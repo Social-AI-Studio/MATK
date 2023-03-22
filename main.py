@@ -71,10 +71,13 @@ def main(args):
 
     # callbacks
     chkpt_callback = ModelCheckpoint(
-        save_top_k=1,
         dirpath="checkpoints/flava_fhm/",
         monitor="val_auroc",
-        mode="max")
+        mode="max",
+        save_top_k=1,
+        every_n_epochs=1,
+        save_last=True,
+    )
     
     es_callback = EarlyStopping(
         monitor="val_auroc",
@@ -88,7 +91,6 @@ def main(args):
         accelerator=args.accelerator,
         devices=args.devices,
         max_epochs=args.num_epochs,
-        limit_train_batches=100,
         strategy='ddp_find_unused_parameters_true',
         callbacks=[chkpt_callback, es_callback],
         accumulate_grad_batches=2,
@@ -100,8 +102,8 @@ def main(args):
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--accelerator", default=None)
-    parser.add_argument("--devices", default=None)
-    parser.add_argument("--num_epochs", default=None)
+    parser.add_argument("--devices", type=int, default=None)
+    parser.add_argument("--num_epochs", type=int, default=None)
     args = parser.parse_args()
 
     main(args)
