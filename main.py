@@ -1,4 +1,4 @@
-from data.fhm import FHMDataset, image_collate_fn
+from datamodules.fhm import FHMDataset, image_collate_fn
 from models.flava import FlavaClassificationModel
 
 from typing import Optional
