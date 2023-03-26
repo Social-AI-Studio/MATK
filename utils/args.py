@@ -6,6 +6,8 @@ def add_trainer_args(parser: ArgumentParser):
 
 def add_train_args(parser: ArgumentParser):
     parser.add_argument("--seed", type=int, default=1001)
+    
+    parser.add_argument("--dataset_name", choices=["fhm", "fhm_finegrained"])
 
     parser.add_argument("--do_train", action='store_true')
     parser.add_argument("--shuffle_train", action='store_true')
