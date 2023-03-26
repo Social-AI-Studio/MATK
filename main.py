@@ -1,18 +1,10 @@
-from datamodules.fhm import FHMDataset, image_collate_fn
-from models.flava import FlavaClassificationModel
-
-from typing import Optional
-from transformers import FlavaProcessor
-
-from torch.utils.data import DataLoader
-from functools import partial
-
-import lightning.pytorch as pl
-from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
-
+import os
+import sys
 import torch
 import numpy as np
+import lightning.pytorch as pl
 
+from lightning.pytorch.callbacks import ModelCheckpoint, EarlyStopping
 from argparse import ArgumentParser
 from utils.args import (
     add_trainer_args,
@@ -20,65 +12,8 @@ from utils.args import (
     add_test_args
 )
 
-
-class FHMDataModule(pl.LightningDataModule):
-    """
-    DataModule used for semantic segmentation in geometric generalization project
-    """
-
-    def __init__(self, model_class_or_path, batch_size, shuffle_train):
-        super().__init__()
-
-        self.annotations_fp = {
-            "train": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/train.jsonl",
-            "validate": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/dev_seen.jsonl",
-            "test": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/dev_seen.jsonl",
-            "predict": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/dev_seen.jsonl",
-        }
-
-        self.batch_size = batch_size
-        self.shuffle_train = shuffle_train
-        self.img_dir = "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/images/img/"
-
-        processor = FlavaProcessor.from_pretrained(model_class_or_path)
-        self.collate_fn = partial(image_collate_fn, processor=processor)
-
-    def setup(self, stage: Optional[str] = None):
-        if stage == "fit" or stage is None:
-            self.train = FHMDataset(
-                annotations_file=self.annotations_fp["train"],
-                img_dir=self.img_dir
-            )
-
-            self.validate = FHMDataset(
-                annotations_file=self.annotations_fp["validate"],
-                img_dir=self.img_dir
-            )
-
-        # Assign test dataset for use in dataloader(s)
-        if stage == "test" or stage is None:
-            self.test = FHMDataset(
-                annotations_file=self.annotations_fp["test"],
-                img_dir=self.img_dir
-            )
-
-        if stage == "predict" or stage is None:
-            self.predict = FHMDataset(
-                annotations_file=self.annotations_fp["predict"],
-                img_dir=self.img_dir
-            )
-
-    def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
-
-    def val_dataloader(self):
-        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
-
-    def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
-
-    def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+from models.flava import FlavaClassificationModel
+from datamodules import load_datamodule
 
 
 def main(args):
@@ -89,8 +24,8 @@ def main(args):
     model = FlavaClassificationModel("facebook/flava-full")
 
     # Initialize the Datasets
-    dataset = FHMDataModule("facebook/flava-full",
-                            args.batch_size, args.shuffle_train)
+    dataset = load_datamodule(args.dataset_name, "facebook/flava-full",
+                              batch_size=args.batch_size, shuffle_train=args.shuffle_train)
 
     # callbacks
     callbacks = []
@@ -119,13 +54,11 @@ def main(args):
             devices=args.devices,
             max_epochs=args.num_epochs,
             accumulate_grad_batches=args.accumulate_gradients,
-            callbacks=callbacks,
-            strategy='ddp_find_unused_parameters_true',
-            limit_train_batches=1
+            callbacks=callbacks
         )
 
         trainer.fit(model, dataset)
-    
+
     if args.do_test:
         chkpt_filepath = args.saved_model_filepath if args.saved_model_filepath else chkpt_callback.best_model_path
         model = FlavaClassificationModel.load_from_checkpoint(chkpt_filepath)
@@ -136,11 +69,10 @@ def main(args):
             devices=1,
             max_epochs=args.num_epochs,
             callbacks=callbacks,
-            strategy='ddp_find_unused_parameters_true'
         )
 
         trainer.test(model, dataset)
-    
+
     if args.do_predict:
 
         chkpt_filepath = args.saved_model_filepath if args.saved_model_filepath else chkpt_callback.best_model_path
@@ -151,8 +83,7 @@ def main(args):
             accelerator=args.accelerator,
             devices=1,
             max_epochs=args.num_epochs,
-            callbacks=callbacks,
-            strategy='ddp_find_unused_parameters_true'
+            callbacks=callbacks
         )
 
         results = trainer.predict(model, dataset)
