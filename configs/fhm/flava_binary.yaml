@@ -1,0 +1,34 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  accelerator: "gpu"
+  devices: 2
+  max_epochs: 50
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/flava/fhm
+        monitor: val_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_auroc
+        patience: 5
+        mode: max
+model:
+  class_path: models.flava.FlavaClassificationModel
+  init_args:
+    model_class_or_path: facebook/flava-full
+    num_classes: 2
+data:
+  class_path: datamodules.fhm.FHMDataModule
+  init_args:
+    dataset_name: fhm
+    model_class_or_path: facebook/flava-full
+    shuffle_train: True
+    batch_size: 32
