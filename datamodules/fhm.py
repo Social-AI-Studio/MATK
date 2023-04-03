@@ -6,69 +6,53 @@ import lightning.pytorch as pl
 from PIL import Image
 from typing import Optional
 from functools import partial
-from transformers import FlavaProcessor
+
+from transformers import AutoProcessor
 from torch.utils.data import DataLoader, Dataset
 
-# from datamodules.utils import image_collate_fn
 from .utils import image_collate_fn
-
-def get_dataset_attributes(dataset_name: str):
-    img_dir = "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/images/img/"
-
-    if dataset_name == "fhm":
-        return FHMDataset, {
-            "train": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/train.jsonl",
-            "validate": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/dev_seen.jsonl",
-            "test": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/dev_seen.jsonl",
-            "predict": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/dev_seen.jsonl",
-        }, img_dir
-    elif dataset_name == "fhm_finegrained":
-        return FHMFinegrainedDataset, {
-            "train": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/train.jsonl",
-            "validate": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl",
-            "test": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl",
-            "predict": "/mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl",
-        }, img_dir
 
 class FHMDataModule(pl.LightningDataModule):
     """
     DataModule used for semantic segmentation in geometric generalization project
     """
 
-    def __init__(self, dataset_name, model_class_or_path, batch_size, shuffle_train, **kwargs):
+    def __init__(self, dataset_class: str, annotation_filepaths: dict, img_dir: str, model_class_or_path: str, batch_size: int, shuffle_train: bool):
         super().__init__()
 
         # TODO: Separate this into a separate YAML configuration file
-        self.dataset_class, self.annotations_fp, self.img_dir = get_dataset_attributes(dataset_name)
+        self.dataset_class = globals()[dataset_class]
+        self.annotation_filepaths = annotation_filepaths
+        self.img_dir = img_dir
 
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
 
-        processor = FlavaProcessor.from_pretrained(model_class_or_path)
+        processor = AutoProcessor.from_pretrained(model_class_or_path)
         self.collate_fn = partial(image_collate_fn, processor=processor)
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
             self.train = self.dataset_class(
-                annotations_file=self.annotations_fp["train"],
+                annotation_filepath=self.annotation_filepaths["train"],
                 img_dir=self.img_dir
             )
 
             self.validate = self.dataset_class(
-                annotations_file=self.annotations_fp["validate"],
+                annotation_filepath=self.annotation_filepaths["validate"],
                 img_dir=self.img_dir
             )
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
             self.test = self.dataset_class(
-                annotations_file=self.annotations_fp["test"],
+                annotation_filepath=self.annotation_filepaths["test"],
                 img_dir=self.img_dir
             )
 
         if stage == "predict" or stage is None:
             self.predict = self.dataset_class(
-                annotations_file=self.annotations_fp["predict"],
+                annotation_filepath=self.annotation_filepaths["predict"],
                 img_dir=self.img_dir
             )
 
@@ -85,8 +69,8 @@ class FHMDataModule(pl.LightningDataModule):
         return DataLoader(self.predict, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
 
 class FHMDataset(Dataset):
-    def __init__(self, annotations_file, img_dir):
-        self.img_annotations = pd.read_json(annotations_file, lines=True)
+    def __init__(self, annotation_filepath, img_dir):
+        self.img_annotations = pd.read_json(annotation_filepath, lines=True)
         self.img_dir = img_dir
 
     def __len__(self):
@@ -110,8 +94,8 @@ class FHMDataset(Dataset):
         }
 
 class FHMFinegrainedDataset(Dataset):
-    def __init__(self, annotations_file, img_dir):
-        self.img_annotations = pd.read_json(annotations_file, lines=True)
+    def __init__(self, annotation_filepath, img_dir):
+        self.img_annotations = pd.read_json(annotation_filepath, lines=True)
         self.img_dir = img_dir
 
     def __len__(self):

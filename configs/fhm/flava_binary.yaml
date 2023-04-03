@@ -3,7 +3,7 @@ seed_everything: 1111
 trainer:
   accelerator: "gpu"
   devices: 2
-  max_epochs: 50
+  max_epochs: 1
   accumulate_grad_batches: 1
   enable_checkpointing: True
   callbacks: 
@@ -20,6 +20,7 @@ trainer:
         monitor: val_auroc
         patience: 5
         mode: max
+  limit_train_batches: 1
 model:
   class_path: models.flava.FlavaClassificationModel
   init_args:
@@ -28,7 +29,14 @@ model:
 data:
   class_path: datamodules.fhm.FHMDataModule
   init_args:
-    dataset_name: fhm
+    dataset_class: FHMFinegrainedDataset
+    img_dir: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/images/img/
+    annotation_filepaths: {
+      train: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/train.jsonl,
+      validate: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
+      test: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
+      predict: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl
+    }
     model_class_or_path: facebook/flava-full
     shuffle_train: True
     batch_size: 32
