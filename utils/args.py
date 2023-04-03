@@ -1,13 +1,13 @@
 from argparse import ArgumentParser
 
 def add_trainer_args(parser: ArgumentParser):
-    parser.add_argument("--accelerator", type=str, required=True)
-    parser.add_argument("--devices", type=int, required=True)
+    parser.add_argument("--accelerator", type=str, default="cuda")
+    parser.add_argument("--devices", type=int, default="1")
 
 def add_train_args(parser: ArgumentParser):
     parser.add_argument("--seed", type=int, default=1001)
     
-    parser.add_argument("--dataset_name", choices=["fhm", "fhm_finegrained"])
+    parser.add_argument("--dataset_name", choices=["fhm", "fhm_finegrained"], default="fhm")
 
     parser.add_argument("--do_train", action='store_true')
     parser.add_argument("--shuffle_train", action='store_true')
