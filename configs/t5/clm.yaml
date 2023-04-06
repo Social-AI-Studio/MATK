@@ -1,0 +1,40 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  accelerator: gpu
+  devices: 1
+  max_epochs: 50
+  accumulate_grad_batches: 2
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/flava/t5
+        monitor: val_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_auroc
+        patience: 5
+        mode: max
+model:
+  class_path: models.t5.T5ClassificationModel
+  init_args:
+    model_class_or_path: t5-large
+data:
+  class_path: datamodules.fhm.FHMT5DataModule
+  init_args:
+    dataset_class: FHMFinegrainedT5Dataset
+    img_dir: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/images/img/
+    annotation_filepaths: {
+      train: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/train.jsonl,
+      validate: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
+      test: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
+      predict: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl
+    }
+    model_class_or_path: t5-large
+    shuffle_train: True
+    batch_size: 16
