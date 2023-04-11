@@ -4,13 +4,13 @@ import torch.nn.functional as F
 import lightning.pytorch as pl
 import torchmetrics
 
-from transformers import T5ForConditionalGeneration, AutoTokenizer
+from transformers import BartForConditionalGeneration, AutoTokenizer
 
-class T5ClassificationModel(pl.LightningModule):
-    def __init__(self, model_class_or_path: str, label2word: dict):
+class BARTCasualModel(pl.LightningModule):
+    def __init__(self, model_class_or_path, label2word: dict):
         super().__init__()
         self.save_hyperparameters()
-        self.model = T5ForConditionalGeneration.from_pretrained(model_class_or_path)
+        self.model = BartForConditionalGeneration.from_pretrained(model_class_or_path)
         self.tokenizer = AutoTokenizer.from_pretrained(model_class_or_path, use_fast=False)
 
         self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=len(label2word))
@@ -23,8 +23,6 @@ class T5ClassificationModel(pl.LightningModule):
         for label, word in label2word.items():
             token = self.tokenizer.encode(word, add_special_tokens=False)[0]
             self.token2label[token] = label
-
-        print(self.token2label)
     
     def training_step(self, batch, batch_idx):
         outputs = self.model(**batch)
@@ -113,6 +111,6 @@ class T5ClassificationModel(pl.LightningModule):
         return results
     
     def configure_optimizers(self):
-        # self.optimizer = torch.optim.Adam(self.parameters(), lr=2e-5)
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=2e-5)
+        # self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
         return [self.optimizer]

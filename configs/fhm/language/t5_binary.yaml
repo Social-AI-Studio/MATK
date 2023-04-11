@@ -1,0 +1,54 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  accelerator: gpu
+  devices: 1
+  strategy: ddp_find_unused_parameters_true
+  max_epochs: 50
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/flava/fhm
+        monitor: val_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_auroc
+        patience: 5
+        mode: max
+model:
+  class_path: models.t5.T5ClassificationModel
+  init_args:
+    model_class_or_path: t5-large
+    label2word: {
+      0: "no",
+      1: "yes"
+    }
+data:
+  class_path: datamodules.fhm.LanguageDataModule
+  init_args:
+    model_class_or_path: t5-large
+    annotation_filepaths: {
+      train: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/train.jsonl,
+      validate: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
+      test: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
+      predict: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl
+    }
+    auxiliary_dicts: {
+      "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
+    }
+    input_template: "question: is it hateful? context: {text} {caption}"
+    output_template: "{label}</s>"
+    label2word: {
+      0: "no",
+      1: "yes"
+    }
+    shuffle_train: True
+    dataset_type: finegrained
+    task: hateful_cls
+    batch_size: 8

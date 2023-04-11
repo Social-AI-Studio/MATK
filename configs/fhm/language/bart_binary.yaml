@@ -2,7 +2,7 @@
 seed_everything: 1111
 trainer:
   accelerator: gpu
-  devices: 2
+  devices: 1
   strategy: ddp_find_unused_parameters_true
   max_epochs: 50
   accumulate_grad_batches: 1
@@ -22,21 +22,33 @@ trainer:
         patience: 5
         mode: max
 model:
-  class_path: models.flava.FlavaClassificationModel
+  class_path: models.bart.BARTCasualModel
   init_args:
-    model_class_or_path: facebook/flava-full
-    num_classes: 2
+    model_class_or_path: facebook/bart-large
+    label2word: {
+      0: "no",
+      1: "yes"
+    }
 data:
-  class_path: datamodules.fhm.FHMDataModule
+  class_path: datamodules.fhm.LanguageDataModule
   init_args:
-    dataset_class: FHMFinegrainedDataset
-    img_dir: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/images/img/
+    model_class_or_path: facebook/bart-large
     annotation_filepaths: {
       train: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/train.jsonl,
       validate: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
       test: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl,
       predict: /mnt/sda/datasets/mmf/datasets/hateful_memes/defaults/annotations/fine_grained/dev_seen.jsonl
     }
-    model_class_or_path: facebook/flava-full
+    auxiliary_dicts: {
+      "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
+    }
+    input_template: "question: is it hateful? context: {text} {caption}"
+    output_template: "{label}</s>"
+    label2word: {
+      0: "no",
+      1: "yes"
+    }
     shuffle_train: True
-    batch_size: 32
+    dataset_type: finegrained
+    task: hateful_cls
+    batch_size: 8
