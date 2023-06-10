@@ -1,0 +1,53 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  default_root_dir: lightning_logs/lxmert_images/fhm/normal
+  accelerator: gpu
+  devices: 1
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/lxmert_images/fhm/normal
+        monitor: label_validate_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: label_validate_auroc
+        patience: 5
+        mode: max
+
+model:
+  class_path: models.lxmert.LxmertClassificationModel
+  init_args:
+    model_class_or_path: unc-nlp/lxmert-base-uncased
+    frcnn_class_or_path: unc-nlp/frcnn-vg-finetuned
+    cls_dict: {
+      "label": 2
+    }
+data:
+  class_path: datamodules.VLImagesDataModule
+  init_args:
+    tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
+    frcnn_class_or_path: unc-nlp/frcnn-vg-finetuned
+    image_dirs: {
+      train: /Scratch/mingshan/datasets/fhm/images/img/,
+      validate: /Scratch/mingshan/datasets/fhm/images/img/,
+      test: /Scratch/mingshan/datasets/fhm/images/img/,
+      predict: /Scratch/mingshan/datasets/fhm/images/img/
+    }
+    annotation_filepaths: {
+      train: /Scratch/mingshan/datasets/fhm_normal/annotations/train.jsonl,
+      validate: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl,
+      test: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl,
+      predict: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl
+    }
+    shuffle_train: True
+    batch_size: 32
+    labels:
+    - label

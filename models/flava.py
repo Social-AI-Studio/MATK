@@ -2,87 +2,88 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import lightning.pytorch as pl
+from lightning.pytorch.callbacks import Callback
 import torchmetrics
-
 
 from transformers import FlavaModel
 
+
 class FlavaClassificationModel(pl.LightningModule):
-    def __init__(self, model_class_or_path, num_classes=2):
+    def __init__(
+            self, 
+            model_class_or_path: str,
+            cls_dict: dict
+        ):
         super().__init__()
         self.save_hyperparameters()
+
         self.model = FlavaModel.from_pretrained(model_class_or_path)
-        self.mlp = nn.Sequential(
-            nn.Linear(self.model.config.multimodal_config.hidden_size, num_classes)
-        )
 
-        self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.train_auroc = torchmetrics.AUROC(task="multiclass", num_classes=num_classes)
+        # set up classification
+        self.mlps = nn.ModuleList([
+            nn.Linear(self.model.config.multimodal_config.hidden_size, value) 
+            for value in cls_dict.values()
+        ])
+        
+        # set up metric
+        self.cls_dict = cls_dict
+        for stage in ["train", "validate", "test"]:
+            for key, value in cls_dict.items():
+                setattr(self, f"{key}_{stage}_acc", torchmetrics.Accuracy(task="multiclass", num_classes=value))
+                setattr(self, f"{key}_{stage}_auroc", torchmetrics.AUROC(task="multiclass", num_classes=value))
+       
 
-        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.val_auroc = torchmetrics.AUROC(task="multiclass", num_classes=num_classes)
+    def compute_metrics_and_logs(self, cls_name, stage, loss, targets, preds):
+        accuracy_metric = getattr(self, f"{cls_name}_{stage}_acc")
+        auroc_metric = getattr(self, f"{cls_name}_{stage}_auroc")
 
-        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-        self.test_auroc = torchmetrics.AUROC(task="multiclass", num_classes=num_classes)
-    
+        accuracy_metric(preds.argmax(dim=-1), targets)
+        auroc_metric(preds, targets)
+
+        self.log(f'{cls_name}_{stage}_loss', loss, prog_bar=True)
+        self.log(f'{cls_name}_{stage}_acc', accuracy_metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log(f'{cls_name}_{stage}_auroc', auroc_metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+
+
     def training_step(self, batch, batch_idx):
-        labels = batch['labels']
 
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
             pixel_values=batch['pixel_values']
         )
-        preds = self.mlp(model_outputs.multimodal_embeddings[:, 0])
-        loss = F.cross_entropy(preds, labels)
-        
-        self.train_acc(preds.argmax(dim=-1), labels)
-        self.train_auroc(preds, labels)
-        self.log('train_loss', loss, prog_bar=True)
-        self.log('train_acc', self.train_acc, on_step=True, on_epoch=True, sync_dist=True)
-        self.log('train_auroc', self.train_auroc, on_step=True, on_epoch=True, sync_dist=True)
 
-        return loss
+        total_loss = 0.0
+
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            targets = batch[cls_name]
+            preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
+            loss = F.cross_entropy(preds, targets)
+            self.compute_metrics_and_logs(cls_name, "train", loss, targets, preds)
+
+            total_loss += loss
+        
+        return total_loss / len(self.cls_dict)
     
     
     def validation_step(self, batch, batch_idx):
-        labels = batch['labels']
-
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
             pixel_values=batch['pixel_values']
         )
-        preds = self.mlp(model_outputs.multimodal_embeddings[:, 0])
-        loss = F.cross_entropy(preds, labels)
-        
-        self.val_acc(preds.argmax(dim=-1), labels)
-        self.val_auroc(preds, labels)
-        
-        self.log('val_loss', loss, prog_bar=True, sync_dist=True)
-        self.log('val_acc', self.val_acc, on_step=True, on_epoch=True, sync_dist=True)
-        self.log('val_auroc', self.val_auroc, on_step=True, on_epoch=True, sync_dist=True)
 
-        return loss
-    
-    def test_step(self, batch, batch_idx):
-        labels = batch["labels"]
-        
-        model_outputs = self.model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
-            pixel_values=batch['pixel_values']
-        )
-        preds = self.mlp(model_outputs.multimodal_embeddings[:, 0])
-        
-        self.test_acc(preds.argmax(dim=-1), labels)
-        self.test_auroc(preds, labels)
+        total_loss = 0.0
 
-        return None
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            targets = batch[cls_name]
+            preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
+            loss = F.cross_entropy(preds, targets)
+            self.compute_metrics_and_logs(cls_name, "validate", loss, targets, preds)
 
-    def on_test_epoch_end(self):
-        print("test_acc:", self.test_acc.compute())
-        print("test_auroc:", self.test_auroc.compute())
+            total_loss += loss
+        
+        return total_loss / len(self.cls_dict)
 
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -90,8 +91,11 @@ class FlavaClassificationModel(pl.LightningModule):
             attention_mask=batch["attention_mask"],
             pixel_values=batch['pixel_values']
         )
-        preds = self.mlp(model_outputs.multimodal_embeddings[:, 0])
-        results = {"preds": preds}
+
+        results = {}
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            label_preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
+            results[cls_name] = label_preds
 
         if "labels" in batch:
             results['labels'] = batch["labels"]

@@ -1,0 +1,51 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  default_root_dir: lightning_logs/flava/harmeme/intensity
+  accelerator: gpu
+  devices: 1
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/flavas/harmeme/intensity
+        monitor: intensity_validate_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: intensity_validate_auroc
+        patience: 5
+        mode: max
+model:
+  class_path: models.flava.FlavaClassificationModel
+  init_args:
+    model_class_or_path: facebook/flava-full
+    cls_dict: {
+      "intensity": 3
+    }
+data:
+  class_path: datamodules.VLImagesDataModule
+  init_args:
+    tokenizer_class_or_path: facebook/flava-full
+    frcnn_class_or_path: None
+    image_dirs: {
+      train: /Scratch/datasets/harmemes/images/,
+      validate: /Scratch/datasets/harmemes/images/,
+      test: /Scratch/datasets/harmemes/images/,
+      predict: /Scratch/datasets/harmemes/images/
+    }
+    annotation_filepaths: {
+      train: /Scratch/datasets/harmemes/annotations/train.jsonl,
+      validate: /Scratch/datasets/harmemes/annotations/val.jsonl,
+      test: /Scratch/datasets/harmemes/annotations/test.jsonl,
+      predict: /Scratch/datasets/harmemes/annotations/val.jsonl
+    }
+    shuffle_train: True
+    labels:
+    - intensity
+    batch_size: 32

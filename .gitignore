@@ -1,3 +1,7 @@
 __pycache__/
 checkpoints/
 lightning_logs/
+pp.ipynb
+fhm-lxmert.log
+fhm-visualbert.log
+fine-lxmert.log

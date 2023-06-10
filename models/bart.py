@@ -4,39 +4,57 @@ import torch.nn.functional as F
 import lightning.pytorch as pl
 import torchmetrics
 
+from typing import List
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
 class BARTCasualModel(pl.LightningModule):
-    def __init__(self, model_class_or_path, label2word: dict):
+    def __init__(self, model_class_or_path, labels: List[str], label2word: dict):
         super().__init__()
         self.save_hyperparameters()
+        self.labels = labels
+
         self.model = BartForConditionalGeneration.from_pretrained(model_class_or_path)
         self.tokenizer = AutoTokenizer.from_pretrained(model_class_or_path, use_fast=False)
 
-        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=len(label2word))
-        self.val_auroc = torchmetrics.AUROC(task="multiclass", num_classes=len(label2word))
+        num_unique_words = len(set(label2word.values()))
+        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_unique_words)
+        self.val_auroc = torchmetrics.AUROC(task="multiclass", num_classes=num_unique_words)
 
-        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=len(label2word))
-        self.test_auroc = torchmetrics.AUROC(task="multiclass", num_classes=len(label2word))
+        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_unique_words)
+        self.test_auroc = torchmetrics.AUROC(task="multiclass", num_classes=num_unique_words)
 
         self.token2label = {}
         for label, word in label2word.items():
             token = self.tokenizer.encode(word, add_special_tokens=False)[0]
             self.token2label[token] = label
+
+        print(label2word)
+        print(self.token2label)
     
     def training_step(self, batch, batch_idx):
-        outputs = self.model(**batch)
+        # TODO: Address this for multi-task learning
+        labels = self.labels[0]
+        labels = batch[labels]
+
+        outputs = self.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            labels=labels
+        )
+
         self.log('train_loss', outputs.loss, prog_bar=True)
         return outputs.loss
     
     
     def validation_step(self, batch, batch_idx):
-        labels = batch['labels']
+        # TODO: Address this for multi-task learning
+        labels = self.labels[0]
+        labels = batch[labels]
 
         outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels = batch['labels']
+            labels=labels
         )
 
         first_word = outputs.logits[:,0,:].cpu()
@@ -58,18 +76,20 @@ class BARTCasualModel(pl.LightningModule):
         self.val_auroc(logits, targets)
         
         self.log('val_loss', outputs.loss, prog_bar=True, sync_dist=True)
-        self.log('val_acc', self.val_acc, on_step=True, on_epoch=True, sync_dist=True)
-        self.log('val_auroc', self.val_auroc, on_step=True, on_epoch=True, sync_dist=True)
+        self.log('val_acc', self.val_acc, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
+        self.log('val_auroc', self.val_auroc, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
 
         return outputs.loss
     
     def test_step(self, batch, batch_idx):
-        labels = batch['labels']
+        # TODO: Address this for multi-task learning
+        labels = self.labels[0]
+        labels = batch[labels]
 
         outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels = batch['labels']
+            labels=labels
         )
 
         first_word = outputs.logits[:,0,:].cpu()
