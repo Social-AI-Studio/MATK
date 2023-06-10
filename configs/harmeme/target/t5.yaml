@@ -11,14 +11,14 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/t5/harmeme/target
-        monitor: val_auroc
+        monitor: target_validate_auroc
         mode: max
         save_top_k: 1
         every_n_epochs: 1
         save_last: True
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: val_auroc
+        monitor: target_validate_auroc
         patience: 5
         mode: max
 model:

@@ -1,0 +1,1 @@
+python3 main.py fit --config configs/fhm/normal/roberta_prompt.yaml --seed_everything 1111

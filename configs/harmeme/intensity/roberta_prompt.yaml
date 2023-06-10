@@ -1,16 +1,16 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
 trainer:
-  default_root_dir: lightning_logs/roberta_prompt/fhm/normal
   accelerator: gpu
   devices: 1
   max_epochs: 30
   accumulate_grad_batches: 1
   enable_checkpointing: True
+  default_root_dir: lightning_logs/roberta_prompt/harmeme
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: checkpoints/roberta_prompt/fhm/normal
+        dirpath: checkpoints/roberta_prompt/harmeme
         monitor: val_auroc
         mode: max
         save_top_k: 1
@@ -38,7 +38,6 @@ model:
       LR_RATE : 1e-05
       EPS : 1e-08
       FIX_LAYERS : 0
-
     label_list: 
       - 205
       - 1099
@@ -50,7 +49,7 @@ data:
     shuffle_train: True
     batch_size: 4
     opt: 
-      DATASET : mem
+      DATASET : harm
       FEW_SHOT : False
       FINE_GRIND : False
       NUM_SHOTS : 16
