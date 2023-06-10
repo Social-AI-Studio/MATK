@@ -1,0 +1,1 @@
+python3 main.py fit --config configs/harmeme/intensity/bart.yaml --seed_everything 1111

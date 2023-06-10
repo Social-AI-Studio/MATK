@@ -1,0 +1,52 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  default_root_dir: lightning_logs/visualbert_images/fhm/hate
+  accelerator: gpu
+  devices: 1
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/visualbert_images/fhm/hate
+        monitor: hate_validate_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: hate_validate_auroc
+        patience: 5
+        mode: max
+
+model:
+  class_path: models.visualbert.VisualBertClassificationModel
+  init_args:
+    model_class_or_path: uclanlp/visualbert-vqa-coco-pre
+    cls_dict: {
+      "hate": 2
+    }
+data:
+  class_path: datamodules.VLImagesDataModule
+  init_args:
+    tokenizer_class_or_path: bert-base-uncased
+    frcnn_class_or_path: unc-nlp/frcnn-vg-finetuned
+    image_dirs: {
+      train: /Scratch/mingshan/datasets/fhm/images/img/,
+      validate: /Scratch/mingshan/datasets/fhm/images/img/,
+      test: /Scratch/mingshan/datasets/fhm/images/img/,
+      predict: /Scratch/mingshan/datasets/fhm/images/img/
+    }
+    annotation_filepaths: {
+      train: /Scratch/mingshan/datasets/fhm_finegrained/annotations/train.jsonl,
+      validate: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
+      test: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
+      predict: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl
+    }
+    shuffle_train: True
+    batch_size: 32
+    labels:
+    - hate

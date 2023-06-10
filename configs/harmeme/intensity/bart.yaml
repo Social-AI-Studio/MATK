@@ -1,0 +1,56 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  default_root_dir: lightning_logs/bart/harmeme/intensity
+  accelerator: gpu
+  devices: 1
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/bart/harmeme/intensity
+        monitor: val_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_auroc
+        patience: 5
+        mode: max
+model:
+  class_path: models.bart.BARTCasualModel
+  init_args:
+    model_class_or_path: facebook/bart-large
+    labels:
+    - intensity
+    label2word: {
+      0: "no",
+      1: "yes",
+      2: "yes"
+    }
+data:
+  class_path: datamodules.LanguageDataModule
+  init_args:
+    tokenizer_class_or_path: facebook/bart-large
+    annotation_filepaths: {
+      train: /Scratch/datasets/harmemes/annotations/train.jsonl,
+      validate: /Scratch/datasets/harmemes/annotations/val.jsonl,
+      test: /Scratch/datasets/harmemes/annotations/test.jsonl,
+      predict: /Scratch/datasets/harmemes/annotations/val.jsonl
+    }
+    auxiliary_dicts: {}
+    input_template: "question: is it hateful? context: {text}"
+    output_template: "{label}</s>"
+    label2word: {
+      0: "no",
+      1: "yes",
+      2: "yes"
+    }
+    shuffle_train: True
+    batch_size: 32
+    labels:
+    - intensity
