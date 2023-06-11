@@ -1,7 +1,6 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
 trainer:
-  default_root_dir: lightning_logs/flava/fhm/hate
   accelerator: gpu
   devices: 1
   max_epochs: 30
@@ -30,23 +29,27 @@ model:
       "hate": 2
     }
 data:
-  class_path: datamodules.VLImagesDataModule
+  class_path: datamodules.modules.ImagesDataModule
   init_args:
     tokenizer_class_or_path: facebook/flava-full
     frcnn_class_or_path: None
+    dataset_class: datamodules.datasets.fhm_finegrained.ImagesDataset
     image_dirs: {
-      train: /Scratch/mingshan/datasets/fhm/images/img/,
-      validate: /Scratch/mingshan/datasets/fhm/images/img/,
-      test: /Scratch/mingshan/datasets/fhm/images/img/,
-      predict: /Scratch/mingshan/datasets/fhm/images/img/
+      train: /mnt/sda/datasets/memes/fhm/images/img/,
+      validate: /mnt/sda/datasets/memes/fhm/images/img/,
+      test: /mnt/sda/datasets/memes/fhm/images/img/,
+      predict: /mnt/sda/datasets/memes/fhm/images/img/
     }
     annotation_filepaths: {
-      train: /Scratch/mingshan/datasets/fhm_finegrained/annotations/train.jsonl,
-      validate: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      test: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      predict: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl
+      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl,
+      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl
+    }
+    auxiliary_dicts: {
+      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
     }
     shuffle_train: True
     labels:
     - hate
-    batch_size: 32
+    batch_size: 4

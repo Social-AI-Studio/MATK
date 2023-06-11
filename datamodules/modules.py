@@ -3,21 +3,25 @@ import tqdm
 import pickle as pkl
 import numpy as np
 
-import lightning.pytorch as pl
-
 
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
-from .datasets.datasets import LanguageDataset
-from .datasets.datasets import VLImagesDataset
-from .datasets.datasets import VLFeaturesDataset
+
+# from ..datasets.fhm_finegrained import (
+#     TextDataset,
+#     ImagesDataset,
+#     FasterRCNNDataset
+# )
+import importlib
 
 from datamodules.collators import get_collator
 
 from typing import List, Optional
 
-class VLFeaturesDataModule(pl.LightningDataModule):
+import lightning.pytorch as pl
+
+class FasterRCNNDataModule(pl.LightningDataModule):
     """
     DataModule used for semantic segmentation in geometric generalization project
     """
@@ -26,6 +30,7 @@ class VLFeaturesDataModule(pl.LightningDataModule):
         self,
         annotation_filepaths: dict,
         tokenizer_class_or_path: str,
+        dataset_class: str,
         feats_dirs: dict,
         batch_size: int,
         shuffle_train: bool,
@@ -39,7 +44,6 @@ class VLFeaturesDataModule(pl.LightningDataModule):
         self.labels = labels
         
         self.feats_dict = {}
-        self.collate_fn = {}
         for split in ["train", "validate", "test", "predict"]:
             self.feats_dict[split] = self._load_feats_frcnn(feats_dirs, split)
         
@@ -48,7 +52,7 @@ class VLFeaturesDataModule(pl.LightningDataModule):
             labels=labels,
         )
 
-        self.dataset_cls = VLFeaturesDataset
+        self.dataset_cls = __import__(dataset_class)
     
     def _load_feats_frcnn(self, feats_dirs: str, key: str):
         feats_dict = {}
@@ -108,7 +112,7 @@ class VLFeaturesDataModule(pl.LightningDataModule):
     def predict_dataloader(self):
         return DataLoader(self.predict, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
 
-class VLImagesDataModule(pl.LightningDataModule):
+class ImagesDataModule(pl.LightningDataModule):
     """
     DataModule used for semantic segmentation in geometric generalization project
     """
@@ -119,6 +123,8 @@ class VLImagesDataModule(pl.LightningDataModule):
         image_dirs: dict,
         tokenizer_class_or_path: str,
         frcnn_class_or_path: str,
+        dataset_class: str,
+        auxiliary_dicts: dict,
         batch_size: int,
         shuffle_train: bool,
         labels: List[str]
@@ -130,24 +136,32 @@ class VLImagesDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
         self.labels = labels
+        self.auxiliary_dicts = auxiliary_dicts
 
         self.collate_fn = get_collator(
             tokenizer_class_or_path, 
             labels=labels, 
             frcnn_class_or_path=frcnn_class_or_path
         )
-        self.dataset_cls = VLImagesDataset
+
+        # TEMP HACK
+        package_name = ".".join(dataset_class.split(".")[:-1])
+        class_name = dataset_class.split(".")[-1]
+        m = importlib.import_module(package_name)
+        self.dataset_cls = getattr(m, class_name)
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
             self.train = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["train"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 image_dir=self.image_dirs["train"],
                 labels=self.labels
             )
 
             self.validate = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["validate"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 image_dir=self.image_dirs["validate"],
                 labels=self.labels
             )
@@ -156,6 +170,7 @@ class VLImagesDataModule(pl.LightningDataModule):
         if stage == "test" or stage is None:
             self.test = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["test"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 image_dir=self.image_dirs["test"],
                 labels=self.labels
             )
@@ -163,6 +178,7 @@ class VLImagesDataModule(pl.LightningDataModule):
         if stage == "predict" or stage is None:
             self.predict = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["predict"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 image_dir=self.image_dirs["predict"],
                 labels=self.labels
             )
@@ -180,7 +196,7 @@ class VLImagesDataModule(pl.LightningDataModule):
         return DataLoader(self.predict, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
 
 
-class LanguageDataModule(pl.LightningDataModule):
+class TextDataModule(pl.LightningDataModule):
     """
     DataModule used for semantic segmentation in geometric generalization project
     """
@@ -189,6 +205,7 @@ class LanguageDataModule(pl.LightningDataModule):
         self,
         annotation_filepaths: dict,
         tokenizer_class_or_path: str,
+        dataset_class: str,
         auxiliary_dicts: dict,
         input_template: str,
         output_template: str,
@@ -215,7 +232,7 @@ class LanguageDataModule(pl.LightningDataModule):
         self.labels = labels
         self.collate_fn = get_collator(tokenizer_class_or_path, labels=labels)
 
-        self.dataset_cls = LanguageDataset
+        self.dataset_cls = __import__(dataset_class)
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
