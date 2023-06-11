@@ -4,12 +4,12 @@ trainer:
   accelerator: gpu
   devices: 1
   max_epochs: 30
-  accumulate_grad_batches: 1
+  accumulate_grad_batches: 2
   enable_checkpointing: True
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: checkpoints/flava/mami
+        dirpath: checkpoints/flava/fhm/hate
         monitor: hate_validate_auroc
         mode: max
         save_top_k: 1
@@ -20,16 +20,13 @@ trainer:
         monitor: hate_validate_auroc
         patience: 5
         mode: max
+  
 model:
   class_path: models.flava.FlavaClassificationModel
   init_args:
     model_class_or_path: facebook/flava-full
     cls_dict: {
-      "shaming": 2,
-      "misogynous": 2,
-      "objectification": 2,
-      "violence": 2,
-      "stereotype": 2
+      "hate": 2
     }
 data:
   class_path: datamodules.VLImagesDataModule
@@ -37,22 +34,18 @@ data:
     tokenizer_class_or_path: facebook/flava-full
     frcnn_class_or_path: None
     image_dirs: {
-      train: /Scratch/datasets/mami/images/img/train,
-      validate: /Scratch/datasets/mami/images/img/test,
-      test: /Scratch/datasets/mami/images/img/test,
-      predict: /Scratch/datasets/mami/images/img/test,
+      train: /mnt/sda/datasets/memes/fhm/images/img/,
+      validate: /mnt/sda/datasets/memes/fhm/images/img/,
+      test: /mnt/sda/datasets/memes/fhm/images/img/,
+      predict: /mnt/sda/datasets/memes/fhm/images/img/
     }
     annotation_filepaths: {
-      train: /Scratch/datasets/mami/annotations/train.jsonl,
-      validate: /Scratch/datasets/mami/annotations/test.jsonl,
-      test: /Scratch/datasets/mami/annotations/test.jsonl,
-      predict: /Scratch/datasets/mami/annotations/test.jsonl,
+      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations_understandings/train.jsonl,
+      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations_understandings/dev_seen.jsonl,
+      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations_understandings/dev_seen.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations_understandings/dev_seen.jsonl
     }
     shuffle_train: True
     labels:
-    - shaming
-    - misogynous
-    - objectification
-    - violence
-    - stereotype
-    batch_size: 32
+    - hate
+    batch_size: 8

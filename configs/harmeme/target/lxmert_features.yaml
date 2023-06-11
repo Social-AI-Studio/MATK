@@ -1,7 +1,6 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
 trainer:
-  default_root_dir: lightning_logs/lxmert_features/harmeme/target
   accelerator: gpu
   devices: 1
   max_epochs: 30
