@@ -6,7 +6,6 @@ trainer:
   max_epochs: 30
   accumulate_grad_batches: 1
   enable_checkpointing: True
-  default_root_dir: lightning_logs/roberta_prompt/harmeme
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
