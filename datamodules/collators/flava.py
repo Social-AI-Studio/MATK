@@ -7,7 +7,7 @@ def image_collate_fn(batch, processor, labels):
         images.append(item["image"])
     
     inputs = processor(  
-        text=texts, images=images, return_tensors="pt", padding=True
+        text=texts, images=images, return_tensors="pt", padding=True, truncation=True
     )
 
     # Get Labels
