@@ -52,7 +52,11 @@ class FasterRCNNDataModule(pl.LightningDataModule):
             labels=labels,
         )
 
-        self.dataset_cls = __import__(dataset_class)
+        # TEMP HACK
+        package_name = ".".join(dataset_class.split(".")[:-1])
+        class_name = dataset_class.split(".")[-1]
+        m = importlib.import_module(package_name)
+        self.dataset_cls = getattr(m, class_name)
     
     def _load_feats_frcnn(self, feats_dirs: str, key: str):
         feats_dict = {}
@@ -232,7 +236,11 @@ class TextDataModule(pl.LightningDataModule):
         self.labels = labels
         self.collate_fn = get_collator(tokenizer_class_or_path, labels=labels)
 
-        self.dataset_cls = __import__(dataset_class)
+        # TEMP HACK
+        package_name = ".".join(dataset_class.split(".")[:-1])
+        class_name = dataset_class.split(".")[-1]
+        m = importlib.import_module(package_name)
+        self.dataset_cls = getattr(m, class_name)
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
