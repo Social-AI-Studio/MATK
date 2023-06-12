@@ -33,6 +33,7 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         dataset_class: str,
         feats_dirs: dict,
         batch_size: int,
+        auxiliary_dicts: dict,
         shuffle_train: bool,
         labels: List[str]
     ):
@@ -42,6 +43,7 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
         self.labels = labels
+        self.auxiliary_dicts = auxiliary_dicts
         
         self.feats_dict = {}
         for split in ["train", "validate", "test", "predict"]:
@@ -79,12 +81,14 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         if stage == "fit" or stage is None:
             self.train = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["train"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["train"],
                 labels=self.labels
             )
 
             self.validate = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["validate"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["validate"],
                 labels=self.labels
             )
@@ -93,6 +97,7 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         if stage == "test" or stage is None:
             self.test = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["test"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["test"],
                 labels=self.labels
             )
@@ -100,6 +105,7 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         if stage == "predict" or stage is None:
             self.predict = self.dataset_cls(
                 annotation_filepath=self.annotation_filepaths["predict"],
+                auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["predict"],
                 labels=self.labels
             )
