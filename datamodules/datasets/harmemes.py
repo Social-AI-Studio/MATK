@@ -166,6 +166,8 @@ class TextDataset(HarmemesBase):
 
         for l in self.labels:
             label = record[l]
+            if label == -1:
+                continue
             item[l] = self.output_template.format(label=self.label2word[label])
 
         return item

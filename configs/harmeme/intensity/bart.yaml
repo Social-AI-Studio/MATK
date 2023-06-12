@@ -10,14 +10,14 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/bart/harmeme/intensity
-        monitor: intensity_validate_auroc
+        monitor: val_auroc
         mode: max
         save_top_k: 1
         every_n_epochs: 1
         save_last: True
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: intensity_validate_auroc
+        monitor: val_auroc
         patience: 5
         mode: max
 model:
@@ -32,16 +32,19 @@ model:
       2: "yes"
     }
 data:
-  class_path: datamodules.LanguageDataModule
+  class_path: datamodules.modules.TextDataModule
   init_args:
     tokenizer_class_or_path: facebook/bart-large
+    dataset_class: datamodules.datasets.harmemes.TextDataset
     annotation_filepaths: {
-      train: /Scratch/datasets/harmemes/annotations/train.jsonl,
-      validate: /Scratch/datasets/harmemes/annotations/val.jsonl,
-      test: /Scratch/datasets/harmemes/annotations/test.jsonl,
-      predict: /Scratch/datasets/harmemes/annotations/val.jsonl
+      train: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/train.jsonl,
+      validate: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/val.jsonl,
+      test: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/test.jsonl,
+      predict: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/test.jsonl,
     }
-    auxiliary_dicts: {}
+    auxiliary_dicts: {
+      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
+    }
     input_template: "question: is it hateful? context: {text}"
     output_template: "{label}</s>"
     label2word: {
