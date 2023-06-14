@@ -85,6 +85,25 @@ class FlavaClassificationModel(pl.LightningModule):
         
         return total_loss / len(self.cls_dict)
 
+    def test_step(self, batch, batch_idx):
+        model_outputs = self.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            pixel_values=batch['pixel_values']
+        )
+        
+        results = {}
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            targets = batch[cls_name]
+            preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
+            loss = F.cross_entropy(preds, targets)
+            self.compute_metrics_and_logs(cls_name, "test", loss, targets, preds)
+
+        if "labels" in batch:
+            results['labels'] = batch["labels"]
+
+        return results
+
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(
             input_ids=batch["input_ids"],

@@ -110,6 +110,12 @@ class T5ClassificationModel(pl.LightningModule):
         self.test_acc(preds, targets)
         self.test_auroc(logits, targets)
 
+        self.log('test_loss', outputs.loss, prog_bar=True, sync_dist=True)
+        self.log('test_acc', self.test_acc, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+        self.log('test_auroc', self.test_auroc, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
+
+        return outputs.loss
+
         return None
 
     def on_test_epoch_end(self):
