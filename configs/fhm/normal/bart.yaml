@@ -54,3 +54,4 @@ data:
     batch_size: 32
     labels:
     - label
+    num_workers: 8

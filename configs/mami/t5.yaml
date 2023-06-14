@@ -64,3 +64,4 @@ data:
     - objectification
     - violence
     - stereotype
+    num_workers: 8

@@ -51,3 +51,4 @@ data:
     labels:
     - hate
     batch_size: 4
+    num_workers: 8

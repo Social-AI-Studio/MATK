@@ -56,3 +56,4 @@ data:
     batch_size: 32
     labels:
     - intensity
+    num_workers: 8
