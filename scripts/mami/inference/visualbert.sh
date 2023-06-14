@@ -1,0 +1,1 @@
+python3 main.py test --config configs/mami/visualbert_features.yaml --seed_everything 1111

@@ -1,0 +1,1 @@
+python3 main.py test --config configs/fhm/normal/t5.yaml --seed_everything 1111

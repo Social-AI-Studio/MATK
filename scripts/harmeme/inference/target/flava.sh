@@ -1,0 +1,1 @@
+python3 main.py test --config configs/harmeme/target/flava.yaml --seed_everything 1111

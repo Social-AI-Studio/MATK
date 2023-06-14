@@ -1,0 +1,1 @@
+python3 main.py test --config configs/fhm/hate/visualbert_images.yaml --seed_everything 1111
