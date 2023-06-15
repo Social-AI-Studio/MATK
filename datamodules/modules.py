@@ -35,7 +35,8 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         batch_size: int,
         auxiliary_dicts: dict,
         shuffle_train: bool,
-        labels: List[str]
+        labels: List[str],
+        num_workers: int
     ):
         super().__init__()
 
@@ -44,6 +45,7 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         self.shuffle_train = shuffle_train
         self.labels = labels
         self.auxiliary_dicts = auxiliary_dicts
+        self.num_workers= num_workers
         
         self.feats_dict = {}
         for split in ["train", "validate", "test", "predict"]:
@@ -111,16 +113,16 @@ class FasterRCNNDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
+        return DataLoader(self.train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
 
     def val_dataloader(self):
-        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.test, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
 class ImagesDataModule(pl.LightningDataModule):
     """
@@ -137,7 +139,8 @@ class ImagesDataModule(pl.LightningDataModule):
         auxiliary_dicts: dict,
         batch_size: int,
         shuffle_train: bool,
-        labels: List[str]
+        labels: List[str],
+        num_workers: int
     ):
         super().__init__()
 
@@ -147,6 +150,7 @@ class ImagesDataModule(pl.LightningDataModule):
         self.shuffle_train = shuffle_train
         self.labels = labels
         self.auxiliary_dicts = auxiliary_dicts
+        self.num_workers= num_workers
 
         self.collate_fn = get_collator(
             tokenizer_class_or_path, 
@@ -194,16 +198,16 @@ class ImagesDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
+        return DataLoader(self.train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
 
     def val_dataloader(self):
-        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.test, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
 
 class TextDataModule(pl.LightningDataModule):
@@ -222,7 +226,8 @@ class TextDataModule(pl.LightningDataModule):
         label2word: dict,
         batch_size: int,
         shuffle_train: bool,
-        labels: List[str]
+        labels: List[str],
+        num_workers: int
     ):
         super().__init__()
 
@@ -241,6 +246,7 @@ class TextDataModule(pl.LightningDataModule):
         self.label2word = label2word
         self.labels = labels
         self.collate_fn = get_collator(tokenizer_class_or_path, labels=labels)
+        self.num_workers= num_workers
 
         # TEMP HACK
         package_name = ".".join(dataset_class.split(".")[:-1])
@@ -290,13 +296,13 @@ class TextDataModule(pl.LightningDataModule):
             )
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
+        return DataLoader(self.train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
 
     def val_dataloader(self):
-        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.test, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=8, collate_fn=self.collate_fn)
+        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
