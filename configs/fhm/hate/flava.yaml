@@ -43,6 +43,8 @@ data:
     annotation_filepaths: {
       train: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/train.json,
       validate: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/dev_seen.json,
+      test: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/dev_seen.json,
+      predict:  /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/dev_seen.json,
     }
     auxiliary_dicts: {
       # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
