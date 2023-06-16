@@ -21,9 +21,10 @@ To get started, run the following command::
 Main Features
 ***************
 
-* Provides a framework for training and evaluating a different multimodal classification models on well known hateful memes datasets
-* Allows for efficient experimentation and parameter tuning through modification of configuration files (under configs directory)
-* Evaluate models using different state-of-the-art evaluation metrics such as Accuracy and AUROC
+* Provides a framework for training and evaluating a different language and vision-language models on well known hateful memes datasets.
+* Allows for efficient experimentation and parameter tuning through modification of configuration files. 
+* Evaluate models using different state-of-the-art evaluation metrics such as Accuracy and AUROC. 
+* Supports visualization by integrating with Tensorboard, allowing users to easily view and analyze metrics in a user-friendly GUI.
 
 
 ***************
@@ -56,55 +57,11 @@ Supported Datasets
 | MAMI                         | `[arxiv] <https://aclanthology.org/2022.semeval-1.74.pdf>`_     | `[CodaLab] <https://competitions.codalab.org/competitions/34175>`_                                             | 2022 | 10001 |               |
 +------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
 
-Converting Your Dataset
-~~~~~~~~~~~~~~~~~~~~~~~
-To prepare your local copy of the any of the above datasets for library usage, use the scripts provided under ``tools/conversion``. For example, use::
-
-  python3 convert_harmemes.py --dataset-dir /path/to/dataset_dir --processed-dir /path/to/processed_dir
-
-where ``dataset-dir`` is the directory containing your raw HarMeme dataset and ``processed-dir`` is the directory that should hold the converted MAMI dataset.
-
-+------------------------------+----------------------------+
-| Dataset                      | Script                     |
-+==============================+============================+
-| Facebook Hateful Memes (FHM) | convert_fhm.py             |
-+------------------------------+----------------------------+
-| Fine grained FHM             | convert_finegrained_fhm.py |
-+------------------------------+----------------------------+
-| HarMeme                      | convert_harmemes.py        |
-+------------------------------+----------------------------+
-| Harm-C                       | convert_harmc.py           |
-+------------------------------+----------------------------+
-| Harm-P                       | convert_harmp.py           |
-+------------------------------+----------------------------+
-| MAMI                         | convert_mami.py            |
-+------------------------------+----------------------------+
-
-For the MAMI dataset, we also provide the option to preprocess the dataset, ie; removing punctuation, removing non-ASCII characters, remove URLs, remove extra whitespaces, etc. To preprocess, set ``--process-data True``::
-
-  python3 convert_mami.py --dataset-dir /path/to/dataset_dir --processed-dir /path/to/processed_dir --process-data True
-
 Adding Custom Datasets
-~~~~~~~~~~~~~~~~~~
-Each custom meme dataset is required to have the following fields:
-
-* img: image filepath
-* text: superimposed/overlaid text
-* {labels}: the label name changes based on the dataset (i.e. hateful, offensive)
-
-Make sure your custom dataset folder's tree looks similar to the following:
-
-.. code-block:: text
-
-   processed_dir
-   ├── annotations
-   │   ├── test.jsonl
-   │   ├── train.jsonl
-   │   └── validate.jsonl
-   └── images
-      ├── 1.jpg
-      └── 2.jpg
-
+~~~~~~~~~~~~~~~~~~~~~~
+1. To use a dataset lot listed above, copy the code given in one of the dataset files, eg; ``datamodules/datasets/fhm.py``. 
+2. Modify the base class implementation, specifically ``_preprocess_annotations`` to suit your dataset's needs.
+3. Create a new YAML config file and script that will reference your new dataset class and paths to your dataset files.
 
 **************************
 Meme Models and Evaluation
@@ -135,22 +92,23 @@ Supported Vision-Language Models
 
 Model configuration
 ~~~~~~~~~~~~~~~~~~~
-Once your dataset is converted, follow these steps to configure the desired model for usage:
+
 #. Go to ``configs`` and pick the relevant dataset folder.
 #. Choose the YAML file relevant to the desired model.
-#. Look for the ``annotation_filepaths`` key and modify the values for ``train``,``test``,``predict``,``validation`` based on your ``processed_dir``.
+#. Look for the ``annotation_filepaths`` key and modify the values for ``train``, ``test``, ``predict``, ``validation`` based on your ``processed_dir``.
+#. If you wish to add any auxiliary information, modify the ``auxiliary_dict`` key.
+#. Modify the ``dirpath`` key under ``callbacks`` suitably.
 #. (Optional) If you wish to modify any of the training hyperparameters, look for the ``trainer`` key and modify the values as required.
 
 
 Model Usage
 ~~~~~~~~~~~
 Once you have created your model configuration, follow these steps to use the configured model:
+
 #. Go to ``scripts`` and pick the relevant dataset folder.
-#. Pick ``test`` or ``train`` based on your requirement and locate the script for your model.
-
-For example, if you wish to train FLAVA on FHM dataset, run the following command::
-
-  bash scripts/fhm/train/flava.sh
+#. Pick ``test``, ``train``, or ``inference`` based on your requirement and locate the script for your model.
+    * If you are chosing inference, make sure the ``ckpt_path`` key is present in the YAML config. 
+#. Run the scripts relevant to your model. 
 
 
 MATK Overview
