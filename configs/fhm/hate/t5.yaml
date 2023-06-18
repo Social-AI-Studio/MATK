@@ -31,14 +31,13 @@ model:
       1: "yes"
     }
 data:
-  class_path: datamodules.LanguageDataModule
+  class_path: datamodules.modules.TextDataModule
   init_args:
     tokenizer_class_or_path: t5-large
+    dataset_class: datamodules.datasets.fhm_finegrained.TextDataset
     annotation_filepaths: {
-      train: /Scratch/mingshan/datasets/fhm_finegrained/annotations/train.jsonl,
-      validate: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      test: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      predict: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl
+      train: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/train.json,
+      validate: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/dev_seen.json,
     }
     auxiliary_dicts: {
       # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
@@ -53,3 +52,4 @@ data:
     batch_size: 32
     labels:
     - hate
+    num_workers: 8

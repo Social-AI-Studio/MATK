@@ -28,23 +28,28 @@ model:
       "intensity": 3
     }
 data:
-  class_path: datamodules.VLImagesDataModule
+  class_path: datamodules.modules.ImagesDataModule
   init_args:
     tokenizer_class_or_path: facebook/flava-full
     frcnn_class_or_path: None
+    dataset_class: datamodules.datasets.harmemes.ImagesDataset
     image_dirs: {
-      train: /Scratch/datasets/harmemes/images/,
-      validate: /Scratch/datasets/harmemes/images/,
-      test: /Scratch/datasets/harmemes/images/,
-      predict: /Scratch/datasets/harmemes/images/
+      train: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
+      validate: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
+      test: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
+      predict: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
     }
     annotation_filepaths: {
-      train: /Scratch/datasets/harmemes/annotations/train.jsonl,
-      validate: /Scratch/datasets/harmemes/annotations/val.jsonl,
-      test: /Scratch/datasets/harmemes/annotations/test.jsonl,
-      predict: /Scratch/datasets/harmemes/annotations/val.jsonl
+      train: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/train.jsonl,
+      validate: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/val.jsonl,
+      test: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
+      predict: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
+    }
+    auxiliary_dicts: {
+      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
     }
     shuffle_train: True
     labels:
     - intensity
     batch_size: 32
+    num_workers: 8

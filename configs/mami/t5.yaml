@@ -10,14 +10,14 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/t5/mami
-        monitor: hate_validate_auroc
+        monitor: val_auroc
         mode: max
         save_top_k: 1
         every_n_epochs: 1
         save_last: True
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: hate_validate_auroc
+        monitor: val_auroc
         patience: 5
         mode: max
 model:
@@ -35,18 +35,19 @@ model:
       1: "yes"
     }
 data:
-  class_path: datamodules.LanguageDataModule
+  class_path: datamodules.modules.TextDataModule
   init_args:
     tokenizer_class_or_path: t5-large
+    dataset_class: datamodules.datasets.mami.TextDataset
     annotation_filepaths: {
       # train: /mnt/sda/datasets/memes/mami/annotations/train.jsonl,
       # validate: /mnt/sda/datasets/memes/mami/annotations/validate.jsonl,
       # test: /mnt/sda/datasets/memes/mami/annotations/validate.jsonl,
       # predict: /mnt/sda/datasets/memes/mami/annotations/validate.jsonl
-      train: /Scratch/datasets/mami/annotations/train.jsonl,
-      validate: /Scratch/datasets/mami/annotations/test.jsonl,
-      test: /Scratch/datasets/mami/annotations/test.jsonl,
-      predict: /Scratch/datasets/mami/annotations/test.jsonl,
+      train: /mnt/sdb/aditi/MAMI/training/TRAINING/training.csv,
+      validate: /mnt/sdb/aditi/MAMI/trial/Users/fersiniel/Desktop/MAMITOLABEL/TRIALDATASET/trial.csv,
+      test: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
+      predict: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
     }
     auxiliary_dicts: {}
     input_template: "question: is it hateful? context: {text}"
@@ -63,3 +64,4 @@ data:
     - objectification
     - violence
     - stereotype
+    num_workers: 8

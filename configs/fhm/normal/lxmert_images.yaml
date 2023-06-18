@@ -25,28 +25,30 @@ model:
   class_path: models.lxmert.LxmertClassificationModel
   init_args:
     model_class_or_path: unc-nlp/lxmert-base-uncased
-    frcnn_class_or_path: unc-nlp/frcnn-vg-finetuned
     cls_dict: {
       "label": 2
     }
 data:
-  class_path: datamodules.VLImagesDataModule
+  class_path: datamodules.modules.ImagesDataModule
   init_args:
     tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
+    dataset_class: datamodules.datasets.fhm.ImagesDataset
     frcnn_class_or_path: unc-nlp/frcnn-vg-finetuned
     image_dirs: {
-      train: /Scratch/mingshan/datasets/fhm/images/img/,
-      validate: /Scratch/mingshan/datasets/fhm/images/img/,
-      test: /Scratch/mingshan/datasets/fhm/images/img/,
-      predict: /Scratch/mingshan/datasets/fhm/images/img/
+      train: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
+      validate: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
+      test: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
+      predict: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
     }
     annotation_filepaths: {
-      train: /Scratch/mingshan/datasets/fhm_normal/annotations/train.jsonl,
-      validate: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl,
-      test: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl,
-      predict: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl
+      train: /mnt/sdb/aditi/hateful_memes/hateful_memes/train.jsonl,
+      validate: /mnt/sdb/aditi/hateful_memes/hateful_memes/dev_seen.jsonl,
+      test: /mnt/sdb/aditi/datasets/fhm/annotations/test.jsonl,
+      predict: /mnt/sdb/aditi/datasets/fhm/annotations/dev_seen.jsonl
     }
+    auxiliary_dicts: {}
     shuffle_train: True
-    batch_size: 32
+    batch_size: 4
     labels:
     - label
+    num_workers: 8

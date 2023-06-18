@@ -29,22 +29,27 @@ model:
       "intensity": 3
     }
 data:
-  class_path: datamodules.VLFeaturesDataModule
+  class_path: datamodules.modules.FasterRCNNDataModule
   init_args:
     tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
+    dataset_class: datamodules.datasets.harmemes.FasterRCNNDataset
     feats_dirs: {
-      train: /Scratch/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
-      validate: /Scratch/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
-      test: /Scratch/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
-      predict: /Scratch/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned
+      train: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      validate: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      test: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      predict: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
     }
     annotation_filepaths: {
-      train: /Scratch/datasets/harmemes/annotations/train.jsonl,
-      validate: /Scratch/datasets/harmemes/annotations/val.jsonl,
-      test: /Scratch/datasets/harmemes/annotations/test.jsonl,
-      predict: /Scratch/datasets/harmemes/annotations/val.jsonl
+      train: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/train.jsonl,
+      validate: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/val.jsonl,
+      test: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
+      predict: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
+    }
+    auxiliary_dicts: {
+      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
     }
     shuffle_train: True
-    batch_size: 32
+    batch_size: 4
     labels:
     - intensity
+    num_workers: 8

@@ -7,13 +7,19 @@ import torchmetrics
 
 from transformers import VisualBertModel
 
+from datamodules.collators.gqa_lxmert.modeling_frcnn import GeneralizedRCNN
+from datamodules.collators.gqa_lxmert.lxmert_utils import Config
+
 
 class VisualBertClassificationModel(pl.LightningModule):
-    def __init__(self, model_class_or_path, cls_dict):
+    def __init__(self, model_class_or_path, cls_dict, frcnn_class_or_path,):
         super().__init__()
         self.save_hyperparameters()
         self.model = VisualBertModel.from_pretrained(model_class_or_path)
 
+        if frcnn_class_or_path:
+            self.frcnn_cfg = Config.from_pretrained("unc-nlp/frcnn-vg-finetuned")
+            self.frcnn = GeneralizedRCNN.from_pretrained("unc-nlp/frcnn-vg-finetuned", config=self.frcnn_cfg)
         # set up classification
         self.mlps = nn.ModuleList([
             nn.Linear(self.model.config.hidden_size, value)
@@ -43,8 +49,28 @@ class VisualBertClassificationModel(pl.LightningModule):
 
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
-        visual_feats = batch['visual_feats']
         token_type_ids = batch['token_type_ids']
+
+        if "visual_feats" in batch and "visual_pos" in batch:
+            visual_feats = batch['visual_feats']
+            visual_pos = batch['visual_pos']
+        else:
+            # Run Faster-RCNN
+            images = batch['images']
+            sizes = batch['sizes']
+            scales_yx = batch['scales_yx']
+            
+            visual_dict = self.frcnn(
+                images,
+                sizes,
+                scales_yx=scales_yx,
+                padding="max_detections",
+                max_detections=self.frcnn_cfg.max_detections,
+                return_tensors="pt",
+            )
+
+            visual_feats = visual_dict['visual_feats']
+            visual_pos = visual_dict['visual_pos']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -74,8 +100,28 @@ class VisualBertClassificationModel(pl.LightningModule):
 
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
-        visual_feats = batch['visual_feats']
         token_type_ids = batch['token_type_ids']
+
+        if "visual_feats" in batch and "visual_pos" in batch:
+            visual_feats = batch['visual_feats']
+            visual_pos = batch['visual_pos']
+        else:
+            # Run Faster-RCNN
+            images = batch['images']
+            sizes = batch['sizes']
+            scales_yx = batch['scales_yx']
+            
+            visual_dict = self.frcnn(
+                images,
+                sizes,
+                scales_yx=scales_yx,
+                padding="max_detections",
+                max_detections=self.frcnn_cfg.max_detections,
+                return_tensors="pt",
+            )
+
+            visual_feats = visual_dict['visual_feats']
+            visual_pos = visual_dict['visual_pos']
 
         outputs = self.model(
             input_ids=input_ids,
