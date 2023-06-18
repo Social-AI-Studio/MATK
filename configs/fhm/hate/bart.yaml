@@ -18,6 +18,7 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/bart/fhm/hate
+        filename: jun18test
         monitor: val_auroc
         mode: max
         save_top_k: 1
