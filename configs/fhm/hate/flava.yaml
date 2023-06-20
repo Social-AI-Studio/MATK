@@ -35,16 +35,16 @@ data:
     frcnn_class_or_path: None
     dataset_class: datamodules.datasets.fhm_finegrained.ImagesDataset
     image_dirs: {
-      train: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
-      validate: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
-      test: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
-      predict: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
+      train: /mnt/sda/datasets/memes/fhm/images/img,
+      validate: /mnt/sda/datasets/memes/fhm/images/img,
+      test: /mnt/sda/datasets/memes/fhm/images/img,
+      predict: /mnt/sda/datasets/memes/fhm/images/img,
     }
     annotation_filepaths: {
-      train: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/train.json,
-      validate: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/dev_seen.json,
-      test: /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/dev_seen.json,
-      predict:  /mnt/sdb/aditi/fine_grained_hateful_memes/data/annotations/dev_seen.json,
+      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl,
+      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
     }
     auxiliary_dicts: {
       # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"

@@ -37,10 +37,10 @@ data:
     tokenizer_class_or_path: facebook/bart-large
     dataset_class: datamodules.datasets.harmemes.TextDataset
     annotation_filepaths: {
-      train: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/train.jsonl,
-      validate: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/val.jsonl,
-      test: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/test.jsonl,
-      predict: /mnt/sdb/aditi/Harmeme_HarmC_Data/Covid_Dataset/datasets/memes/defaults/annotations/test.jsonl,
+      train: /mnt/sda/datasets/memes/harmemes/annotations/original/train.jsonl,
+      validate: /mnt/sda/datasets/memes/harmemes/annotations/original/val.jsonl,
+      test: /mnt/sda/datasets/memes/harmemes/annotations/original/test.jsonl,
+      predict: /mnt/sda/datasets/memes/harmemes/annotations/original/test.jsonl,
     }
     auxiliary_dicts: {
       # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"

@@ -36,10 +36,10 @@ data:
   init_args:
     tokenizer_class_or_path: facebook/bart-large
     annotation_filepaths: {
-      train: /Scratch/datasets/harmemes/annotations/train.jsonl,
-      validate: /Scratch/datasets/harmemes/annotations/val.jsonl,
-      test: /Scratch/datasets/harmemes/annotations/test.jsonl,
-      predict: /Scratch/datasets/harmemes/annotations/val.jsonl
+      train: /mnt/sda/datasets/memes/harmemes/annotations/original/train.jsonl,
+      validate: /mnt/sda/datasets/memes/harmemes/annotations/original/val.jsonl,
+      test: /mnt/sda/datasets/memes/harmemes/annotations/original/test.jsonl,
+      predict: /mnt/sda/datasets/memes/harmemes/annotations/original/test.jsonl,
     }
     auxiliary_dicts: {}
     input_template: "question: is it hateful? context: {text}"

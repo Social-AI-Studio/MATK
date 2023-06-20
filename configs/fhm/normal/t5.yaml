@@ -36,10 +36,10 @@ data:
     tokenizer_class_or_path: t5-large
     dataset_class: datamodules.datasets.fhm.TextDataset
     annotation_filepaths: {
-      train: /mnt/sdb/aditi/hateful_memes/hateful_memes/train.jsonl,
-      validate: /mnt/sdb/aditi/hateful_memes/hateful_memes/dev_seen.jsonl,
-      test: /mnt/sdb/aditi/datasets/fhm/annotations/test.jsonl,
-      predict: /mnt/sdb/aditi/datasets/fhm/annotations/dev_seen.jsonl
+      train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.json,
+      test: /mnt/sda/datasets/memes/fhm/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm/annotations/test.jsonl,
     }
     auxiliary_dicts: {
       # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
