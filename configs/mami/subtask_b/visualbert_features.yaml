@@ -1,0 +1,58 @@
+# lightning.pytorch==2.0.0
+seed_everything: 1111
+trainer:
+  accelerator: gpu
+  devices: 1
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/visualbert_features/mami
+        monitor: shaming_validate_auroc
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: shaming_validate_auroc
+        patience: 5
+        mode: max
+model:
+  class_path: models.visualbert.VisualBertClassificationModel
+  init_args:
+    model_class_or_path: uclanlp/visualbert-vqa-coco-pre
+    cls_dict: {
+      "shaming": 2,
+      "objectification": 2,
+      "violence": 2,
+      "stereotype": 2
+    }
+data:
+  class_path: datamodules.modules.FasterRCNNDataModule
+  init_args:
+    tokenizer_class_or_path: bert-base-uncased
+    dataset_class: datamodules.datasets.mami.FasterRCNNDataset
+    feats_dirs: {
+      train: /mnt/sda/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned,
+      validate: /mnt/sda/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
+      test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
+      predict: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
+    }
+    annotation_filepaths: {
+      train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+      validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+      test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
+    }
+    auxiliary_dicts: {}
+    shuffle_train: True
+    labels:
+    - shaming
+    - objectification
+    - violence
+    - stereotype
+    batch_size: 32
+    num_workers: 8

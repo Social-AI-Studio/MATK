@@ -42,13 +42,11 @@ data:
     }
     annotation_filepaths: {
       train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl,
-      validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.json,
-      test: /mnt/sda/datasets/memes/fhm/annotations/test.jsonl,
-      predict: /mnt/sda/datasets/memes/fhm/annotations/test.jsonl,
+      validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.jsonl,
+      test: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
     }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-    }
+    auxiliary_dicts: {}
     shuffle_train: True
     labels:
     - label

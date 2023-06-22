@@ -41,14 +41,12 @@ data:
       predict: /mnt/sda/datasets/memes/fhm/images/img,
     }
     annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.jsonl,
-      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl,
+      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
+      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
       test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
       predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
     }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-    }
+    auxiliary_dicts: {}
     shuffle_train: True
     labels:
     - hate

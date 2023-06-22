@@ -41,8 +41,8 @@ data:
       predict: /mnt/sda/datasets/memes/fhm/images/img,
     }
     annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.jsonl,
-      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl,
+      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
+      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
       test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
       predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
     }

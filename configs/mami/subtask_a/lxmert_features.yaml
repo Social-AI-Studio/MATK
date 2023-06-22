@@ -10,14 +10,14 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/lxmert_features/mami
-        monitor: shaming_validate_auroc
+        monitor: misogynous_validate_auroc
         mode: max
         save_top_k: 1
         every_n_epochs: 1
         save_last: True
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: shaming_validate_auroc
+        monitor: misogynous_validate_auroc
         patience: 5
         mode: max
 model:
@@ -25,11 +25,7 @@ model:
   init_args:
     model_class_or_path: unc-nlp/lxmert-base-uncased
     cls_dict: {
-      "shaming": 2,
       "misogynous": 2,
-      "objectification": 2,
-      "violence": 2,
-      "stereotype": 2
     }
 data:
   class_path: datamodules.modules.FasterRCNNDataModule
@@ -37,26 +33,20 @@ data:
     tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
     dataset_class: datamodules.datasets.mami.FasterRCNNDataset
     feats_dirs: {
-      train: /mnt/sdb/aditi/datasets/mami/features/train/unc-nlp/frcnn-vg-finetuned,
-      validate: /mnt/sdb/aditi/datasets/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
-      test: /mnt/sdb/aditi/datasets/mami/features/test/unc-nlp/frcnn-vg-finetuned,
-      predict: /mnt/sdb/aditi/datasets/mami/features/test/unc-nlp/frcnn-vg-finetuned,
+      train: /mnt/sda/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned,
+      validate: /mnt/sda/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
+      test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
+      predict: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
     }
     annotation_filepaths: {
-      train: /mnt/sdb/aditi/MAMI/training/TRAINING/training.csv,
-      validate: /mnt/sdb/aditi/MAMI/trial/Users/fersiniel/Desktop/MAMITOLABEL/TRIALDATASET/trial.csv,
-      test: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
-      predict: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
+      train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+      validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+      test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
     }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-    }
+    auxiliary_dicts: {}
     shuffle_train: True
     labels:
-    - shaming
     - misogynous
-    - objectification
-    - violence
-    - stereotype
     batch_size: 32
     num_workers: 8

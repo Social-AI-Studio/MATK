@@ -37,14 +37,12 @@ data:
     tokenizer_class_or_path: facebook/bart-large
     dataset_class: datamodules.datasets.harmemes.TextDataset
     annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/harmemes/annotations/original/train.jsonl,
-      validate: /mnt/sda/datasets/memes/harmemes/annotations/original/val.jsonl,
-      test: /mnt/sda/datasets/memes/harmemes/annotations/original/test.jsonl,
-      predict: /mnt/sda/datasets/memes/harmemes/annotations/original/test.jsonl,
+      train: /mnt/sda/datasets/memes/harmemes/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/harmemes/annotations/val.jsonl,
+      test: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
     }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-    }
+    auxiliary_dicts: {}
     input_template: "question: is it hateful? context: {text}"
     output_template: "{label}</s>"
     label2word: {
