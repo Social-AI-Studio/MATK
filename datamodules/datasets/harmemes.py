@@ -30,9 +30,10 @@ class HarmemesBase(Dataset):
         auxiliary_dicts: dict,
         labels: List[str]
     ):
+        self.labels = labels
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = labels
+        
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -43,14 +44,22 @@ class HarmemesBase(Dataset):
         record_id = 0
         
         # translate labels into numeric values
-        for record in tqdm.tqdm(data, desc="Preprocessing labels"):
-            record["img"] = record.pop("image")
-            record["intensity"] = INTENSITY_MAP[record["labels"][0]]
-            record["target"] = TARGET_MAP[record["labels"][1]] if len(record["labels"]) > 1 else -1
-            record["id"] = record_id
-            record_id += 1
-            if record["target"] != -1:
+        if "intensity" in self.labels:
+            for record in tqdm.tqdm(data, desc="Preprocessing labels"):
+                record["img"] = record.pop("image")
+                record["intensity"] = INTENSITY_MAP[record["labels"][0]]
+                record["id"] = record_id
+                record_id += 1
                 annotations.append(record)
+        
+        else:
+            for record in tqdm.tqdm(data, desc="Preprocessing labels"):
+                record["img"] = record.pop("image")
+                record["target"] = TARGET_MAP[record["labels"][1]] if len(record["labels"]) > 1 else -1
+                record["id"] = record_id
+                record_id += 1
+                if record["target"] != -1:
+                    annotations.append(record)
         
         return annotations
 
