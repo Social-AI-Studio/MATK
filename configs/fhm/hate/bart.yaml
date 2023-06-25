@@ -8,17 +8,17 @@ trainer:
   accumulate_grad_batches: 1
   enable_checkpointing: True
   logger:
-        class_path: lightning.pytorch.loggers.TensorBoardLogger
-        init_args:
-            save_dir: lightning_logs/
-            name: fhm-finegrained
-            version: hostname_time_lr_batch_size
-            default_hp_metric: false
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: lightning_logs/
+      name: fhm-finegrained
+      version: bart_epochs30_date2306
+      default_hp_metric: false
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/bart/fhm/hate
-        filename: jun18test
+        filename: bart_epochs30_date2306
         monitor: val_auroc
         mode: max
         save_top_k: 1
