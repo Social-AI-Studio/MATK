@@ -11,14 +11,14 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/flava/fhm/hate
-        monitor: hate_validate_auroc
+        monitor: hate_validate_AUROC
         mode: max
         save_top_k: 1
         every_n_epochs: 1
         save_last: True
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: hate_validate_auroc
+        monitor: hate_validate_AUROC
         patience: 5
         mode: max
   
@@ -29,22 +29,29 @@ model:
     cls_dict: {
       "hate": 2
     }
+    metrics: 
+    - name: Accuracy
+      args: 
+        task: multiclass
+        num_classes: 2
+    - name: AUROC
+      args: 
+        task: multiclass
+        num_classes: 2
 data:
   class_path: datamodules.VLImagesDataModule
   init_args:
     tokenizer_class_or_path: facebook/flava-full
     frcnn_class_or_path: None
     image_dirs: {
-      train: /Scratch/mingshan/datasets/fhm/images/img/,
-      validate: /Scratch/mingshan/datasets/fhm/images/img/,
-      test: /Scratch/mingshan/datasets/fhm/images/img/,
-      predict: /Scratch/mingshan/datasets/fhm/images/img/
+      train: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
+      validate: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
+      test: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
+      predict: /mnt/sdb/aditi/hateful_memes/hateful_memes/img/,
     }
     annotation_filepaths: {
-      train: /Scratch/mingshan/datasets/fhm_finegrained/annotations/train.jsonl,
-      validate: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      test: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      predict: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl
+      train: /mnt/sdb/aditi/hconvert/fhm_finegrained/annotations/train.jsonl,
+      validate: /mnt/sdb/aditi/hconvert/fhm_finegrained/annotations/dev_seen.jsonl,
     }
     shuffle_train: True
     labels:
