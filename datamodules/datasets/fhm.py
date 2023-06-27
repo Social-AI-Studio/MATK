@@ -152,6 +152,7 @@ class TextDataset(FHMBase):
             item[l] = self.output_template.format(label=self.label2word[label])
 
         return item
+<<<<<<< HEAD
 
 
 class MultimodalDataset():
@@ -499,3 +500,5 @@ class MultimodalDataset():
         
     def __len__(self):
         return len(self.entries)
+=======
+>>>>>>> origin/main

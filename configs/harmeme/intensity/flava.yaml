@@ -42,20 +42,18 @@ data:
     frcnn_class_or_path: None
     dataset_class: datamodules.datasets.harmemes.ImagesDataset
     image_dirs: {
-      train: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
-      validate: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
-      test: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
-      predict: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images/,
+      train: /mnt/sda/datasets/memes/harmemes/images,
+      validate: /mnt/sda/datasets/memes/harmemes/images,
+      test: /mnt/sda/datasets/memes/harmemes/images,
+      predict: /mnt/sda/datasets/memes/harmemes/images,
     }
     annotation_filepaths: {
-      train: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/train.jsonl,
-      validate: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/val.jsonl,
-      test: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
-      predict: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
+      train: /mnt/sda/datasets/memes/harmemes/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/harmemes/annotations/val.jsonl,
+      test: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
     }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-    }
+    auxiliary_dicts: {}
     shuffle_train: True
     labels:
     - intensity

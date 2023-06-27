@@ -1,24 +1,15 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
 trainer:
-  default_root_dir: lightning_logs/bart/fhm/hate
   accelerator: gpu
   devices: 1
   max_epochs: 30
   accumulate_grad_batches: 1
   enable_checkpointing: True
-  logger:
-    class_path: lightning.pytorch.loggers.TensorBoardLogger
-    init_args:
-      save_dir: lightning_logs/
-      name: fhm-finegrained
-      version: bart_epochs30_date2306
-      default_hp_metric: false
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: checkpoints/bart/fhm/hate
-        filename: bart_epochs30_date2306
+        dirpath: checkpoints/bart/mami
         monitor: val_auroc
         mode: max
         save_top_k: 1
@@ -34,7 +25,7 @@ model:
   init_args:
     model_class_or_path: facebook/bart-large
     labels:
-    - hate
+    - misogynous
     label2word: {
       0: "no",
       1: "yes"
@@ -43,22 +34,22 @@ data:
   class_path: datamodules.modules.TextDataModule
   init_args:
     tokenizer_class_or_path: facebook/bart-large
-    dataset_class: datamodules.datasets.fhm_finegrained.TextDataset
+    dataset_class: datamodules.datasets.mami.TextDataset
     annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
-      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
-      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
-      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+      train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+      validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+      test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
     }
     auxiliary_dicts: {}
-    input_template: "question: is it hateful? context: {text}"
+    input_template: "question: is it misogynous? context: {text}"
     output_template: "{label}</s>"
     label2word: {
       0: "no",
       1: "yes"
     }
     shuffle_train: True
-    batch_size: 32
     labels:
-    - hate
+    - misogynous
+    batch_size: 32
     num_workers: 8

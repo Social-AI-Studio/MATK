@@ -145,16 +145,3 @@ Authors and acknowledgment
 *  Nirmalendu PRAKASH, Singapore University of Technology and Design (SUTD)
 *  Rui CAO, Singapore Management University (SMU)
 *  Prof. Roy Ka-Wei LEE, Singapore University of Technology and Design (SUTD)
-
-**************************
-License
-**************************
-
-Coming soon...
-
-**************************
-Project status
-**************************
-[] Dataset Preprocessing
-[] README.rst updates
-[] Implementing analysis code

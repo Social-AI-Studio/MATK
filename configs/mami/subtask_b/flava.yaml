@@ -17,7 +17,10 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/flava/mami
+<<<<<<< HEAD:configs/mami/flava.yaml
         filename: flava_epochs30_date2306
+=======
+>>>>>>> origin/main:configs/mami/subtask_b/flava.yaml
         monitor: shaming_validate_auroc
         mode: max
         save_top_k: 1
@@ -34,7 +37,6 @@ model:
     model_class_or_path: facebook/flava-full
     cls_dict: {
       "shaming": 2,
-      "misogynous": 2,
       "objectification": 2,
       "violence": 2,
       "stereotype": 2
@@ -46,6 +48,7 @@ data:
     frcnn_class_or_path: None
     dataset_class: datamodules.datasets.mami.ImagesDataset
     image_dirs: {
+<<<<<<< HEAD:configs/mami/flava.yaml
       train: /mnt/sdb/aditi/MAMI/training/TRAINING,
       validate: /mnt/sdb/aditi/MAMI/trial/Users/fersiniel/Desktop/MAMITOLABEL/TRIALDATASET/,
       test: /mnt/sdb/aditi/MAMI/test/test,
@@ -59,11 +62,23 @@ data:
     }
     auxiliary_dicts: {
       # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
+=======
+      train: /mnt/sda/datasets/memes/mami/images/img/train,
+      validate: /mnt/sda/datasets/memes/mami/images/img/validate,
+      test: /mnt/sda/datasets/memes/mami/images/img/test,
+      predict: /mnt/sda/datasets/memes/mami/images/img/test
     }
+    annotation_filepaths: {
+      train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+      validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+      test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
+>>>>>>> origin/main:configs/mami/subtask_b/flava.yaml
+    }
+    auxiliary_dicts: {}
     shuffle_train: True
     labels:
     - shaming
-    - misogynous
     - objectification
     - violence
     - stereotype

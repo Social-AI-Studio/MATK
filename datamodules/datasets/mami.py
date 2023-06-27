@@ -18,9 +18,16 @@ class MamiBase(Dataset):
         auxiliary_dicts: dict,
         labels: List[str]
     ):
+<<<<<<< HEAD
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
         self.labels = labels
+=======
+        self.labels = labels
+        self.annotations = self._preprocess_annotations(annotation_filepath)
+        self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
+        
+>>>>>>> origin/main
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -36,12 +43,25 @@ class MamiBase(Dataset):
             record["img"] = record.pop("file_name")
             record["text"] = record.pop("Text Transcription")
             record["id"] = record_id
+<<<<<<< HEAD
             record["misogynous"] = int(record.pop("misogynous"))
             record["non_misogynous"] = 1- record["misogynous"]
             record["shaming"] = int(record.pop("shaming"))
             record["objectification"] = int(record.pop("objectification"))
             record["violence"] = int(record.pop("violence"))
             record["stereotype"] = int(record.pop("stereotype"))
+=======
+
+            if "misogynous" in self.labels:
+                record["misogynous"] = int(record.pop("misogynous"))
+                record["non_misogynous"] = 1- record["misogynous"]
+            else:
+                record["shaming"] = int(record.pop("shaming"))
+                record["objectification"] = int(record.pop("objectification"))
+                record["violence"] = int(record.pop("violence"))
+                record["stereotype"] = int(record.pop("stereotype"))
+
+>>>>>>> origin/main
             record_id+=1
             annotations.append(record)
         

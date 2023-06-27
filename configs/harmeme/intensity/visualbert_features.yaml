@@ -41,20 +41,18 @@ data:
     tokenizer_class_or_path: bert-base-uncased
     dataset_class: datamodules.datasets.harmemes.FasterRCNNDataset
     feats_dirs: {
-      train: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
-      validate: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
-      test: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
-      predict: /mnt/sdb/aditi/datasets/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      train: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      validate: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      test: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      predict: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
     }
     annotation_filepaths: {
-      train: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/train.jsonl,
-      validate: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/val.jsonl,
-      test: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
-      predict: /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/annotations/test.jsonl,
+      train: /mnt/sda/datasets/memes/harmemes/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/harmemes/annotations/val.jsonl,
+      test: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
     }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-    }
+    auxiliary_dicts: {}
     shuffle_train: True
     batch_size: 4
     labels:

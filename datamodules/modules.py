@@ -235,7 +235,7 @@ class TextDataModule(pl.LightningDataModule):
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path, use_fast=False)
         for word in label2word.values():
             encoded = tokenizer.encode(word, add_special_tokens=False)
-            assert len(encoded) == 1
+            # assert len(encoded) == 1
 
         self.annotation_filepaths = annotation_filepaths
         self.batch_size = batch_size

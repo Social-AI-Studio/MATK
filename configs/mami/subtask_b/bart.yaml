@@ -17,7 +17,10 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/bart/mami
+<<<<<<< HEAD:configs/mami/bart.yaml
         filename: bart_epochs30_date2306
+=======
+>>>>>>> origin/main:configs/mami/subtask_b/bart.yaml
         monitor: val_auroc
         mode: max
         save_top_k: 1
@@ -34,7 +37,6 @@ model:
     model_class_or_path: facebook/bart-large
     labels:
     - shaming
-    - misogynous
     - objectification
     - violence
     - stereotype
@@ -48,6 +50,7 @@ data:
     tokenizer_class_or_path: facebook/bart-large
     dataset_class: datamodules.datasets.mami.TextDataset
     annotation_filepaths: {
+<<<<<<< HEAD:configs/mami/bart.yaml
       # train: /mnt/sda/datasets/memes/mami/annotations/train.jsonl,
       # validate: /mnt/sda/datasets/memes/mami/annotations/validate.jsonl,
       # test: /mnt/sda/datasets/memes/mami/annotations/validate.jsonl,
@@ -56,9 +59,15 @@ data:
       validate: /mnt/sdb/aditi/MAMI/trial/Users/fersiniel/Desktop/MAMITOLABEL/TRIALDATASET/trial.csv,
       test: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
       predict: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
+=======
+      train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+      validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+      test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
+>>>>>>> origin/main:configs/mami/subtask_b/bart.yaml
     }
     auxiliary_dicts: {}
-    input_template: "question: is it hateful? context: {text}"
+    input_template: "question: is it misogynous? context: {text}"
     output_template: "{label}</s>"
     label2word: {
       0: "no",
@@ -67,7 +76,6 @@ data:
     shuffle_train: True
     labels:
     - shaming
-    - misogynous
     - objectification
     - violence
     - stereotype

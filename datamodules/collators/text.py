@@ -15,7 +15,7 @@ def text_collate_fn(batch, tokenizer, labels):
             labels = [feature[l] for feature in batch]
 
             if isinstance(labels[0], str):
-                labels = tokenizer(labels, truncation=True, return_tensors="pt", add_special_tokens=False).input_ids
+                labels = tokenizer(labels, padding=True, truncation=True, return_tensors="pt", add_special_tokens=False).input_ids
                 labels[labels == tokenizer.pad_token_id] = -100
             else:
                 labels = torch.tensor(labels, dtype=torch.int64)
