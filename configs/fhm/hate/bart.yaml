@@ -32,19 +32,18 @@ model:
       1: "yes"
     }
 data:
-  class_path: datamodules.LanguageDataModule
+  class_path: datamodules.modules.TextDataModule
   init_args:
     tokenizer_class_or_path: facebook/bart-large
+    dataset_class: datamodules.datasets.fhm_finegrained.TextDataset
     annotation_filepaths: {
-      train: /Scratch/mingshan/datasets/fhm_finegrained/annotations/train.jsonl,
-      validate: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      test: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl,
-      predict: /Scratch/mingshan/datasets/fhm_finegrained/annotations/dev_seen.jsonl
+      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
+      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
+      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
     }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-    }
-    input_template: "question: is it hateful? context: {text} {caption}"
+    auxiliary_dicts: {}
+    input_template: "question: is it hateful? context: {text}"
     output_template: "{label}</s>"
     label2word: {
       0: "no",
@@ -54,3 +53,4 @@ data:
     batch_size: 32
     labels:
     - hate
+    num_workers: 8

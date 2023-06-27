@@ -9,7 +9,7 @@ trainer:
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: checkpoints/t5/fhm/hate
+        dirpath: checkpoints/t5/mami
         monitor: val_auroc
         mode: max
         save_top_k: 1
@@ -25,7 +25,10 @@ model:
   init_args:
     model_class_or_path: t5-large
     labels:
-    - hate
+    - shaming
+    - objectification
+    - violence
+    - stereotype
     label2word: {
       0: "no",
       1: "yes"
@@ -34,15 +37,15 @@ data:
   class_path: datamodules.modules.TextDataModule
   init_args:
     tokenizer_class_or_path: t5-large
-    dataset_class: datamodules.datasets.fhm_finegrained.TextDataset
+    dataset_class: datamodules.datasets.mami.TextDataset
     annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
-      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
-      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
-      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+      train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+      validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+      test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
     }
     auxiliary_dicts: {}
-    input_template: "question: is it hateful? context: {text}"
+    input_template: "question: is it misogynous? context: {text}"
     output_template: "{label}</s>"
     label2word: {
       0: "no",
@@ -51,5 +54,8 @@ data:
     shuffle_train: True
     batch_size: 32
     labels:
-    - hate
+    - shaming
+    - objectification
+    - violence
+    - stereotype
     num_workers: 8

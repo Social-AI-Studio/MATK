@@ -29,22 +29,25 @@ model:
       "hate": 2
     }
 data:
-  class_path: datamodules.VLFeaturesDataModule
+  class_path: datamodules.modules.FasterRCNNDataModule
   init_args:
     tokenizer_class_or_path: bert-base-uncased
+    dataset_class: datamodules.datasets.fhm_finegrained.FasterRCNNDataset
     feats_dirs: {
-      train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/,
-      validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/,
-      test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/,
-      predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/
+      train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
     }
     annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.jsonl,
-      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl,
-      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl,
-      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.jsonl
+      train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
+      validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
+      test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
     }
+    auxiliary_dicts: {}
     shuffle_train: True
     batch_size: 32
     labels:
     - hate
+    num_workers: 8

@@ -9,15 +9,15 @@ trainer:
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: checkpoints/visualbert_features/fhm/normal
-        monitor: label_validate_auroc
+        dirpath: checkpoints/visualbert_features/mami
+        monitor: misogynous_validate_auroc
         mode: max
         save_top_k: 1
         every_n_epochs: 1
         save_last: True
     - class_path: lightning.pytorch.callbacks.EarlyStopping
       init_args:
-        monitor: label_validate_auroc
+        monitor: misogynous_validate_auroc
         patience: 5
         mode: max
 model:
@@ -25,28 +25,28 @@ model:
   init_args:
     model_class_or_path: uclanlp/visualbert-vqa-coco-pre
     cls_dict: {
-      "label": 2
+      "misogynous": 2,
     }
 data:
   class_path: datamodules.modules.FasterRCNNDataModule
   init_args:
     tokenizer_class_or_path: bert-base-uncased
-    dataset_class: datamodules.datasets.fhm.FasterRCNNDataset
+    dataset_class: datamodules.datasets.mami.FasterRCNNDataset
     feats_dirs: {
-      train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
-      validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
-      test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
-      predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      train: /mnt/sda/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned,
+      validate: /mnt/sda/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
+      test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
+      predict: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
     }
     annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl,
-      validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.jsonl,
-      test: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
-      predict: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
+      train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+      validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+      test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
     }
     auxiliary_dicts: {}
     shuffle_train: True
-    batch_size: 32
     labels:
-    - label
+    - misogynous
+    batch_size: 32
     num_workers: 8

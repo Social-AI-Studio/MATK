@@ -25,26 +25,29 @@ model:
   init_args:
     model_class_or_path: facebook/flava-full
     cls_dict: {
-      "target": 3
+      "target": 4
     }
 data:
-  class_path: datamodules.VLImagesDataModule
+  class_path: datamodules.modules.ImagesDataModule
   init_args:
     tokenizer_class_or_path: facebook/flava-full
     frcnn_class_or_path: None
+    dataset_class: datamodules.datasets.harmemes.ImagesDataset
     image_dirs: {
-      train: /Scratch/datasets/harmemes/images/,
-      validate: /Scratch/datasets/harmemes/images/,
-      test: /Scratch/datasets/harmemes/images/,
-      predict: /Scratch/datasets/harmemes/images/
+      train: /mnt/sda/datasets/memes/harmemes/images,
+      validate: /mnt/sda/datasets/memes/harmemes/images,
+      test: /mnt/sda/datasets/memes/harmemes/images,
+      predict: /mnt/sda/datasets/memes/harmemes/images,
     }
     annotation_filepaths: {
-      train: /Scratch/datasets/harmemes/annotations/train.jsonl,
-      validate: /Scratch/datasets/harmemes/annotations/val.jsonl,
-      test: /Scratch/datasets/harmemes/annotations/test.jsonl,
-      predict: /Scratch/datasets/harmemes/annotations/val.jsonl
+      train: /mnt/sda/datasets/memes/harmemes/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/harmemes/annotations/val.jsonl,
+      test: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
+      predict: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
     }
+    auxiliary_dicts: {}
     shuffle_train: True
     labels:
     - target
     batch_size: 32
+    num_workers: 8

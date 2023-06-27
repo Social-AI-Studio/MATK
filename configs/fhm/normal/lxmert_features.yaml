@@ -29,22 +29,25 @@ model:
       "label": 2
     }
 data:
-  class_path: datamodules.VLFeaturesDataModule
+  class_path: datamodules.modules.FasterRCNNDataModule
   init_args:
     tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
+    dataset_class: datamodules.datasets.fhm.FasterRCNNDataset
     feats_dirs: {
-      train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/,
-      validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/,
-      test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/,
-      predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned/
+      train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
     }
     annotation_filepaths: {
-      train: /Scratch/mingshan/datasets/fhm_normal/annotations/train.jsonl,
-      validate: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl,
-      test: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl,
-      predict: /Scratch/mingshan/datasets/fhm_normal/annotations/dev_seen.jsonl
+      train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl,
+      validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.jsonl,
+      test: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
+      predict: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
     }
+    auxiliary_dicts: {}
     shuffle_train: True
     batch_size: 32
     labels:
     - label
+    num_workers: 8
