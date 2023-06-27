@@ -6,10 +6,18 @@ trainer:
   max_epochs: 30
   accumulate_grad_batches: 1
   enable_checkpointing: True
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: lightning_logs/
+      name: harmeme
+      version: visualbert_epochs30_date2306
+      default_hp_metric: false
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/visualbert_features/harmeme/target
+        filename: visualbert_epochs30_date2306
         monitor: target_validate_auroc
         mode: max
         save_top_k: 1
