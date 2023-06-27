@@ -17,10 +17,7 @@ trainer:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
         dirpath: checkpoints/visualbert_features/mami
-<<<<<<< HEAD:configs/mami/visualbert_features.yaml
         filename: visualbert_epochs30_date2306
-=======
->>>>>>> origin/main:configs/mami/subtask_b/visualbert_features.yaml
         monitor: shaming_validate_auroc
         mode: max
         save_top_k: 1
@@ -47,21 +44,6 @@ data:
     tokenizer_class_or_path: bert-base-uncased
     dataset_class: datamodules.datasets.mami.FasterRCNNDataset
     feats_dirs: {
-<<<<<<< HEAD:configs/mami/visualbert_features.yaml
-      train: /mnt/sdb/aditi/datasets/mami/features/train/unc-nlp/frcnn-vg-finetuned,
-      validate: /mnt/sdb/aditi/datasets/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
-      test: /mnt/sdb/aditi/datasets/mami/features/test/unc-nlp/frcnn-vg-finetuned,
-      predict: /mnt/sdb/aditi/datasets/mami/features/test/unc-nlp/frcnn-vg-finetuned,
-    }
-    annotation_filepaths: {
-      train: /mnt/sdb/aditi/MAMI/training/TRAINING/training.csv,
-      validate: /mnt/sdb/aditi/MAMI/trial/Users/fersiniel/Desktop/MAMITOLABEL/TRIALDATASET/trial.csv,
-      test: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
-      predict: /mnt/sdb/aditi/MAMI/test/test/Test.csv,
-    }
-    auxiliary_dicts: {
-      # "caption": "/mnt/sda/datasets/memes/fhm/captions/fhm_clean_captions.pkl"
-=======
       train: /mnt/sda/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned,
       validate: /mnt/sda/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
       test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
@@ -72,7 +54,6 @@ data:
       validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
       test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
       predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv
->>>>>>> origin/main:configs/mami/subtask_b/visualbert_features.yaml
     }
     auxiliary_dicts: {}
     shuffle_train: True
