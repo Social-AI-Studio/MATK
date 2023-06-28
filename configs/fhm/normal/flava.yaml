@@ -40,20 +40,9 @@ data:
   class_path: datamodules.modules.ImagesDataModule
   init_args:
     tokenizer_class_or_path: facebook/flava-full
-    dataset_class: datamodules.datasets.fhm.ImagesDataset
     frcnn_class_or_path: None
-    image_dirs: {
-      train: /mnt/sda/datasets/memes/fhm/images/img,
-      validate: /mnt/sda/datasets/memes/fhm/images/img,
-      test: /mnt/sda/datasets/memes/fhm/images/img,
-      predict: /mnt/sda/datasets/memes/fhm/images/img,
-    }
-    annotation_filepaths: {
-      train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl,
-      validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.jsonl,
-      test: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
-      predict: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
-    }
+    dataset_class: datamodules.datasets.fhm.ImagesDataset
+    dataset_handler: configs/datasets.yaml
     auxiliary_dicts: {}
     shuffle_train: True
     labels:

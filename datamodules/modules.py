@@ -18,6 +18,7 @@ import importlib
 from datamodules.collators import get_collator
 
 from typing import List, Optional
+from dataset_handler import DatasetHandler
 
 import lightning.pytorch as pl
 
@@ -131,8 +132,6 @@ class ImagesDataModule(pl.LightningDataModule):
 
     def __init__(
         self,
-        annotation_filepaths: dict,
-        image_dirs: dict,
         tokenizer_class_or_path: str,
         frcnn_class_or_path: str,
         dataset_class: str,
@@ -140,12 +139,11 @@ class ImagesDataModule(pl.LightningDataModule):
         batch_size: int,
         shuffle_train: bool,
         labels: List[str],
-        num_workers: int
+        num_workers: int, 
+        dataset_handler: str
     ):
         super().__init__()
 
-        self.annotation_filepaths = annotation_filepaths
-        self.image_dirs = image_dirs
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
         self.labels = labels
@@ -157,6 +155,7 @@ class ImagesDataModule(pl.LightningDataModule):
             labels=labels, 
             frcnn_class_or_path=frcnn_class_or_path
         )
+        self.dataset_handler = DatasetHandler(dataset_handler)
 
         # TEMP HACK
         package_name = ".".join(dataset_class.split(".")[:-1])
@@ -164,36 +163,39 @@ class ImagesDataModule(pl.LightningDataModule):
         m = importlib.import_module(package_name)
         self.dataset_cls = getattr(m, class_name)
 
+        self.dataset_name = dataset_class.split(".")[2]
+
     def setup(self, stage: Optional[str] = None):
+        dataset_info = self.dataset_handler.get_dataset_info(self.dataset_name)
         if stage == "fit" or stage is None:
             self.train = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["train"],
+                annotation_filepath=dataset_info["annotation_filepaths"]["train"],
                 auxiliary_dicts=self.auxiliary_dicts,
-                image_dir=self.image_dirs["train"],
+                image_dir=dataset_info["image_dirs"]["train"],
                 labels=self.labels
             )
 
             self.validate = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["validate"],
+                annotation_filepath=dataset_info["annotation_filepaths"]["validate"],
                 auxiliary_dicts=self.auxiliary_dicts,
-                image_dir=self.image_dirs["validate"],
+                image_dir=dataset_info["image_dirs"]["validate"],
                 labels=self.labels
             )
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
             self.test = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["test"],
+                annotation_filepath=dataset_info["annotation_filepaths"]["test"],
                 auxiliary_dicts=self.auxiliary_dicts,
-                image_dir=self.image_dirs["test"],
+                image_dir=dataset_info["image_dirs"]["test"],
                 labels=self.labels
             )
 
         if stage == "predict" or stage is None:
             self.predict = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["predict"],
+                annotation_filepath=dataset_info["annotation_filepaths"]["predict"],
                 auxiliary_dicts=self.auxiliary_dicts,
-                image_dir=self.image_dirs["predict"],
+                image_dir=dataset_info["image_dirs"]["predict"],
                 labels=self.labels
             )
 

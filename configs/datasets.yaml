@@ -1,0 +1,90 @@
+datasets:
+  fhm:
+    annotation_filepaths:
+      {
+        train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl,
+        validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.jsonl,
+        test: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
+        predict: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
+      }
+    image_dirs:
+      {
+        train: /mnt/sda/datasets/memes/fhm/images/img,
+        validate: /mnt/sda/datasets/memes/fhm/images/img,
+        test: /mnt/sda/datasets/memes/fhm/images/img,
+        predict: /mnt/sda/datasets/memes/fhm/images/img,
+      }
+    feats_dirs:
+      {
+        train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+        validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+        test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+        predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      }
+
+  fhm-finegrained:
+    annotation_filepaths:
+      {
+        train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
+        validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
+        test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+        predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+      }
+    image_dirs:
+      {
+        train: /mnt/sda/datasets/memes/fhm/images/img,
+        validate: /mnt/sda/datasets/memes/fhm/images/img,
+        test: /mnt/sda/datasets/memes/fhm/images/img,
+        predict: /mnt/sda/datasets/memes/fhm/images/img,
+      }
+    feats_dirs:
+      {
+        train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+        validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+        test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+        predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+      }
+  harmemes:
+    annotation_filepaths:
+      {
+        train: /mnt/sda/datasets/memes/harmemes/annotations/train.jsonl,
+        validate: /mnt/sda/datasets/memes/harmemes/annotations/val.jsonl,
+        test: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
+        predict: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl,
+      }
+    image_dirs:
+      {
+        train: /mnt/sda/datasets/memes/harmemes/images,
+        validate: /mnt/sda/datasets/memes/harmemes/images,
+        test: /mnt/sda/datasets/memes/harmemes/images,
+        predict: /mnt/sda/datasets/memes/harmemes/images,
+      }
+    feats_dirs:
+      {
+        train: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+        validate: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+        test: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+        predict: /mnt/sda/datasets/memes/harmemes/features/unc-nlp/frcnn-vg-finetuned,
+      }
+  mami:
+    annotation_filepaths:
+      {
+        train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
+        validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
+        test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+        predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+      }
+    image_dirs:
+      {
+        train: /mnt/sda/datasets/memes/mami/images/img/train,
+        validate: /mnt/sda/datasets/memes/mami/images/img/validate,
+        test: /mnt/sda/datasets/memes/mami/images/img/test,
+        predict: /mnt/sda/datasets/memes/mami/images/img/test,
+      }
+    feats_dirs:
+      {
+        train: /mnt/sda/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned,
+        validate: /mnt/sda/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
+        test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
+        predict: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
+      }
