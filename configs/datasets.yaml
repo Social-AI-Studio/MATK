@@ -21,6 +21,8 @@ datasets:
         test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
         predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
       }
+    labels:
+      - label
 
   fhm-finegrained:
     annotation_filepaths:

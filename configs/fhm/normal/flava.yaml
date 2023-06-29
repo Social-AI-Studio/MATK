@@ -45,7 +45,5 @@ data:
     dataset_handler: configs/datasets.yaml
     auxiliary_dicts: {}
     shuffle_train: True
-    labels:
-    - label
     batch_size: 32
     num_workers: 8
