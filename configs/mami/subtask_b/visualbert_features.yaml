@@ -1,5 +1,6 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
+# ckpt_path: checkpoints/visualbert_features/mami/subtask_b/visualbert_epochs30_date2306.ckpt
 trainer:
   accelerator: gpu
   devices: 1
@@ -10,13 +11,13 @@ trainer:
     class_path: lightning.pytorch.loggers.TensorBoardLogger
     init_args:
       save_dir: lightning_logs/
-      name: mami
+      name: mami/subtask_b
       version: visualbert_epochs30_date2306
       default_hp_metric: false
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: checkpoints/visualbert_features/mami
+        dirpath: checkpoints/visualbert_features/mami/subtask_b
         filename: visualbert_epochs30_date2306
         monitor: shaming_validate_auroc
         mode: max

@@ -1,5 +1,6 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
+# ckpt_path: checkpoints/bart/mami/subtask_b/bart_epochs30_date2306.ckpt
 trainer:
   accelerator: gpu
   devices: 1
@@ -10,13 +11,13 @@ trainer:
     class_path: lightning.pytorch.loggers.TensorBoardLogger
     init_args:
       save_dir: lightning_logs/
-      name: fhm-finegrained
+      name: mami/subtask_b
       version: hostname_time_lr_batch_size
       default_hp_metric: false
   callbacks: 
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
-        dirpath: checkpoints/bart/mami
+        dirpath: checkpoints/bart/mami/subtask_b
         filename: bart_epochs30_date2306
         monitor: val_auroc
         mode: max

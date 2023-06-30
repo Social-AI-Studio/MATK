@@ -1,5 +1,6 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
+# ckpt_path: checkpoints/visualbert_images/fhm/hate/visualbert_epochs30_date2306.ckpt
 trainer:
   accelerator: gpu
   devices: 1

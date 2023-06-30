@@ -1,5 +1,6 @@
 # lightning.pytorch==2.0.0
 seed_everything: 1111
+# ckpt_path: checkpoints/bart/fhm/hate/bart_epochs30_date2306.ckpt
 trainer:
   default_root_dir: lightning_logs/bart/fhm/hate
   accelerator: gpu

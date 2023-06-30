@@ -154,10 +154,10 @@ class LxmertClassificationModel(pl.LightningModule):
     
     def test_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
+        token_type_ids = batch['token_type_ids']
         attention_mask = batch['attention_mask']
         visual_feats = batch['visual_feats']
         visual_pos = batch['visual_pos']
-        token_type_ids = batch['token_type_ids']
         
         outputs = self.model(
             input_ids=input_ids,
@@ -184,9 +184,6 @@ class LxmertClassificationModel(pl.LightningModule):
         
         return loss
 
-    def on_test_epoch_end(self):
-        print("test_acc:", self.test_acc.compute())
-        print("test_auroc:", self.test_auroc.compute())
 
     def predict_step(self, batch, batch_idx):
         input_ids = batch['input_ids']
