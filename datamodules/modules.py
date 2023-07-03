@@ -221,7 +221,6 @@ class TextDataModule(pl.LightningDataModule):
 
     def __init__(
         self,
-        annotation_filepaths: dict,
         tokenizer_class_or_path: str,
         dataset_class: str,
         auxiliary_dicts: dict,
@@ -230,8 +229,9 @@ class TextDataModule(pl.LightningDataModule):
         label2word: dict,
         batch_size: int,
         shuffle_train: bool,
-        labels: List[str],
-        num_workers: int
+
+        num_workers: int,
+        dataset_handler:str
     ):
         super().__init__()
 
@@ -241,15 +241,11 @@ class TextDataModule(pl.LightningDataModule):
             encoded = tokenizer.encode(word, add_special_tokens=False)
             # assert len(encoded) == 1
 
-        self.annotation_filepaths = annotation_filepaths
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
-        self.auxiliary_dicts = auxiliary_dicts
         self.input_template = input_template
         self.output_template = output_template
         self.label2word = label2word
-        self.labels = labels
-        self.collate_fn = get_collator(tokenizer_class_or_path, labels=labels)
         self.num_workers= num_workers
 
         # TEMP HACK
@@ -258,10 +254,21 @@ class TextDataModule(pl.LightningDataModule):
         m = importlib.import_module(package_name)
         self.dataset_cls = getattr(m, class_name)
 
+        self.dataset_name = dataset_class.split(".")[2]
+
+        self.dataset_handler = DatasetHandler(dataset_handler)
+        self.dataset_info = self.dataset_handler.get_dataset_info(self.dataset_name)
+        
+        self.labels = self.dataset_info['labels']
+        self.collate_fn = get_collator(
+            tokenizer_class_or_path, 
+            labels=self.labels, 
+        )
+
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
             self.train = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["train"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["train"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 input_template=self.input_template,
                 output_template=self.output_template,
@@ -270,7 +277,7 @@ class TextDataModule(pl.LightningDataModule):
             )
 
             self.validate = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["validate"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["validate"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 input_template=self.input_template,
                 output_template=self.output_template,
@@ -281,7 +288,7 @@ class TextDataModule(pl.LightningDataModule):
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
             self.test = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["test"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["test"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 input_template=self.input_template,
                 output_template=self.output_template,
@@ -291,7 +298,7 @@ class TextDataModule(pl.LightningDataModule):
 
         if stage == "predict" or stage is None:
             self.predict = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["predict"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["predict"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 input_template=self.input_template,
                 output_template=self.output_template,

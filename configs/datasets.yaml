@@ -24,7 +24,7 @@ datasets:
     labels:
       - label
 
-  fhm-finegrained:
+  fhm_finegrained:
     annotation_filepaths:
       {
         train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
@@ -46,6 +46,8 @@ datasets:
         test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
         predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
       }
+    labels:
+      - hate
   harmemes:
     annotation_filepaths:
       {
