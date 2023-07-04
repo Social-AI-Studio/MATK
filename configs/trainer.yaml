@@ -1,0 +1,29 @@
+trainer:
+  accelerator: gpu
+  devices: 1
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  # logger:
+  #   class_path: lightning.pytorch.loggers.TensorBoardLogger
+  #   init_args:
+  #     save_dir: lightning_logs/
+  #     name: fhm-finegrained
+  #     version: flava_epochs30_date2306
+  #     default_hp_metric: false
+  # callbacks: 
+  #   - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+  #     init_args:
+  #       dirpath: checkpoints/flava/fhm/hate
+  #       filename: flava_epochs30_date2306
+  #       monitor: hate_validate_auroc
+  #       mode: max
+  #       save_top_k: 1
+  #       every_n_epochs: 1
+  #       save_last: True
+  #   - class_path: lightning.pytorch.callbacks.EarlyStopping
+  #     init_args:
+  #       monitor: hate_validate_auroc
+  #       patience: 5
+  #       mode: max
+  

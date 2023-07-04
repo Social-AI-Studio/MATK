@@ -247,6 +247,7 @@ class TextDataModule(pl.LightningDataModule):
         self.output_template = output_template
         self.label2word = label2word
         self.num_workers= num_workers
+        self.auxiliary_dicts = auxiliary_dicts
 
         # TEMP HACK
         package_name = ".".join(dataset_class.split(".")[:-1])
