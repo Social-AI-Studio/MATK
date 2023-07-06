@@ -23,11 +23,11 @@ def cli():
     ## Loading the configs for model, datamodule and trainer from the correct files
     models_path = "configs/models.yaml"
     data_path = "configs/" + dataset_choice + "_data.yaml"
-    trainer_path = "configs/trainer.yaml"
+    trainer_path = "configs/" + dataset_choice + "_trainer.yaml"
 
     req_model_config = load_config(models_path, model_choice)
     req_data_config = load_config(data_path, datamodule_choice)
-    req_trainer_config = load_config(trainer_path, None)
+    req_trainer_config = load_config(trainer_path, model_choice)
 
     ## Handling the model to dataset config mappings - cls_dict, labels, label2word
     model_config_handler = ModelHandler(model_choice, dataset_choice)

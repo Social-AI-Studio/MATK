@@ -11,7 +11,7 @@ def load_config(config_filename, key):
         return config["models"][key]
 
     if "trainer" in config_filename:
-        return config["trainer"]
+        return config["trainers"][key]
 
     if "data" in config_filename:
         return config["datamodules"][key]
