@@ -1,27 +1,11 @@
 import lightning.pytorch
-from lightning.pytorch.cli import LightningCLI
 from lightning.pytorch import Trainer
 import argparse
 import yaml
 import importlib
 
 from model_handler import ModelHandler
-
-
-def load_config(config_filename, key):
-
-    with open(config_filename, 'r') as file:
-        config = yaml.safe_load(file)
-
-    if "models" in config_filename:
-        return config["models"][key]
-
-    if "trainer" in config_filename:
-        return config["trainer"]
-
-    if "data" in config_filename:
-        return config["datamodules"][key]
-
+from cli_utils import load_callbacks, load_config, load_logger
 
 def cli():
     parser = argparse.ArgumentParser("Fine-tuning")
@@ -65,6 +49,17 @@ def cli():
     model = model_class(**req_model_config["init_args"])
     datamodule = datamodule_class(**req_data_config)
 
+    ## Instantiation of callbacks
+    callback_config = req_trainer_config.pop("callbacks")
+    callback_config_updated = load_callbacks(callback_config)
+
+    ## Instantiation of logger
+    logger_config = req_trainer_config.pop("logger")
+    logger_config_updated = load_logger(logger_config)
+
+    req_trainer_config.update({"callbacks": callback_config_updated})
+    req_trainer_config.update({"logger": logger_config_updated})
+ 
     trainer = Trainer(**req_trainer_config)
     
     if action_choice == "fit":
