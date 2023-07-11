@@ -9,7 +9,7 @@ trainers:
       class_path: lightning.pytorch.loggers.TensorBoardLogger
       init_args:
         save_dir: lightning_logs/
-        name: harmeme
+        name: harmeme/target
         version: bart_epochs30_date1007
         default_hp_metric: false
     callbacks:
@@ -37,7 +37,7 @@ trainers:
       class_path: lightning.pytorch.loggers.TensorBoardLogger
       init_args:
         save_dir: lightning_logs/
-        name: harmeme
+        name: harmeme/target
         version: flava_epochs30_date1007
         default_hp_metric: false
     callbacks:
@@ -66,7 +66,7 @@ trainers:
       class_path: lightning.pytorch.loggers.TensorBoardLogger
       init_args:
         save_dir: lightning_logs/
-        name: harmeme
+        name: harmeme/target
         version: lxmert_epochs30_date1007
         default_hp_metric: false
     callbacks:
@@ -94,7 +94,7 @@ trainers:
       class_path: lightning.pytorch.loggers.TensorBoardLogger
       init_args:
         save_dir: lightning_logs/
-        name: harmeme
+        name: harmeme/target
         version: t5_epochs30_date1007
         default_hp_metric: false
     callbacks:
@@ -123,7 +123,7 @@ trainers:
       class_path: lightning.pytorch.loggers.TensorBoardLogger
       init_args:
         save_dir: lightning_logs/
-        name: harmeme
+        name: harmeme/target
         version: visualbert_epochs30_date1007
         default_hp_metric: false
     callbacks: 
