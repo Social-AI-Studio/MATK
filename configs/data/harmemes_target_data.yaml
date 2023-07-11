@@ -1,0 +1,34 @@
+datamodules:
+    ImagesDataModule:
+        tokenizer_class_or_path: facebook/flava-full
+        frcnn_class_or_path: None
+        dataset_class: datamodules.datasets.harmemes.ImagesDataset
+        dataset_handler: configs/datasets.yaml
+        auxiliary_dicts: {}
+        shuffle_train: True
+        batch_size: 4
+        num_workers: 8
+    FasterRCNNDataModule:
+        tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
+        dataset_class: datamodules.datasets.harmemes.FasterRCNNDataset
+        dataset_handler: configs/datasets.yaml
+        auxiliary_dicts: {}
+        shuffle_train: True
+        batch_size: 32
+        num_workers: 8
+    TextDataModule:
+        tokenizer_class_or_path: t5-large
+        dataset_class: datamodules.datasets.harmemes.TextDataset
+        dataset_handler: configs/datasets.yaml
+        auxiliary_dicts: {}
+        input_template: "question: who does it target? context: {text}"
+        output_template: "{label}</s>"
+        label2word: {
+            0: "individual",
+            1: "organization",
+            2: "community",
+            3: "society"
+        }
+        shuffle_train: True
+        batch_size: 32
+        num_workers: 8

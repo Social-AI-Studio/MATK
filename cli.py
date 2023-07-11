@@ -11,26 +11,37 @@ def cli():
     parser = argparse.ArgumentParser("Fine-tuning")
     parser.add_argument("--model", type=str, required=True)
     parser.add_argument("--dataset", type=str, required=True)
+    parser.add_argument("--task", type=str, required=False)
     parser.add_argument("--datamodule", type=str, required=True)
     parser.add_argument("--action", type=str, required=True)
     args = parser.parse_args()
 
     model_choice = args.model
     dataset_choice = args.dataset
+    task = args.task
     datamodule_choice = args.datamodule
     action_choice = args.action
 
-    ## Loading the configs for model, datamodule and trainer from the correct files
+    ## Finding the paths for data yaml and model yaml
     models_path = "configs/models.yaml"
-    data_path = "configs/data/" + dataset_choice + "_data.yaml"
-    trainer_path = "configs/trainers/" + dataset_choice + "_trainer.yaml"
 
+    if task is None:
+        data_path = f"configs/data/{dataset_choice}_data.yaml"
+        trainer_path = f"configs/trainers/{dataset_choice}_trainer.yaml"
+    else:
+        data_path = f"configs/data/{dataset_choice}_{task}_data.yaml"
+        trainer_path = f"configs/trainers/{dataset_choice}_{task}_trainer.yaml"
+
+    ## Loading the configs for model, datamodule and trainer from the correct files
     req_model_config = load_config(models_path, model_choice)
     req_data_config = load_config(data_path, datamodule_choice)
     req_trainer_config = load_config(trainer_path, model_choice)
 
+    if task is not None:
+        req_data_config.update({"task": task})
+
     ## Handling the model to dataset config mappings - cls_dict, labels, label2word
-    model_config_handler = ModelHandler(model_choice, dataset_choice)
+    model_config_handler = ModelHandler(model_choice, dataset_choice, task)
     reqd_args = model_config_handler.get_cls_dict()
     req_model_config["init_args"].update(reqd_args)
 
