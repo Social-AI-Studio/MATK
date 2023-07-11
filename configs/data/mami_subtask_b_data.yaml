@@ -1,0 +1,32 @@
+datamodules:
+    ImagesDataModule:
+        tokenizer_class_or_path: facebook/flava-full
+        frcnn_class_or_path: None
+        dataset_class: datamodules.datasets.mami.ImagesDataset
+        dataset_handler: configs/datasets.yaml
+        auxiliary_dicts: {}
+        shuffle_train: True
+        batch_size: 4
+        num_workers: 8
+    FasterRCNNDataModule:
+        tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
+        dataset_class: datamodules.datasets.mami.FasterRCNNDataset
+        dataset_handler: configs/datasets.yaml
+        auxiliary_dicts: {}
+        shuffle_train: True
+        batch_size: 32
+        num_workers: 8
+    TextDataModule:
+        tokenizer_class_or_path: facebook/bart-large
+        dataset_class: datamodules.datasets.mami.TextDataset
+        dataset_handler: configs/datasets.yaml
+        auxiliary_dicts: {}
+        input_template: "question: is it misogynous? context: {text}"
+        output_template: "{label}</s>"
+        label2word: {
+          0: "no",
+          1: "yes"
+        }
+        shuffle_train: True
+        batch_size: 32
+        num_workers: 8
