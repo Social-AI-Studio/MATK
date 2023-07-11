@@ -14,8 +14,9 @@ from datamodules.collators.gqa_lxmert.lxmert_utils import Config
 class LxmertClassificationModel(pl.LightningModule):
     def __init__(self, 
                  model_class_or_path, 
-                 frcnn_class_or_path,
-                 cls_dict):
+                 cls_dict,
+                 frcnn_class_or_path=None,
+                 ):
         super().__init__()
         self.save_hyperparameters()
 

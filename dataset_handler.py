@@ -13,3 +13,10 @@ class DatasetHandler:
             return self.datasets["datasets"][dataset_name]
         else:
             return None
+
+    def get_labels(self, dataset_name, task=None):
+        if dataset_name in self.datasets["datasets"]:
+            if task is None: 
+                return self.datasets["datasets"][dataset_name]['labels']
+            return self.datasets["datasets"][dataset_name]['labels'][task]
+        return None
