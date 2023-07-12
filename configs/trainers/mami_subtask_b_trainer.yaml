@@ -2,9 +2,7 @@ trainers:
   bart:
     accelerator: gpu
     devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
+    max_epochs: 30
     accumulate_grad_batches: 1
     enable_checkpointing: True
     logger:
@@ -32,9 +30,7 @@ trainers:
   flava:
     accelerator: gpu
     devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
+    max_epochs: 30
     accumulate_grad_batches: 1
     enable_checkpointing: True
     logger:
@@ -62,9 +58,7 @@ trainers:
   lxmert:
     accelerator: gpu
     devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
+    max_epochs: 30
     accumulate_grad_batches: 1
     enable_checkpointing: True
     logger:
@@ -92,9 +86,7 @@ trainers:
   t5:
     accelerator: gpu
     devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
+    max_epochs: 30
     accumulate_grad_batches: 1
     enable_checkpointing: True
     logger:
@@ -122,9 +114,7 @@ trainers:
   visualbert:
     accelerator: gpu
     devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
+    max_epochs: 30
     accumulate_grad_batches: 1
     enable_checkpointing: True
     logger:
