@@ -1,5 +1,5 @@
 import lightning.pytorch
-from lightning.pytorch import Trainer
+from lightning.pytorch import Trainer, seed_everything
 import argparse
 import yaml
 import importlib
@@ -35,7 +35,8 @@ def cli():
     ## Loading the configs for model, datamodule and trainer from the correct files
     req_model_config = load_config(models_path, model_choice)
     req_data_config = load_config(data_path, datamodule_choice)
-    req_trainer_config = load_config(trainer_path, model_choice)
+    req_exp_config = load_config(trainer_path, model_choice)
+    req_trainer_config = req_exp_config.pop("trainer")
 
     if task is not None:
         req_data_config.update({"task": task})
@@ -72,10 +73,17 @@ def cli():
     req_trainer_config.update({"logger": logger_config_updated})
  
     trainer = Trainer(**req_trainer_config)
-    
+
+    if "seed_everything" in req_exp_config:
+        seed_everything(req_exp_config["seed_everything"], workers= True)
+
     if action_choice == "fit":
         trainer.fit(model, datamodule)
     elif action_choice == "test":
+        model = model_class.load_from_checkpoint(
+            checkpoint_path=req_exp_config["ckpt_path"],
+        )
         trainer.test(model, datamodule)
+        
     else:
         raise Exception(f"Requested action {action_choice} Unavailable")

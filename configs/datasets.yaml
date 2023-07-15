@@ -29,7 +29,7 @@ datasets:
       {
         train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json,
         validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
-        test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
+        test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json,
         predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl,
       }
     image_dirs:

@@ -1,3 +1,4 @@
+import importlib
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,7 +13,8 @@ class FlavaClassificationModel(pl.LightningModule):
     def __init__(
             self, 
             model_class_or_path: str,
-            cls_dict: dict
+            cls_dict: dict,
+            metrics: list
         ):
         super().__init__()
         self.save_hyperparameters()
@@ -27,22 +29,31 @@ class FlavaClassificationModel(pl.LightningModule):
         
         # set up metric
         self.cls_dict = cls_dict
+        
+        # TEMP HACK
+        package_name = "torchmetrics"
+        module = importlib.import_module(package_name)
+        self.metric_dict = metrics # metric details : metric class
+        
         for stage in ["train", "validate", "test"]:
             for key, value in cls_dict.items():
-                setattr(self, f"{key}_{stage}_acc", torchmetrics.Accuracy(task="multiclass", num_classes=value))
-                setattr(self, f"{key}_{stage}_auroc", torchmetrics.AUROC(task="multiclass", num_classes=value))
-       
+                for metric_details in self.metric_dict:
+                    metric_class = getattr(module, metric_details['name'])
+                    args = metric_details['args']
+                    setattr(self, f"{key}_{stage}_{metric_details['name']}", metric_class(**args))
+
 
     def compute_metrics_and_logs(self, cls_name, stage, loss, targets, preds):
-        accuracy_metric = getattr(self, f"{cls_name}_{stage}_acc")
-        auroc_metric = getattr(self, f"{cls_name}_{stage}_auroc")
+        for metric_details in self.metric_dict:
+            metric_name = metric_details['name']
+            metric = getattr(self, f"{cls_name}_{stage}_{metric_name}")
 
-        accuracy_metric(preds.argmax(dim=-1), targets)
-        auroc_metric(preds, targets)
-
+            if metric_name == 'Accuracy':
+                metric(preds.argmax(dim=-1), targets)
+            elif metric_name == 'AUROC':
+                metric(preds, targets)
+            self.log(f'{cls_name}_{stage}_{metric_name}', metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         self.log(f'{cls_name}_{stage}_loss', loss, prog_bar=True)
-        self.log(f'{cls_name}_{stage}_acc', accuracy_metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
-        self.log(f'{cls_name}_{stage}_auroc', auroc_metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
 
 
     def training_step(self, batch, batch_idx):
@@ -80,6 +91,25 @@ class FlavaClassificationModel(pl.LightningModule):
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
             loss = F.cross_entropy(preds, targets)
             self.compute_metrics_and_logs(cls_name, "validate", loss, targets, preds)
+
+            total_loss += loss
+        
+        return total_loss / len(self.cls_dict)
+
+    def test_step(self, batch, batch_idx):
+        model_outputs = self.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            pixel_values=batch['pixel_values']
+        )
+
+        total_loss = 0.0
+
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            targets = batch[cls_name]
+            preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
+            loss = F.cross_entropy(preds, targets)
+            self.compute_metrics_and_logs(cls_name, "test", loss, targets, preds)
 
             total_loss += loss
         

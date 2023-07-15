@@ -1,151 +1,146 @@
 trainers:
   bart:
-    accelerator: gpu
-    devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
-    accumulate_grad_batches: 1
-    enable_checkpointing: True
-    logger:
-      class_path: lightning.pytorch.loggers.TensorBoardLogger
-      init_args:
-        save_dir: lightning_logs/
-        name: fhm-finegrained
-        version: bart_epochs30_date1007
-        default_hp_metric: false
-    callbacks: 
-      - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
         init_args:
-          dirpath: checkpoints/bart/fhm/hate
-          filename: bart_epochs30_date1007
-          monitor: val_auroc
-          mode: max
-          save_top_k: 1
-          every_n_epochs: 1
-          save_last: True
-      - class_path: lightning.pytorch.callbacks.EarlyStopping
-        init_args:
-          monitor: val_auroc
-          patience: 5
-          mode: max
+          save_dir: lightning_logs/
+          name: fhm-finegrained
+          version: bart_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/bart/fhm/hate
+            filename: bart_epochs30_date1007
+            monitor: val_auroc
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: val_auroc
+            patience: 5
+            mode: max
   flava:
-    accelerator: gpu
-    devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
-    accumulate_grad_batches: 1
-    enable_checkpointing: True
-    logger:
-      class_path: lightning.pytorch.loggers.TensorBoardLogger
-      init_args:
-        save_dir: lightning_logs/
-        name: fhm-finegrained
-        version: flava_epochs30_date1007
-        default_hp_metric: false
-    callbacks: 
-      - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
         init_args:
-          dirpath: checkpoints/flava/fhm/hate
-          filename: flava_epochs30_date1007
-          monitor: hate_validate_auroc
-          mode: max
-          save_top_k: 1
-          every_n_epochs: 1
-          save_last: True
-      - class_path: lightning.pytorch.callbacks.EarlyStopping
-        init_args:
-          monitor: hate_validate_auroc
-          patience: 5
-          mode: max
+          save_dir: lightning_logs/
+          name: fhm-finegrained
+          version: flava_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/flava/fhm/hate
+            filename: flava_epochs30_date1007
+            monitor: hate_validate_AUROC
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: hate_validate_AUROC
+            patience: 5
+            mode: max
   lxmert:
-    accelerator: gpu
-    devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
-    accumulate_grad_batches: 1
-    enable_checkpointing: True
-    logger:
-      class_path: lightning.pytorch.loggers.TensorBoardLogger
-      init_args:
-        save_dir: lightning_logs/
-        name: fhm-finegrained
-        version: lxmert_epochs30_date1007
-        default_hp_metric: false
-    callbacks: 
-      - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
         init_args:
-          dirpath: checkpoints/lxmert_features/fhm/hate
-          filename: lxmert_epochs30_date1007
-          monitor: hate_validate_auroc
-          mode: max
-          save_top_k: 1
-          every_n_epochs: 1
-          save_last: True
-      - class_path: lightning.pytorch.callbacks.EarlyStopping
-        init_args:
-          monitor: hate_validate_auroc
-          patience: 5
-          mode: max
+          save_dir: lightning_logs/
+          name: fhm-finegrained
+          version: lxmert_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/lxmert_features/fhm/hate
+            filename: lxmert_epochs30_date1007
+            monitor: hate_validate_AUROC
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: hate_validate_AUROC
+            patience: 5
+            mode: max
   t5:
-    accelerator: gpu
-    devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
-    accumulate_grad_batches: 1
-    enable_checkpointing: True
-    logger:
-      class_path: lightning.pytorch.loggers.TensorBoardLogger
-      init_args:
-        save_dir: lightning_logs/
-        name: fhm-finegrained
-        version: t5_epochs30_date1007
-        default_hp_metric: false
-    callbacks: 
-      - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    trainer:  
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
         init_args:
-          dirpath: checkpoints/t5/fhm/hate
-          filename: t5_epochs30_date1007
-          monitor: val_auroc
-          mode: max
-          save_top_k: 1
-          every_n_epochs: 1
-          save_last: True
-      - class_path: lightning.pytorch.callbacks.EarlyStopping
-        init_args:
-          monitor: val_auroc
-          patience: 5
-          mode: max
+          save_dir: lightning_logs/
+          name: fhm-finegrained
+          version: t5_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/t5/fhm/hate
+            filename: t5_epochs30_date1007
+            monitor: val_auroc
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: val_auroc
+            patience: 5
+            mode: max
   visualbert:
-    accelerator: gpu
-    devices: 1
-    max_epochs: 1
-    limit_train_batches: 1
-    limit_val_batches: 1
-    accumulate_grad_batches: 1
-    enable_checkpointing: True
-    logger:
-      class_path: lightning.pytorch.loggers.TensorBoardLogger
-      init_args:
-        save_dir: lightning_logs/
-        name: fhm-finegrained
-        version: visualbert_epochs30_date1007
-        default_hp_metric: false
-    callbacks: 
-      - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
         init_args:
-          dirpath: checkpoints/visualbert_features/fhm/hate
-          filename: visualbert_epochs30_date1007
-          monitor: hate_validate_auroc
-          mode: max
-          save_top_k: 1
-          every_n_epochs: 1
-          save_last: True
-      - class_path: lightning.pytorch.callbacks.EarlyStopping
-        init_args:
-          monitor: hate_validate_auroc
-          patience: 5
-          mode: max
+          save_dir: lightning_logs/
+          name: fhm-finegrained
+          version: visualbert_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/visualbert_features/fhm/hate
+            filename: visualbert_epochs30_date1007
+            monitor: hate_validate_AUROC
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: hate_validate_AUROC
+            patience: 5
+            mode: max
