@@ -80,8 +80,8 @@ datasets:
       {
         train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
         validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
-        test: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
-        predict: /mnt/sda/datasets/memes/mami/annotations/Test.csv,
+        test: /mnt/sda/datasets/memes/mami/annotations/test.csv,
+        predict: /mnt/sda/datasets/memes/mami/annotations/test.csv,
       }
     image_dirs:
       {
@@ -94,8 +94,8 @@ datasets:
       {
         train: /mnt/sda/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned,
         validate: /mnt/sda/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
-        test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
-        predict: /mnt/sda/datasets/memes/mami/features/test/unc-nlp,
+        test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned,
+        predict: /mnt/sda/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned,
       }
     labels:
       subtask_a:
