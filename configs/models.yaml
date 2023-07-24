@@ -1,47 +1,38 @@
+defaults: &defaults
+  metrics:
+    - name: Accuracy
+      args:
+        task: multiclass
+        num_classes: 2
+    - name: AUROC
+      args:
+        task: multiclass
+        num_classes: 2
+
 models:
   flava:
     class_path: models.flava.FlavaClassificationModel
     init_args:
       model_class_or_path: facebook/flava-full
-      metrics: 
-      - name: Accuracy
-        args: 
-          task: multiclass
-          num_classes: 2
-      - name: AUROC
-        args: 
-          task: multiclass
-          num_classes: 2
+      <<: *defaults
+
   lxmert:
     class_path: models.lxmert.LxmertClassificationModel
     init_args:
       model_class_or_path: unc-nlp/lxmert-base-uncased
-      metrics: 
-      - name: Accuracy
-        args: 
-          task: multiclass
-          num_classes: 2
-      - name: AUROC
-        args: 
-          task: multiclass
-          num_classes: 2
+      <<: *defaults
+
   visualbert:
     class_path: models.visualbert.VisualBertClassificationModel
-    init_args: 
+    init_args:
       model_class_or_path: uclanlp/visualbert-vqa-coco-pre
-      metrics: 
-      - name: Accuracy
-        args: 
-          task: multiclass
-          num_classes: 2
-      - name: AUROC
-        args: 
-          task: multiclass
-          num_classes: 2
+      <<: *defaults
+
   t5:
     class_path: models.t5.T5ClassificationModel
     init_args:
       model_class_or_path: t5-large
+      
   bart:
     class_path: models.bart.BARTCasualModel
     init_args:
