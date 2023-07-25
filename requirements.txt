@@ -16,3 +16,6 @@ wget==3.2
 jsonargparse[signatures]>=4.17.0
 lightning>=2.0.0
 transformers
+
+# BLIP-2 Captioning
+salesforce-lavis
