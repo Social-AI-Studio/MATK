@@ -1,0 +1,146 @@
+trainers:
+  bart:
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
+        init_args:
+          save_dir: lightning_logs/
+          name: mami/subtask_b
+          version: bart_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/bart/mami/subtask_b
+            filename: bart_epochs30_date1007
+            monitor: val_auroc
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: val_auroc
+            patience: 5
+            mode: max
+  flava:
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
+        init_args:
+          save_dir: lightning_logs/
+          name: mami/subtask_b
+          version: flava_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/flava/mami/subtask_b
+            filename: flava_epochs30_date1007
+            monitor: shaming_validate_AUROC
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: shaming_validate_AUROC
+            patience: 5
+            mode: max
+  lxmert:
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
+        init_args:
+          save_dir: lightning_logs/
+          name: mami/subtask_b
+          version: lxmert_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/lxmert_features/mami/subtask_b
+            filename: lxmert_epochs30_date1007
+            monitor: shaming_validate_AUROC
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: shaming_validate_AUROC
+            patience: 5
+            mode: max
+  t5:
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
+        init_args:
+          save_dir: lightning_logs/
+          name: mami/subtask_b
+          version: t5_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/t5/mami/subtask_b
+            filename: t5_epochs30_date1007
+            monitor: val_auroc
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: val_auroc
+            patience: 5
+            mode: max
+  visualbert:
+    trainer:
+      accelerator: gpu
+      devices: 1
+      max_epochs: 30
+      accumulate_grad_batches: 1
+      enable_checkpointing: True
+      logger:
+        class_path: lightning.pytorch.loggers.TensorBoardLogger
+        init_args:
+          save_dir: lightning_logs/
+          name: mami/subtask_b
+          version: visualbert_epochs30_date1007
+          default_hp_metric: false
+      callbacks: 
+        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+          init_args:
+            dirpath: checkpoints/visualbert_features/mami/subtask_b
+            filename: visualbert_epochs30_date1007
+            monitor: shaming_validate_AUROC
+            mode: max
+            save_top_k: 1
+            every_n_epochs: 1
+            save_last: True
+        - class_path: lightning.pytorch.callbacks.EarlyStopping
+          init_args:
+            monitor: shaming_validate_AUROC
+            patience: 5
+            mode: max

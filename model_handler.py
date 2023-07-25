@@ -11,7 +11,11 @@ class ModelHandler:
 
     def get_cls_dict(self):
         if self.dataset in self.DATASET_CONFIGS:
-            dataset_config = self.DATASET_CONFIGS[self.dataset]
+            if self.task:
+                dataset_config = self.DATASET_CONFIGS[self.dataset][self.task]
+            else:
+                dataset_config = self.DATASET_CONFIGS[self.dataset]
+                
             if self.model in dataset_config:
                 return dataset_config[self.model]
             else:

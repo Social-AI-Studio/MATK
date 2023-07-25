@@ -44,7 +44,7 @@ fhm_finegrained:
     labels:
       - hate
 
-harmeme:
+harmemes:
   intensity:
     flava:
       cls_dict:
@@ -132,12 +132,12 @@ mami:
         shaming: 2
         stereotype: 2
         violence: 2
-      visualbert:
-        cls_dict:
-          objectification: 2
-          shaming: 2
-          stereotype: 2
-          violence: 2
+    visualbert:
+      cls_dict:
+        objectification: 2
+        shaming: 2
+        stereotype: 2
+        violence: 2
     bart:
       label2word:
         0: "no"

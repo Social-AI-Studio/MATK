@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import lightning.pytorch as pl
 from lightning.pytorch.callbacks import Callback
 import torchmetrics
-
+import importlib
 from transformers import VisualBertModel
 
 from datamodules.collators.gqa_lxmert.modeling_frcnn import GeneralizedRCNN
@@ -12,7 +12,12 @@ from datamodules.collators.gqa_lxmert.lxmert_utils import Config
 
 
 class VisualBertClassificationModel(pl.LightningModule):
-    def __init__(self, model_class_or_path, cls_dict, frcnn_class_or_path,):
+    def __init__(self, 
+                 model_class_or_path, 
+                 cls_dict, 
+                 metrics: list,
+                 frcnn_class_or_path=None
+                 ):
         super().__init__()
         self.save_hyperparameters()
         self.model = VisualBertModel.from_pretrained(model_class_or_path)
@@ -28,22 +33,31 @@ class VisualBertClassificationModel(pl.LightningModule):
 
         # set up metric
         self.cls_dict = cls_dict
+        
+        # TEMP HACK
+        package_name = "torchmetrics"
+        module = importlib.import_module(package_name)
+        self.metric_dict = metrics # metric details : metric class
+        
         for stage in ["train", "validate", "test"]:
             for key, value in cls_dict.items():
-                setattr(self, f"{key}_{stage}_acc", torchmetrics.Accuracy(task="multiclass", num_classes=value))
-                setattr(self, f"{key}_{stage}_auroc", torchmetrics.AUROC(task="multiclass", num_classes=value))
-       
+                for metric_details in self.metric_dict:
+                    metric_class = getattr(module, metric_details['name'])
+                    args = metric_details['args']
+                    setattr(self, f"{key}_{stage}_{metric_details['name']}", metric_class(**args))
+
 
     def compute_metrics_and_logs(self, cls_name, stage, loss, targets, preds):
-        accuracy_metric = getattr(self, f"{cls_name}_{stage}_acc")
-        auroc_metric = getattr(self, f"{cls_name}_{stage}_auroc")
+        for metric_details in self.metric_dict:
+            metric_name = metric_details['name']
+            metric = getattr(self, f"{cls_name}_{stage}_{metric_name}")
 
-        accuracy_metric(preds.argmax(dim=-1), targets)
-        auroc_metric(preds, targets)
-
+            if metric_name == 'Accuracy':
+                metric(preds.argmax(dim=-1), targets)
+            elif metric_name == 'AUROC':
+                metric(preds, targets)
+            self.log(f'{cls_name}_{stage}_{metric_name}', metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         self.log(f'{cls_name}_{stage}_loss', loss, prog_bar=True)
-        self.log(f'{cls_name}_{stage}_acc', accuracy_metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
-        self.log(f'{cls_name}_{stage}_auroc', auroc_metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
         
     def training_step(self, batch, batch_idx):
 

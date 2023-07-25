@@ -1,0 +1,28 @@
+defaults: &defaults
+  dataset_handler: configs/datasets.yaml
+  auxiliary_dicts: {}
+  shuffle_train: true
+  num_workers: 8
+  batch_size: 4
+
+datamodules:
+  ImagesDataModule:
+    <<: *defaults
+    tokenizer_class_or_path: facebook/flava-full
+    dataset_class: datamodules.datasets.fhm.ImagesDataset
+    frcnn_class_or_path: None
+
+  FasterRCNNDataModule:
+    <<: *defaults
+    tokenizer_class_or_path: unc-nlp/lxmert-base-uncased
+    dataset_class: datamodules.datasets.fhm.FasterRCNNDataset
+
+  TextDataModule:
+    <<: *defaults
+    tokenizer_class_or_path: facebook/bart-large
+    dataset_class: datamodules.datasets.fhm.TextDataset
+    input_template: "question: is it hateful? context: {text}"
+    output_template: "{label}</s>"
+    label2word:
+      0: "no"
+      1: "yes"

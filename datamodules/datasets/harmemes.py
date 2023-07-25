@@ -29,10 +29,11 @@ class HarmemesBase(Dataset):
         annotation_filepath: str,
         auxiliary_dicts: dict,
         labels: List[str]
-    ):
+    ):  
+        self.labels = labels
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = labels
+        
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []

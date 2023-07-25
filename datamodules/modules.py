@@ -29,40 +29,45 @@ class FasterRCNNDataModule(pl.LightningDataModule):
 
     def __init__(
         self,
-        annotation_filepaths: dict,
         tokenizer_class_or_path: str,
         dataset_class: str,
-        feats_dirs: dict,
         batch_size: int,
         auxiliary_dicts: dict,
         shuffle_train: bool,
-        labels: List[str],
-        num_workers: int
+        num_workers: int, 
+        dataset_handler: str,
+        task = None
     ):
         super().__init__()
 
-        self.annotation_filepaths = annotation_filepaths
+   
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
-        self.labels = labels
+        
         self.auxiliary_dicts = auxiliary_dicts
         self.num_workers= num_workers
-        
-        self.feats_dict = {}
-        for split in ["train", "validate", "test", "predict"]:
-            self.feats_dict[split] = self._load_feats_frcnn(feats_dirs, split)
-        
-        self.collate_fn = get_collator(
-            tokenizer_class_or_path, 
-            labels=labels,
-        )
-
         # TEMP HACK
         package_name = ".".join(dataset_class.split(".")[:-1])
         class_name = dataset_class.split(".")[-1]
         m = importlib.import_module(package_name)
         self.dataset_cls = getattr(m, class_name)
-    
+        self.dataset_name = dataset_class.split(".")[2]
+
+        self.dataset_handler = DatasetHandler(dataset_handler)
+        self.dataset_info = self.dataset_handler.get_dataset_info(self.dataset_name)
+        
+        self.labels = self.dataset_handler.get_labels(self.dataset_name, task)
+
+        self.collate_fn = get_collator(
+            tokenizer_class_or_path, 
+            labels=self.labels, 
+        )
+
+        feats_dirs = self.dataset_info['feats_dirs']
+        self.feats_dict = {}
+        for split in ["train", "validate", "test", "predict"]:
+            self.feats_dict[split] = self._load_feats_frcnn(feats_dirs, split)
+        
     def _load_feats_frcnn(self, feats_dirs: str, key: str):
         feats_dict = {}
 
@@ -83,14 +88,14 @@ class FasterRCNNDataModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
             self.train = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["train"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["train"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["train"],
                 labels=self.labels
             )
 
             self.validate = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["validate"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["validate"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["validate"],
                 labels=self.labels
@@ -99,7 +104,7 @@ class FasterRCNNDataModule(pl.LightningDataModule):
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
             self.test = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["test"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["test"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["test"],
                 labels=self.labels
@@ -107,7 +112,7 @@ class FasterRCNNDataModule(pl.LightningDataModule):
 
         if stage == "predict" or stage is None:
             self.predict = self.dataset_cls(
-                annotation_filepath=self.annotation_filepaths["predict"],
+                annotation_filepath=self.dataset_info["annotation_filepaths"]["predict"],
                 auxiliary_dicts=self.auxiliary_dicts,
                 feats_dict=self.feats_dict["predict"],
                 labels=self.labels
@@ -139,7 +144,8 @@ class ImagesDataModule(pl.LightningDataModule):
         batch_size: int,
         shuffle_train: bool,
         num_workers: int, 
-        dataset_handler: str
+        dataset_handler: str,
+        task = None
     ):
         super().__init__()
 
@@ -160,7 +166,7 @@ class ImagesDataModule(pl.LightningDataModule):
         self.dataset_handler = DatasetHandler(dataset_handler)
         self.dataset_info = self.dataset_handler.get_dataset_info(self.dataset_name)
         
-        self.labels = self.dataset_info['labels']
+        self.labels = self.dataset_handler.get_labels(self.dataset_name, task)
         self.collate_fn = get_collator(
             tokenizer_class_or_path, 
             labels=self.labels, 
@@ -229,9 +235,9 @@ class TextDataModule(pl.LightningDataModule):
         label2word: dict,
         batch_size: int,
         shuffle_train: bool,
-
         num_workers: int,
-        dataset_handler:str
+        dataset_handler:str,
+        task = None
     ):
         super().__init__()
 
@@ -260,7 +266,7 @@ class TextDataModule(pl.LightningDataModule):
         self.dataset_handler = DatasetHandler(dataset_handler)
         self.dataset_info = self.dataset_handler.get_dataset_info(self.dataset_name)
         
-        self.labels = self.dataset_info['labels']
+        self.labels = self.dataset_handler.get_labels(self.dataset_name, task)
         self.collate_fn = get_collator(
             tokenizer_class_or_path, 
             labels=self.labels, 

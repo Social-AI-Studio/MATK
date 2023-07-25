@@ -28,7 +28,7 @@ trainer:
         monitor: hate_validate_auroc
         patience: 5
         mode: max
-  
+ckpt_path: checkpoints/flava/fhm/hate/flava_epochs30_date0407_s1115-v1.ckpt
 model:
   class_path: models.flava.FlavaClassificationModel
   init_args:
