@@ -3,12 +3,21 @@ import sys
 import json
 import tqdm
 import torch
+import numpy as np
 import argparse
 
 from PIL import Image
 from transformers import AutoTokenizer
 from mplug_owl.modeling_mplug_owl import MplugOwlForConditionalGeneration
 from mplug_owl.processing_mplug_owl import MplugOwlImageProcessor, MplugOwlProcessor
+
+def yield_partition(image_files, num_partitions, partition_idx):
+    partitions = np.array_split(image_files, num_partitions)
+    selected_partition = partitions[partition_idx]
+    print(f"Partition Index: {partition_idx}")
+    print(f"Num. Records: {len(selected_partition)}")
+
+    return selected_partition
 
 def load_model(pretrained_ckpt):
     model = MplugOwlForConditionalGeneration.from_pretrained(
@@ -22,8 +31,9 @@ def load_model(pretrained_ckpt):
 
     return model, tokenizer, processor
 
-def main(pretrained_ckpt, image_dir, output_dir):
+def main(pretrained_ckpt, image_dir, output_dir, num_partitions, partition_idx):
     image_files = os.listdir(image_dir)
+    image_files = yield_partition(image_files, num_partitions, partition_idx)
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -50,7 +60,6 @@ def main(pretrained_ckpt, image_dir, output_dir):
         'max_new_tokens': 128
     }
 
-    records = []
     for image_filename in tqdm.tqdm(image_files):
         images = [Image.open(os.path.join(image_dir, image_filename)).convert("RGB")]
         
@@ -64,24 +73,25 @@ def main(pretrained_ckpt, image_dir, output_dir):
             res = model.generate(**inputs, **generate_kwargs)
         sentence = tokenizer.decode(res.tolist()[0], skip_special_tokens=True)
 
-        records.append({
+        record = {
             "img": image_filename,
             "caption": sentence
-        })
-
-        print(image_filename, sentence)
+        }
     
-    output_filepath = os.path.join(output_dir, f"{pretrained_ckpt}.jsonl")
-    with open(output_filepath, "w") as f:
-        for item in records:
-            f.write(json.dumps(item))
-            f.write("\n")
+        image_name, _ = os.path.splitext(image_filename)
+        output_filepath = os.path.join(output_dir, f"{image_name}.json")
+        with open(output_filepath, "w") as f:
+            f.write(json.dumps(record))
+
+        break
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Perform Image Captioning")
     parser.add_argument("--pretrained-ckpt", type=str, required=True)
     parser.add_argument("--image-dir", type=str, required=True)
     parser.add_argument("--output-dir", type=str, required=True)
+    parser.add_argument("--num-partitions", type=int, required=True)
+    parser.add_argument("--partition-idx", type=int, required=True)
     args = parser.parse_args()
 
-    main(args.pretrained_ckpt, args.image_dir, args.output_dir)
+    main(args.pretrained_ckpt, args.image_dir, args.output_dir, args.num_partitions, args.partition_idx)
