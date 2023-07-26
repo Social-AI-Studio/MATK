@@ -13,11 +13,17 @@ Image Captioning
 
 Supported Models
 ----------------
-* BLIP-2
-* InstructBLIP
+* mPLUG-Owl `[Link] <https://github.com/X-PLUG/mPLUG-Owl>`_
+* BLIP-2 `[Link] <https://github.com/salesforce/LAVIS>`_
+* InstructBLIP `[Link] <https://github.com/salesforce/LAVIS>`_
 
 Requirements
 ------------
+
+mPLUG-Owl
+~~~~~~~~~
+
+To use mPLUG-Owl vision-language assistant, you are required to install the packages mentioned in the `mPLUG-Owl <https://github.com/X-PLUG/mPLUG-Owl>`_ repositry. 
 
 BLIP-2 & InstructBLIP
 ~~~~~~~~~~~~~~~~~~~~~

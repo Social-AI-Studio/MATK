@@ -44,9 +44,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser("Perform Image Captioning")
     parser.add_argument("--model-name", type=str, required=True, choices=["blip2_vicuna_instruct", "blip2_t5_instruct"])
     parser.add_argument("--model-type", type=str, required=True)
+    parser.add_argument("--device", type=str, required=True, choices=["cpu", "cuda"])
     parser.add_argument("--image-dir", type=str, required=True)
     parser.add_argument("--output-dir", type=str, required=True)
-    parser.add_argument("--device", type=str, required=True, choices=["cpu", "cuda"])
     args = parser.parse_args()
 
     main(args.model_name, args.model_type, args.image_dir, args.output_dir, args.device)
