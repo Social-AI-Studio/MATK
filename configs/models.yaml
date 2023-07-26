@@ -3,11 +3,9 @@ defaults: &defaults
     - name: Accuracy
       args:
         task: multiclass
-        num_classes: 2
     - name: AUROC
       args:
         task: multiclass
-        num_classes: 2
 
 models:
   flava:
@@ -32,8 +30,10 @@ models:
     class_path: models.t5.T5ClassificationModel
     init_args:
       model_class_or_path: t5-large
+      <<: *defaults
       
   bart:
     class_path: models.bart.BARTCasualModel
     init_args:
       model_class_or_path: facebook/bart-large
+      <<: *defaults
