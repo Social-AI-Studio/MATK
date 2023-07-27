@@ -61,6 +61,25 @@ def cli():
     model = model_class(**req_model_config["init_args"])
     datamodule = datamodule_class(**req_data_config)
 
+    ## modify logger 
+    raw_logger_version = req_trainer_config["logger"]["init_args"]["version"] 
+    specific_logger_version = raw_logger_version+f"_{model_choice}"
+    req_trainer_config["logger"]["init_args"]["version"] = specific_logger_version
+
+    ## modify model checkpoint dirpath
+    raw_checkpoint_dirpath = req_trainer_config["callbacks"][0]["init_args"]["dirpath"]
+    specific_ckpt_dirpath = raw_checkpoint_dirpath+f"/{model_choice}"
+    req_trainer_config["callbacks"][0]["init_args"]["dirpath"] = specific_ckpt_dirpath
+
+    ## specify model ckpt filename
+    raw_checkpoint_filename = req_trainer_config["callbacks"][0]["init_args"]["filename"]
+    specific_ckpt_filename = f"{model_choice}_"+raw_checkpoint_filename
+    req_trainer_config["callbacks"][0]["init_args"]["filename"] = specific_ckpt_filename
+
+    ## monitor metric
+    monitor_metric = req_trainer_config.pop("monitor_metric")
+    req_trainer_config["callbacks"][0]["init_args"]["monitor"] = monitor_metric
+
     ## Instantiation of callbacks
     callback_config = req_trainer_config.pop("callbacks")
     callback_config_updated = load_callbacks(callback_config)

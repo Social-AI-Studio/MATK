@@ -40,6 +40,7 @@ class FlavaClassificationModel(pl.LightningModule):
                 for metric_details in self.metric_dict:
                     metric_class = getattr(module, metric_details['name'])
                     args = metric_details['args']
+                    args["num_classes"] = value
                     setattr(self, f"{key}_{stage}_{metric_details['name']}", metric_class(**args))
 
 

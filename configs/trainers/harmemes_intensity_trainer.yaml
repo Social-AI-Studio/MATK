@@ -1,148 +1,54 @@
+defaults: &defaults
+  accelerator: gpu
+  devices: 1
+  max_epochs: 30
+  accumulate_grad_batches: 1
+  enable_checkpointing: True
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: lightning_logs/
+      name: harmeme/intensity
+      version: epochs30_date1007
+      default_hp_metric: false
+  callbacks: 
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: checkpoints/harmeme/intensity
+        filename: epochs30_date1007
+        monitor: ${monitor_metric}
+        mode: max
+        save_top_k: 1
+        every_n_epochs: 1
+        save_last: True
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: ${monitor_metric}
+        patience: 5
+        mode: max
+
 trainers:
   bart:
     trainer:
-      accelerator: gpu
-      devices: 1
-      max_epochs: 30
-      accumulate_grad_batches: 1
-      enable_checkpointing: True
-      logger:
-        class_path: lightning.pytorch.loggers.TensorBoardLogger
-        init_args:
-          save_dir: lightning_logs/
-          name: harmeme/intensity
-          version: bart_epochs30_date1007
-          default_hp_metric: false
-      callbacks:
-        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
-          init_args:
-            dirpath: checkpoints/bart/harmeme/intensity
-            filename: bart_epochs30_date1007
-            monitor: val_auroc
-            mode: max
-            save_top_k: 1
-            every_n_epochs: 1
-            save_last: True
-        - class_path: lightning.pytorch.callbacks.EarlyStopping
-          init_args:
-            monitor: val_auroc
-            patience: 5
-            mode: max
+      <<: *defaults
+      monitor_metric: val_auroc
+
   flava:
     trainer:
-      accelerator: gpu
-      devices: 1
-      max_epochs: 30
-      accumulate_grad_batches: 1
-      enable_checkpointing: True
-      logger:
-        class_path: lightning.pytorch.loggers.TensorBoardLogger
-        init_args:
-          save_dir: lightning_logs/
-          name: harmeme/intensity
-          version: flava_epochs30_date1007
-          default_hp_metric: false
-      callbacks:
-        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
-          init_args:
-            dirpath: checkpoints/flava/harmeme/intensity
-            filename: flava_epochs30_date1007
-            monitor: intensity_validate_AUROC
-            mode: max
-            save_top_k: 1
-            every_n_epochs: 1
-            save_last: True
-        - class_path: lightning.pytorch.callbacks.EarlyStopping
-          init_args:
-            monitor: intensity_validate_AUROC
-            patience: 5
-            mode: max
+      <<: *defaults
+      monitor_metric: intensity_validate_AUROC
 
   lxmert:
     trainer:
-      accelerator: gpu
-      devices: 1
-      max_epochs: 30
-      accumulate_grad_batches: 1
-      enable_checkpointing: True
-      logger:
-        class_path: lightning.pytorch.loggers.TensorBoardLogger
-        init_args:
-          save_dir: lightning_logs/
-          name: harmeme/intensity
-          version: lxmert_epochs30_date1007
-          default_hp_metric: false
-      callbacks:
-        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
-          init_args:
-            dirpath: checkpoints/lxmert_features/harmeme/intensity
-            filename: lxmert_epochs30_date1007
-            monitor: intensity_validate_AUROC
-            mode: max
-            save_top_k: 1
-            every_n_epochs: 1
-            save_last: True
-        - class_path: lightning.pytorch.callbacks.EarlyStopping
-          init_args:
-            monitor: intensity_validate_AUROC
-            patience: 5
-            mode: max
+      <<: *defaults
+      monitor_metric: intensity_validate_AUROC
+
   t5:
-    trainer:
-      accelerator: gpu
-      devices: 1
-      max_epochs: 30
-      accumulate_grad_batches: 1
-      enable_checkpointing: True
-      logger:
-        class_path: lightning.pytorch.loggers.TensorBoardLogger
-        init_args:
-          save_dir: lightning_logs/
-          name: harmeme/intensity
-          version: t5_epochs30_date1007
-          default_hp_metric: false
-      callbacks:
-        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
-          init_args:
-            dirpath: checkpoints/t5/harmeme/intensity
-            filename: t5_epochs30_date1007
-            monitor: val_auroc
-            mode: max
-            save_top_k: 1
-            every_n_epochs: 1
-            save_last: True
-        - class_path: lightning.pytorch.callbacks.EarlyStopping
-          init_args:
-            monitor: val_auroc
-            patience: 5
-            mode: max
+    trainer:  
+      <<: *defaults
+      monitor_metric: val_auroc
 
   visualbert:
     trainer:
-      accelerator: gpu
-      devices: 1
-      max_epochs: 30
-      accumulate_grad_batches: 1
-      enable_checkpointing: True
-      logger:
-        class_path: lightning.pytorch.loggers.TensorBoardLogger
-        init_args:
-          save_dir: lightning_logs/
-          name: harmeme/intensity
-          version: visualbert_epochs30_date1007
-          default_hp_metric: false
-      callbacks: 
-        - class_path: lightning.pytorch.callbacks.ModelCheckpoint
-          init_args:
-            dirpath: checkpoints/visualbert_features/harmeme/intensity
-            filename: visualbert_epochs30_date1007
-            monitor: intensity_validate_AUROC
-            mode: max
-            save_top_k: 1
-            every_n_epochs: 1
-            save_last: True
-        - class_path: lightning.pytorch.callbacks.EarlyStopping
-          init_args:
-            monitor: intensity_validate_AUROC
-            patience: 5
-            mode: max
+      <<: *defaults
+      monitor_metric: intensity_validate_AUROC
