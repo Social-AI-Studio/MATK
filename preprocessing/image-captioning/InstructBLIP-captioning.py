@@ -9,6 +9,8 @@ import argparse
 from PIL import Image
 from lavis.models import load_model_and_preprocess
 
+PROMPT = "Write a short description for the image."
+
 def yield_partition(image_files, num_partitions, partition_idx):
     partitions = np.array_split(image_files, num_partitions)
     selected_partition = partitions[partition_idx]
@@ -39,7 +41,7 @@ def main(model_name, model_type, image_dir, output_dir, device, num_partitions, 
         image = vis_processors["eval"](image).unsqueeze(0).to(device)
 
         # generate caption
-        caption = model.generate({"image": image, "prompt": "Write a short description for the image."})
+        caption = model.generate({"image": image, "prompt": PROMPT})
 
         record = {
             "img": image_filename,

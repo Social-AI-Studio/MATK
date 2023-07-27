@@ -11,6 +11,16 @@ from transformers import AutoTokenizer
 from mplug_owl.modeling_mplug_owl import MplugOwlForConditionalGeneration
 from mplug_owl.processing_mplug_owl import MplugOwlImageProcessor, MplugOwlProcessor
 
+INSTRUCTIONS = "The following is a conversation between a curious human and AI assistant." \
+            "The assistant gives helpful, detailed, and polite answers to the user's questions."
+
+PROMPT = [
+    f'''{INSTRUCTIONS}
+    Human: <image>
+    Human: Write a short description for the image.
+    AI: '''
+]
+
 def yield_partition(image_files, num_partitions, partition_idx):
     partitions = np.array_split(image_files, num_partitions)
     selected_partition = partitions[partition_idx]
@@ -43,15 +53,6 @@ def main(pretrained_ckpt, image_dir, output_dir, num_partitions, partition_idx):
     model, tokenizer, processor = load_model(pretrained_ckpt)
 
     print("Performing model inference...")
-    instruction = "The following is a conversation between a curious human and AI assistant." \
-            "The assistant gives helpful, detailed, and polite answers to the user's questions."
-    prompt = "Write a short description for the image."
-    conv = [
-        f'''{instruction}
-        Human: <image>
-        Human: {prompt}
-        AI: '''
-    ]
 
     # generate kwargs (the same in transformers) can be passed in the do_generate()
     generate_kwargs = {
@@ -72,7 +73,7 @@ def main(pretrained_ckpt, image_dir, output_dir, num_partitions, partition_idx):
         images = [Image.open(os.path.join(image_dir, image_filename)).convert("RGB")]
         
         # preprocess the image
-        inputs = processor(text=conv, images=images, return_tensors='pt')
+        inputs = processor(text=PROMPT, images=images, return_tensors='pt')
         inputs = {k: v.bfloat16() if v.dtype == torch.float else v for k, v in inputs.items()}
         inputs = {k: v.to(model.device) for k, v in inputs.items()}
 
