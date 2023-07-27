@@ -156,3 +156,55 @@ mami:
         - objectification
         - violence
         - stereotype
+harmp:
+  intensity:
+    flava:
+      cls_dict:
+        intensity: 3
+    lxmert:
+      cls_dict:
+        intensity: 3
+    visualbert:
+      cls_dict:
+        intensity: 3
+    bart:
+      label2word:
+        0: "no"
+        1: "yes"
+        2: "yes"
+      labels:
+        - intensity
+    t5:
+      label2word:
+        0: "no"
+        1: "yes"
+        2: "yes"
+      labels:
+        - intensity
+
+  target:
+    flava:
+      cls_dict:
+        target: 4
+    lxmert:
+      cls_dict:
+        target: 4
+    visualbert:
+      cls_dict:
+        target: 4
+    bart:
+      label2word:
+        0: individual
+        1: organization
+        2: community
+        3: society
+      labels:
+        - target
+    t5:
+      label2word:
+        0: individual
+        1: organization
+        2: community
+        3: society
+      labels:
+        - target
