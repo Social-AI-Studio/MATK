@@ -27,8 +27,10 @@ def main(model_name, model_type, image_dir, output_dir, device, num_partitions, 
 
     # loads BLIP caption base model, with finetuned checkpoints on MSCOCO captioning dataset.
     # this also loads the associated image processors
+    print("Loading model...")
     model, vis_processors, _ = load_model_and_preprocess(name=model_name, model_type=model_type, is_eval=True, device=device)
 
+    print("Performing model inference...")
     for image_filename in tqdm.tqdm(image_files):
         image = Image.open(os.path.join(image_dir, image_filename))
         image = image.convert("RGB")
@@ -48,8 +50,6 @@ def main(model_name, model_type, image_dir, output_dir, device, num_partitions, 
         output_filepath = os.path.join(output_dir, f"{image_name}.json")
         with open(output_filepath, "w") as f:
             f.write(json.dumps(record))
-            
-        break
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Perform Image Captioning")

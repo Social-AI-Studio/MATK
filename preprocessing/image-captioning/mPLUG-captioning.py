@@ -61,6 +61,14 @@ def main(pretrained_ckpt, image_dir, output_dir, num_partitions, partition_idx):
     }
 
     for image_filename in tqdm.tqdm(image_files):
+
+        # Check if it exists
+        image_name, _ = os.path.splitext(image_filename)
+        output_filepath = os.path.join(output_dir, f"{image_name}.json")
+        if os.path.exists(output_filepath):
+            continue
+
+
         images = [Image.open(os.path.join(image_dir, image_filename)).convert("RGB")]
         
         # preprocess the image
@@ -82,8 +90,6 @@ def main(pretrained_ckpt, image_dir, output_dir, num_partitions, partition_idx):
         output_filepath = os.path.join(output_dir, f"{image_name}.json")
         with open(output_filepath, "w") as f:
             f.write(json.dumps(record))
-
-        break
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Perform Image Captioning")
