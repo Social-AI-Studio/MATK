@@ -1,7 +1,8 @@
 Meme Preprocessing
 ===================
 
-In this subfolder, we have implemented the popular techniques that helps with: 
+In this subfolder, we have implemented the popular techniques that helps with:
+
 #. Text removal using *image in-painting* techniques
 #. Visual features extraction using *image captioning* techniques
 
