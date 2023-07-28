@@ -34,6 +34,13 @@ def main(model_name, model_type, image_dir, output_dir, device, num_partitions, 
 
     print("Performing model inference...")
     for image_filename in tqdm.tqdm(image_files):
+
+        # Check if it exists
+        image_name, _ = os.path.splitext(image_filename)
+        output_filepath = os.path.join(output_dir, f"{image_name}.json")
+        if os.path.exists(output_filepath):
+            continue
+
         image = Image.open(os.path.join(image_dir, image_filename))
         image = image.convert("RGB")
         
@@ -48,8 +55,6 @@ def main(model_name, model_type, image_dir, output_dir, device, num_partitions, 
             "caption": caption[0]
         }
 
-        image_name, _ = os.path.splitext(image_filename)
-        output_filepath = os.path.join(output_dir, f"{image_name}.json")
         with open(output_filepath, "w") as f:
             f.write(json.dumps(record))
 

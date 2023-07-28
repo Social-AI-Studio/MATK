@@ -86,9 +86,7 @@ def main(pretrained_ckpt, image_dir, output_dir, num_partitions, partition_idx):
             "img": image_filename,
             "caption": sentence
         }
-    
-        image_name, _ = os.path.splitext(image_filename)
-        output_filepath = os.path.join(output_dir, f"{image_name}.json")
+
         with open(output_filepath, "w") as f:
             f.write(json.dumps(record))
 
