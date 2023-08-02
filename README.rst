@@ -96,7 +96,9 @@ Usage
 | Dataset              | Datamodule        | Usage              |
 +======================+===================+====================+
 | FasterRCNNDataModule | FasterRCNNDataset | LXMERT, VisualBERT |
++----------------------+-------------------+--------------------+
 | ImagesDataModule     | ImagesDataset     | FLAVA              |
++----------------------+-------------------+--------------------+
 | TextDataModule       | TextDataset       | BART, T5           |
 +----------------------+-------------------+--------------------+
 
