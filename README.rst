@@ -90,25 +90,27 @@ Supported Vision-Language Models
 | FLAVA      | `[arxiv] <https://arxiv.org/pdf/2112.04482.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/flava#transformers.FlavaModel>`_            | 2021 |
 +------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
 
-Model configuration
-~~~~~~~~~~~~~~~~~~~
+Usage
+~~~~~
++----------------------+-------------------+--------------------+
+| Dataset              | Datamodule        | Usage              |
++======================+===================+====================+
+| FasterRCNNDataModule | FasterRCNNDataset | LXMERT, VisualBERT |
+| ImagesDataModule     | ImagesDataset     | FLAVA              |
+| TextDataModule       | TextDataset       | BART, T5           |
++----------------------+-------------------+--------------------+
 
-#. Go to ``configs`` and pick the relevant dataset folder.
-#. Choose the YAML file relevant to the desired model.
-#. Look for the ``annotation_filepaths`` key and modify the values for ``train``, ``test``, ``predict``, ``validation`` based on your ``processed_dir``.
-#. If you wish to add any auxiliary information, modify the ``auxiliary_dict`` key.
-#. Modify the ``dirpath`` key under ``callbacks`` suitably.
-#. (Optional) If you wish to modify any of the training hyperparameters, look for the ``trainer`` key and modify the values as required.
+Make sure you have already run::
 
+   pip install -r requirements.txt
 
-Model Usage
-~~~~~~~~~~~
-Once you have created your model configuration, follow these steps to use the configured model:
+To train a model::
 
-#. Go to ``scripts`` and pick the relevant dataset folder.
-#. Pick ``test``, ``train``, or ``inference`` based on your requirement and locate the script for your model.
-    * If you are chosing inference, make sure the ``ckpt_path`` key is present in the YAML config. 
-#. Run the scripts relevant to your model. 
+   python main.py --model flava --dataset fhm --datamodule ImagesDataModule --action fit
+
+To test a model::
+
+   python main.py --model flava --dataset fhm --datamodule ImagesDataModule --action test
 
 
 MATK Overview
