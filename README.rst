@@ -181,7 +181,8 @@ HarMeme - target subtask
 | VisualBert | 0.705          | 0.551            | 0.9596          | 0.7025            |
 +------------+----------------+------------------+-----------------+-------------------+
 
-MAMI - subtask_a (misogyny detection)
+MAMI - misogyny detection subtask (subtask_a)
+
 +------------+--------------------+----------------------+---------------------+-----------------------+
 | Model      | misogynous_val_acc | misogynous_val_auroc | misogynous_test_acc | misogynous_test_auroc |
 +============+====================+======================+=====================+=======================+
