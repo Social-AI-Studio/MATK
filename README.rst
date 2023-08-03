@@ -92,6 +92,8 @@ Supported Vision-Language Models
 
 Usage
 ~~~~~
+The table below shows highlights the datamodules that should be used in conjunction with each model:
+
 +----------------------+-------------------+--------------------+----------------------+
 | Datamodule           | Dataset           | Usage              |  Name in toolkit     |
 +======================+===================+====================+======================+
