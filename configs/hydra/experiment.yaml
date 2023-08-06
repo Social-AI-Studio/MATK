@@ -5,10 +5,10 @@ job:
         - experiment
         - action
 run:
-  dir: experiments/${experiment_name}/${version}
+  dir: experiments/${experiment_name}
 sweep:
   dir: experiments
-  subdir: ${experiment_name}/${version}/${hydra.job.override_dirname}
+  subdir: ${experiment_name}/${hydra.job.override_dirname}
   
 job_logging:
   version: 1

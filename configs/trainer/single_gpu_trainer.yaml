@@ -4,17 +4,16 @@ accumulate_grad_batches: 1
 enable_checkpointing: True
 logger:
   _target_: lightning.pytorch.loggers.TensorBoardLogger
-  save_dir: ${hydra:runtime.output_dir}
-  name: ${experiment_name}
-  version: ${version}
+  save_dir: lightning_logs
+  name: ${experiment_name}/${hydra:job.override_dirname}
   default_hp_metric: false
 callbacks: 
   - _target_: lightning.pytorch.callbacks.ModelCheckpoint
     dirpath: ${hydra:runtime.output_dir}
-    filename: ${version}
     monitor: ${monitor_metric}
     mode: ${monitor_mode}
     save_top_k: ${save_top_ks}
+    save_weights_only: true
     every_n_epochs: 1
     save_last: True
   - _target_: lightning.pytorch.callbacks.EarlyStopping

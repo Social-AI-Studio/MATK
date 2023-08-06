@@ -34,6 +34,7 @@ experiment_name: fhm_finegrained_flava
 version: baseline
 
 # Job settings
-seed_everything: 1111
 hydra.verbose: True
+seed_everything: 1111
+overwrite: False
 action: ???
