@@ -1,0 +1,39 @@
+# @package _global_
+defaults:
+- /model: flava
+- /dataset: fhm_finegrained
+- /datamodule: image_datamodule
+- /trainer: debug_trainer
+- /metric:
+  - accuracy
+  - auroc
+- /hydra: experiment
+- _self_
+    
+# Mandatory Configuration Parameters
+model:
+  cls_dict: 
+    hate: 2
+
+dataset:
+  dataset_class: datasets.fhm_finegrained.ImageDataset
+  text_template: "{text}"
+  labels:
+  - hate
+
+datamodule:
+  tokenizer_class_or_path: facebook/flava-full
+  frcnn_class_or_path: None
+
+monitor_metric: validate_hate_auroc
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: fhm_finegrained_flava
+version: baseline
+
+# Job settings
+seed_everything: 1111
+hydra.verbose: True
+action: ???

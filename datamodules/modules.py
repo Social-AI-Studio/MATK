@@ -55,7 +55,6 @@ class FasterRCNNDataModule(pl.LightningDataModule):
 
         self.dataset_handler = DatasetHandler(dataset_handler)
         self.dataset_info = self.dataset_handler.get_dataset_info(self.dataset_name)
-        
         self.labels = self.dataset_handler.get_labels(self.dataset_name, task)
 
         self.collate_fn = get_collator(

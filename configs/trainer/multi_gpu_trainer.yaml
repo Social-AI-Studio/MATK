@@ -1,0 +1,24 @@
+accelerator: cuda
+devices: 2
+max_epochs: 30
+accumulate_grad_batches: 1
+enable_checkpointing: True
+logger:
+  _target_: lightning.pytorch.loggers.TensorBoardLogger
+  save_dir: ${hydra:runtime.output_dir}
+  name: ${experiment_name}
+  version: ${version}
+  default_hp_metric: false
+callbacks: 
+  - _target_: lightning.pytorch.callbacks.ModelCheckpoint
+    dirpath: ${hydra:runtime.output_dir}
+    filename: ${version}
+    monitor: ${monitor_metric}
+    mode: ${monitor_mode}
+    save_top_k: ${save_top_ks}
+    every_n_epochs: 1
+    save_last: True
+  - _target_: lightning.pytorch.callbacks.EarlyStopping
+    monitor: ${monitor_metric}
+    patience: 5
+    mode: ${monitor_mode}

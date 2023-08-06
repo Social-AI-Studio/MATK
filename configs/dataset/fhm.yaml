@@ -1,0 +1,20 @@
+annotation_filepaths:
+  train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl,
+  validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.jsonl,
+  test: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
+  predict: /mnt/sda/datasets/memes/fhm/annotations/test_unseen.jsonl,
+
+image_dirs:
+  train: /mnt/sda/datasets/memes/fhm/images/img,
+  validate: /mnt/sda/datasets/memes/fhm/images/img,
+  test: /mnt/sda/datasets/memes/fhm/images/img,
+  predict: /mnt/sda/datasets/memes/fhm/images/img,
+
+feats_dirs:
+  train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+  validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+  test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+  predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned,
+
+labels:
+  - label

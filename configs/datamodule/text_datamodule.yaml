@@ -1,0 +1,11 @@
+auxiliary_dicts: {}
+shuffle_train: true
+num_workers: 4
+batch_size: 32
+dataset_class: datamodules.datasets.fhm.TextDataset
+tokenizer_class_or_path: ${{ parameters.models_name[0] }}
+input_template: "question: is it hateful? context: {text}"
+output_template: "{label}</s>"
+label2word:
+  0: "no"
+  1: "yes"
