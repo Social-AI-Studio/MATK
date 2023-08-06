@@ -17,10 +17,14 @@ feats_dirs:
   predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
 
 auxiliary_dicts:
-  train: {}
-  validate: {}
-  test: {}
-  predict: {}
+  train: 
+    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
+  validate: 
+    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
+  test: 
+    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
+  predict: 
+    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
 
 dataset_class: ???
 text_template: ???

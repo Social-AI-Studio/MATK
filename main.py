@@ -38,12 +38,12 @@ def main(cfg) -> None:
     datamodule.setup(stage="fit")
     logging.info("Logging an example record of the dataset")
     logging.info(datamodule.train_dataloader().dataset[0])
-    print(datamodule.train_dataloader().dataset[0])
-    exit()
 
     if cfg.action == "fit":
+        logging.info("Training model...")
         trainer.fit(model, datamodule)
     elif cfg.action == "test":
+        logging.info("Evaluating model...")
         model = model_class.load_from_checkpoint(
             checkpoint_path=cfg.model_checkpoint,
         )

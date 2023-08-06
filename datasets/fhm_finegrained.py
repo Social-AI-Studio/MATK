@@ -1,5 +1,6 @@
 import os
 import tqdm
+import json
 import numpy as np
 import pickle as pkl
 
@@ -80,8 +81,8 @@ class FHMFGBase(Dataset):
     def _load_auxiliary(self, auxiliary_dicts: dict):
         data = {}
         for key, filepath in tqdm.tqdm(auxiliary_dicts.items(), desc="Loading auxiliary info"):
-            with open(filepath, "rb") as f:
-                data[key] = pkl.load(f)
+            with open(filepath, "r") as f:
+                data[key] = json.load(f)
 
         return data
 
@@ -106,18 +107,18 @@ class FasterRCNNDataset(FHMFGBase):
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
-        image_id = record['img']
-        id, _ = os.path.splitext(image_id)
+        image_filename = record['img']
+        image_id, _ = os.path.splitext(image_filename)
 
         # text formatting
         input_kwargs = {"text": record['text']}
         for key, data in self.auxiliary_data.items():
-            input_kwargs[key] = data[f"{id:05}"]
+            input_kwargs[key] = data[image_filename]
         text = self.text_template.format(**input_kwargs)
 
         item = {
-            'id': id,
-            'image_id': image_id,
+            'id': image_id,
+            'image_filename': image_filename,
             'text': text,
             'roi_features': self.feats_dict[id]['roi_features'],
             'normalized_boxes': self.feats_dict[id]['normalized_boxes']
@@ -146,7 +147,6 @@ class ImageDataset(FHMFGBase):
         record = self.annotations[idx]
 
         image_filename = record['img']
-        image_id, _ = os.path.splitext(image_filename)
 
         image_path = os.path.join(self.image_dir, image_filename)
         image = Image.open(image_path)
@@ -156,12 +156,13 @@ class ImageDataset(FHMFGBase):
         # text formatting
         input_kwargs = {"text": record['text']}
         for key, data in self.auxiliary_data.items():
-            input_kwargs[key] = data[f"{id:05}"]
+            input_kwargs[key] = data[image_filename]
+
         text = self.text_template.format(**input_kwargs)
 
         item = {
             'id': record['id'],
-            'image_id': image_id,
+            'image_filename': image_filename,
             'text': text,
             'image': np.array(image),
             'image_path': image_path
