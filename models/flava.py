@@ -13,13 +13,15 @@ class FlavaClassificationModel(pl.LightningModule):
         model_class_or_path: str,
         metrics_cfg: dict,
         cls_dict: dict,
+        lr: float
     ):
         super().__init__()
         self.save_hyperparameters()
 
         self.model = FlavaModel.from_pretrained(model_class_or_path)
-        self.cls_dict = cls_dict
         self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.cls_dict = cls_dict
+        self.lr = lr
 
         # set up classification
         self.mlps = nn.ModuleList([
@@ -130,5 +132,5 @@ class FlavaClassificationModel(pl.LightningModule):
         return results
 
     def configure_optimizers(self):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=2e-5)
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return [self.optimizer]

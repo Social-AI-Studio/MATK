@@ -3,7 +3,7 @@ defaults:
 - /model: flava
 - /dataset: fhm_finegrained
 - /datamodule: image_datamodule
-- /trainer: debug_trainer
+- /trainer: single_gpu_trainer
 - /metric:
   - accuracy
   - auroc
@@ -12,8 +12,9 @@ defaults:
     
 # Mandatory Configuration Parameters
 model:
-  cls_dict: 
+  cls_dict:
     hate: 2
+  lr: 2e-5
 
 dataset:
   dataset_class: datasets.fhm_finegrained.ImageDataset
