@@ -15,8 +15,6 @@ def get_class(class_path):
 
 @hydra.main(version_base=None, config_path="configs")
 def main(cfg) -> None:
-
-    print(OmegaConf.to_yaml(cfg))
     cfg = hydra.utils.instantiate(cfg)
 
     if "seed_everything" in cfg:

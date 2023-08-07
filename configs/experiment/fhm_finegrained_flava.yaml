@@ -14,7 +14,9 @@ defaults:
 model:
   cls_dict:
     hate: 2
-  lr: 2e-5
+  optimizers: 
+  - class_path: torch.optim.Adam
+    lr: 2e-5
 
 dataset:
   dataset_class: datasets.fhm_finegrained.ImageDataset
@@ -26,13 +28,12 @@ datamodule:
   tokenizer_class_or_path: facebook/flava-full
   frcnn_class_or_path: None
 
-monitor_metric: validate_hate_auroc
+monitor_metric: validate_hate_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: fhm_finegrained_flava
-version: baseline
+experiment_name: fhm_finegrained_flava_baseline
 
 # Job settings
 hydra.verbose: True
