@@ -33,7 +33,7 @@ monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: fhm_finegrained_flava_baseline
+experiment_name: baseline/fhm_finegrained_flava
 
 # Job settings
 hydra.verbose: True

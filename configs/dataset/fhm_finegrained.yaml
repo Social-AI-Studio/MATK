@@ -1,34 +1,26 @@
 annotation_filepaths:
-  train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json
-  validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json
-  test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json
-  predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl
+  train: /mnt/sda/mshee/datasets/memes/fhm_finegrained/annotations/train.json
+  validate: /mnt/sda/mshee/datasets/memes/fhm_finegrained/annotations/dev_seen.json
+  test: /mnt/sda/mshee/datasets/memes/fhm_finegrained/annotations/dev_seen.json
+  predict: /mnt/sda/mshee/datasets/memes/fhm_finegrained/annotations/test.jsonl
 
 image_dirs:
-  train: /mnt/sda/datasets/memes/fhm/images/img_clean
-  validate: /mnt/sda/datasets/memes/fhm/images/img_clean
-  test: /mnt/sda/datasets/memes/fhm/images/img_clean
-  predict: /mnt/sda/datasets/memes/fhm/images/img_clean
+  train: /mnt/sda/mshee/datasets/memes/fhm/images/img
+  validate: /mnt/sda/mshee/datasets/memes/fhm/images/img
+  test: /mnt/sda/mshee/datasets/memes/fhm/images/img
+  predict: /mnt/sda/mshee/datasets/memes/fhm/images/img
 
 feats_dirs:
-  train: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-  validate: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-  test: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-  predict: /mnt/sda/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+  train: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+  validate: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+  test: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+  predict: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
 
 auxiliary_dicts:
-  train: 
-    interpretation: /mnt/sda/mshee/MIME/interpretations/outputs/mPLUG.json
-    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
-  validate: 
-    interpretation: /mnt/sda/mshee/MIME/interpretations/outputs/mPLUG.json
-    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
-  test: 
-    interpretation: /mnt/sda/mshee/MIME/interpretations/outputs/mPLUG.json
-    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
-  predict: 
-    interpretation: /mnt/sda/mshee/MIME/interpretations/outputs/mPLUG.json
-    caption: /mnt/sda/datasets/memes/fhm/captions/mPLUG.json
+  train: {}
+  validate: {}
+  test: {}
+  predict: {}
 
 dataset_class: ???
 text_template: ???
