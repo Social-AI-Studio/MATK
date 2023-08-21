@@ -27,7 +27,7 @@ class MamiBase(Dataset):
         annotations = []
 
         # load the default annotations
-        data = utils._load_csv(annotation_filepath)
+        data = utils._load_jsonl(annotation_filepath)
 
         ## handle id stuff
         
@@ -40,7 +40,6 @@ class MamiBase(Dataset):
 
             if "misogynous" in self.labels:
                 record["misogynous"] = int(record.pop("misogynous"))
-                record["non_misogynous"] = 1- record["misogynous"]
             else:
                 record["shaming"] = int(record.pop("shaming"))
                 record["objectification"] = int(record.pop("objectification"))
@@ -96,32 +95,39 @@ class FasterRCNNDataset(MamiBase):
         return item
 
 
-class ImagesDataset(MamiBase):
+class ImageDataset(MamiBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
+        text_template: str,
         labels: List[str],
         image_dir: str
     ):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.image_dir = image_dir
+        self.text_template = text_template
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
         image_filename = record['img']
-        image_id, _ = os.path.splitext(image_filename)
 
         image_path = os.path.join(self.image_dir, image_filename)
         image = Image.open(image_path)
         image = image.resize((224, 224))
         image = image.convert("RGB") if image.mode != "RGB" else image
 
+        # text formatting
+        input_kwargs = {"text": record['text']}
+        for key, data in self.auxiliary_data.items():
+            input_kwargs[key] = data[image_filename]
+        text = self.text_template.format(**input_kwargs)
+
         item = {
             'id': record['id'],
-            'image_id': image_id,
-            'text': record['text'],
+            'image_filename': image_filename,
+            'text': text,
             'image': np.array(image),
             'image_path': image_path
         }

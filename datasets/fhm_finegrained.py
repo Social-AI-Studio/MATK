@@ -69,7 +69,7 @@ class FHMFGBase(Dataset):
                 record["hate"] = HATEFULNESS[record["gold_hate"][0]]
 
             if "gold_pc" in record:
-                record["pc"] = [PROTECTED_CATEGORY[x] for x in record["gold_pc"]]
+                record["category"] = [PROTECTED_CATEGORY[x] for x in record["gold_pc"]]
 
             if "gold_attack" in record:
                 record["attack"] = [PROTECTED_ATTACK[x] for x in record["gold_attack"]]

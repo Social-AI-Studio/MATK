@@ -1,30 +1,27 @@
 annotation_filepaths:
-  {
-    train: /mnt/sda/datasets/memes/mami/annotations/training.csv,
-    validate: /mnt/sda/datasets/memes/mami/annotations/trial.csv,
-    test: /mnt/sda/datasets/memes/mami/annotations/test.csv,
-    predict: /mnt/sda/datasets/memes/mami/annotations/test.csv,
-  }
-image_dirs:
-  {
-    train: /mnt/sda/datasets/memes/mami/images/img/train,
-    validate: /mnt/sda/datasets/memes/mami/images/img/validate,
-    test: /mnt/sda/datasets/memes/mami/images/img/test,
-    predict: /mnt/sda/datasets/memes/mami/images/img/test,
-  }
-feats_dirs:
-  {
-    train: /mnt/sda/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned,
-    validate: /mnt/sda/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned,
-    test: /mnt/sda/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned,
-    predict: /mnt/sda/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned,
-  }
+  train: /mnt/sda/mshee/datasets/memes/mami/annotations/train.jsonl
+  validate: /mnt/sda/mshee/datasets/memes/mami/annotations/trial.jsonl
+  test: /mnt/sda/mshee/datasets/memes/mami/annotations/test.jsonl
+  predict: /mnt/sda/mshee/datasets/memes/mami/annotations/test.jsonl
 
-labels:
-  subtask_a:
-    - misogynous
-  subtask_b:
-    - shaming
-    - objectification
-    - violence
-    - stereotype
+image_dirs:
+  train: /mnt/sda/mshee/datasets/memes/mami/images/img/train
+  validate: /mnt/sda/mshee/datasets/memes/mami/images/img/trial
+  test: /mnt/sda/mshee/datasets/memes/mami/images/img/test
+  predict: /mnt/sda/mshee/datasets/memes/mami/images/img/test
+
+feats_dirs:
+  train: /mnt/sda/mshee/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned
+  validate: /mnt/sda/mshee/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned
+  test: /mnt/sda/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
+  predict: /mnt/sda/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
+
+auxiliary_dicts:
+  train: {}
+  validate: {}
+  test: {}
+  predict: {}
+
+dataset_class: ???
+text_template: ???
+labels: ???

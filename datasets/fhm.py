@@ -9,8 +9,6 @@ from . import utils
 from typing import List
 from torch.utils.data import Dataset
 
-
-
 class FHMBase(Dataset):
     def __init__(
         self,
@@ -53,22 +51,29 @@ class FasterRCNNDataset(FHMBase):
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
+        text_template: str,
         labels: List[str],
         feats_dict: dict
     ):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.feats_dict = feats_dict
+        self.text_template = text_template
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
-        text = record['text']
-        image_id = record['img']
-        id, _ = os.path.splitext(image_id)
+        image_filename = record['img']
+        id, _ = os.path.splitext(image_filename)
+
+        # text formatting
+        input_kwargs = {"text": record['text']}
+        for key, data in self.auxiliary_data.items():
+            input_kwargs[key] = data[image_filename]
+        text = self.text_template.format(**input_kwargs)
 
         item = {
             'id': id,
-            'image_id': image_id,
+            'image_id': image_filename,
             'text': text,
             'roi_features': self.feats_dict[id]['roi_features'],
             'normalized_boxes': self.feats_dict[id]['normalized_boxes']
@@ -80,32 +85,40 @@ class FasterRCNNDataset(FHMBase):
         return item
 
 
-class ImagesDataset(FHMBase):
+class ImageDataset(FHMBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
+        text_template: str,
         labels: List[str],
         image_dir: str
     ):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.image_dir = image_dir
+        self.text_template = text_template
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
         image_filename = record['img']
-        image_id, _ = os.path.splitext(image_filename)
 
         image_path = os.path.join(self.image_dir, image_filename)
         image = Image.open(image_path)
         image = image.resize((224, 224))
         image = image.convert("RGB") if image.mode != "RGB" else image
 
+        # text formatting
+        input_kwargs = {"text": record['text']}
+        for key, data in self.auxiliary_data.items():
+            input_kwargs[key] = data[image_filename]
+
+        text = self.text_template.format(**input_kwargs)
+
         item = {
             'id': record['id'],
-            'image_id': image_id,
-            'text': record['text'],
+            'image_filename': image_filename,
+            'text': text,
             'image': np.array(image),
             'image_path': image_path
         }
