@@ -1,1 +1,0 @@
-python3 main.py fit --config configs/fhm/hate/lxmert_images.yaml --seed_everything 1111
