@@ -1,15 +1,14 @@
 import torch
 import importlib
-import logging
 import torch.nn as nn
 import torch.nn.functional as F
-import lightning.pytorch as pl
 
 from transformers import FlavaModel
 from .model_utils import setup_metrics
+from .base import BaseLightningModule
 
 
-class FlavaClassificationModel(pl.LightningModule):
+class FlavaClassificationModel(BaseLightningModule):
     def __init__(
         self,
         model_class_or_path: str,
@@ -36,39 +35,6 @@ class FlavaClassificationModel(pl.LightningModule):
         setup_metrics(self, cls_dict, metrics_cfg, "validate")
         setup_metrics(self, cls_dict, metrics_cfg, "test")
 
-    def compute_metrics_step(self, cls_name, stage, loss, targets, preds):
-        self.log(f'{stage}_{cls_name}_loss', loss, prog_bar=True)
-
-        for metric_name in self.metric_names:
-            metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
-            metric(preds, targets)
-
-    def compute_metrics_epoch(self, cls_name, stage):
-        msg = "Epoch Results:\n"
-
-        avg_metric_score = 0
-        for metric_name in self.metric_names:
-            metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
-            metric_score = metric.compute()
-            avg_metric_score += metric_score
-
-            self.log(f'{stage}_{cls_name}_{metric_name}', metric_score,
-                     prog_bar=True, sync_dist=True)
-            
-            msg += f"\t{stage}_{cls_name}_{metric_name}: {metric_score}\n"
-
-            # reset the metrics
-            metric.reset()
-
-
-        self.log(f'{stage}_{cls_name}_average', avg_metric_score,
-                    prog_bar=True, sync_dist=True)
-        
-        avg_metric_score = avg_metric_score / len(self.metric_names)
-        msg += f"\t{stage}_{cls_name}_average: {avg_metric_score}\n"
-
-        logging.info(msg)
-
 
     def training_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -92,10 +58,6 @@ class FlavaClassificationModel(pl.LightningModule):
 
         return total_loss / len(self.cls_dict)
 
-    def on_training_epoch_end(self):
-        for cls_name in self.cls_dict.keys():
-            self.compute_metrics_epoch(cls_name, "train")
-
     def validation_step(self, batch, batch_idx):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
@@ -115,11 +77,10 @@ class FlavaClassificationModel(pl.LightningModule):
             self.compute_metrics_step(
                 cls_name, "validate", loss, targets, preds)
 
-            total_loss += loss
-
         return total_loss / len(self.cls_dict)
 
     def on_validation_epoch_end(self):
+        print("TEST2")
         for cls_name in self.cls_dict.keys():
             self.compute_metrics_epoch(cls_name, "validate")
 
@@ -142,13 +103,7 @@ class FlavaClassificationModel(pl.LightningModule):
             self.compute_metrics_step(
                 cls_name, "test", loss, targets, preds)
 
-            total_loss += loss
-
         return total_loss / len(self.cls_dict)
-
-    def on_test_epoch_end(self):
-        for cls_name in self.cls_dict.keys():
-            self.compute_metrics_epoch(cls_name, "test")
 
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -159,13 +114,11 @@ class FlavaClassificationModel(pl.LightningModule):
 
         results = {}
         for idx, cls_name in enumerate(self.cls_dict.keys()):
-            label_preds = self.mlps[idx](
-                model_outputs.multimodal_embeddings[:, 0])
+            preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
             
-            results[cls_name] = label_preds
-
-        if "labels" in batch:
-            results['labels'] = batch["labels"]
+            results["img"] = batch["image_filename"].tolist()
+            results[f"{cls_name}_preds"] = torch.argmax(preds, dim=1).tolist()
+            results[f"{cls_name}_labels"] = batch[cls_name].tolist()
 
         return results
 

@@ -10,55 +10,40 @@ from transformers import VisualBertModel
 from datamodules.collators.gqa_lxmert.modeling_frcnn import GeneralizedRCNN
 from datamodules.collators.gqa_lxmert.lxmert_utils import Config
 
+from .model_utils import setup_metrics
+from .base import BaseLightningModule
 
-class VisualBertClassificationModel(pl.LightningModule):
-    def __init__(self, 
-                 model_class_or_path, 
-                 cls_dict, 
-                 metrics: list,
-                 frcnn_class_or_path=None
-                 ):
+class VisualBertClassificationModel(BaseLightningModule):
+    def __init__(
+            self, 
+            model_class_or_path: str,
+            frcnn_class_or_path: str,
+            metrics_cfg: dict,
+            cls_dict: dict,
+            optimizers: list
+        ):
         super().__init__()
         self.save_hyperparameters()
+
         self.model = VisualBertModel.from_pretrained(model_class_or_path)
+        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.cls_dict = cls_dict
+        self.optimizers = optimizers
 
         if frcnn_class_or_path:
-            self.frcnn_cfg = Config.from_pretrained("unc-nlp/frcnn-vg-finetuned")
-            self.frcnn = GeneralizedRCNN.from_pretrained("unc-nlp/frcnn-vg-finetuned", config=self.frcnn_cfg)
+            self.frcnn_cfg = Config.from_pretrained(frcnn_class_or_path)
+            self.frcnn = GeneralizedRCNN.from_pretrained(frcnn_class_or_path, config=self.frcnn_cfg)
+
         # set up classification
         self.mlps = nn.ModuleList([
             nn.Linear(self.model.config.hidden_size, value)
             for value in cls_dict.values()
         ])
-
+        
         # set up metric
-        self.cls_dict = cls_dict
-        
-        # TEMP HACK
-        package_name = "torchmetrics"
-        module = importlib.import_module(package_name)
-        self.metric_dict = metrics # metric details : metric class
-        
-        for stage in ["train", "validate", "test"]:
-            for key, value in cls_dict.items():
-                for metric_details in self.metric_dict:
-                    metric_class = getattr(module, metric_details['name'])
-                    args = metric_details['args']
-                    args["num_classes"] = value
-                    setattr(self, f"{key}_{stage}_{metric_details['name']}", metric_class(**args))
-
-
-    def compute_metrics_and_logs(self, cls_name, stage, loss, targets, preds):
-        for metric_details in self.metric_dict:
-            metric_name = metric_details['name']
-            metric = getattr(self, f"{cls_name}_{stage}_{metric_name}")
-
-            if metric_name == 'Accuracy':
-                metric(preds.argmax(dim=-1), targets)
-            elif metric_name == 'AUROC':
-                metric(preds, targets)
-            self.log(f'{cls_name}_{stage}_{metric_name}', metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
-        self.log(f'{cls_name}_{stage}_loss', loss, prog_bar=True)
+        setup_metrics(self, cls_dict, metrics_cfg, "train")
+        setup_metrics(self, cls_dict, metrics_cfg, "validate")
+        setup_metrics(self, cls_dict, metrics_cfg, "test")
         
     def training_step(self, batch, batch_idx):
 
@@ -68,7 +53,6 @@ class VisualBertClassificationModel(pl.LightningModule):
 
         if "visual_feats" in batch and "visual_pos" in batch:
             visual_feats = batch['visual_feats']
-            visual_pos = batch['visual_pos']
         else:
             # Run Faster-RCNN
             images = batch['images']
@@ -85,7 +69,6 @@ class VisualBertClassificationModel(pl.LightningModule):
             )
 
             visual_feats = visual_dict['visual_feats']
-            visual_pos = visual_dict['visual_pos']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -95,21 +78,19 @@ class VisualBertClassificationModel(pl.LightningModule):
             token_type_ids=token_type_ids,
         )
 
-        loss = 0
+        total_loss = 0
 
-        label_list = []
-        for k,v in self.cls_dict.items():
-            label_list.append(k)
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            targets = batch[cls_name]
+            
+            preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
+            loss = F.cross_entropy(preds, targets)
+            total_loss += loss
 
-        for i in range(len(self.cls_dict)):
-            label_targets = batch[label_list[i]]
-            label_preds = self.mlps[i](outputs.last_hidden_state[:, 0, :])
-            label_loss = F.cross_entropy(label_preds, label_targets)
-            loss += label_loss
-            self.compute_metrics_and_logs(label_list[i], "train", label_loss, label_targets, label_preds)
+            self.compute_metrics_step(
+                cls_name, "train", loss, targets, preds)
 
-        return loss
-    
+        return total_loss
     
     def validation_step(self, batch, batch_idx):
 
@@ -119,7 +100,6 @@ class VisualBertClassificationModel(pl.LightningModule):
 
         if "visual_feats" in batch and "visual_pos" in batch:
             visual_feats = batch['visual_feats']
-            visual_pos = batch['visual_pos']
         else:
             # Run Faster-RCNN
             images = batch['images']
@@ -136,7 +116,6 @@ class VisualBertClassificationModel(pl.LightningModule):
             )
 
             visual_feats = visual_dict['visual_feats']
-            visual_pos = visual_dict['visual_pos']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -146,27 +125,44 @@ class VisualBertClassificationModel(pl.LightningModule):
             token_type_ids=token_type_ids,
         )
 
-        loss = 0
+        total_loss = 0
 
-        label_list = []
-        for k,v in self.cls_dict.items():
-            label_list.append(k)
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            targets = batch[cls_name]
+            preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
 
-        for i in range(len(self.cls_dict)):
-            label_targets = batch[label_list[i]]
-            label_preds = self.mlps[i](outputs.last_hidden_state[:, 0, :])
-            label_loss = F.cross_entropy(label_preds, label_targets)
-            loss += label_loss
-            self.compute_metrics_and_logs(label_list[i], "validate", label_loss, label_targets, label_preds)
+            loss = F.cross_entropy(preds, targets)
+            total_loss += loss
+            
+            self.compute_metrics_step(
+                cls_name, "validate", loss, targets, preds)
 
-        return loss
+        return total_loss / len(self.cls_dict)
     
     def test_step(self, batch, batch_idx):
 
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
-        visual_feats = batch['visual_feats']
         token_type_ids = batch['token_type_ids']
+
+        if "visual_feats" in batch and "visual_pos" in batch:
+            visual_feats = batch['visual_feats']
+        else:
+            # Run Faster-RCNN
+            images = batch['images']
+            sizes = batch['sizes']
+            scales_yx = batch['scales_yx']
+            
+            visual_dict = self.frcnn(
+                images,
+                sizes,
+                scales_yx=scales_yx,
+                padding="max_detections",
+                max_detections=self.frcnn_cfg.max_detections,
+                return_tensors="pt",
+            )
+
+            visual_feats = visual_dict['visual_feats']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -176,18 +172,17 @@ class VisualBertClassificationModel(pl.LightningModule):
             token_type_ids=token_type_ids,
         )
 
-        loss = 0
+        total_loss = 0
 
-        label_list = []
-        for k,v in self.cls_dict.items():
-            label_list.append(k)
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            targets = batch[cls_name]
+            preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
 
-        for i in range(len(self.cls_dict)):
-            label_targets = batch[label_list[i]]
-            label_preds = self.mlps[i](outputs.last_hidden_state[:, 0, :])
-            label_loss = F.cross_entropy(label_preds, label_targets)
-            loss += label_loss
-            self.compute_metrics_and_logs(label_list[i], "test", label_loss, label_targets, label_preds)
+            loss = F.cross_entropy(preds, targets)
+            total_loss += loss
+
+            self.compute_metrics_step(
+                cls_name, "test", loss, targets, preds)
         
         return loss
 
@@ -195,35 +190,56 @@ class VisualBertClassificationModel(pl.LightningModule):
 
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
-        visual_feats = batch['visual_feats']
-        visual_pos = batch['visual_pos']
         token_type_ids = batch['token_type_ids']
+
+        if "visual_feats" in batch and "visual_pos" in batch:
+            visual_feats = batch['visual_feats']
+        else:
+            # Run Faster-RCNN
+            images = batch['images']
+            sizes = batch['sizes']
+            scales_yx = batch['scales_yx']
+            
+            visual_dict = self.frcnn(
+                images,
+                sizes,
+                scales_yx=scales_yx,
+                padding="max_detections",
+                max_detections=self.frcnn_cfg.max_detections,
+                return_tensors="pt",
+            )
+
+            visual_feats = visual_dict['visual_feats']
 
         outputs = self.model(
             input_ids=input_ids,
             attention_mask=attention_mask,
             visual_embeds=visual_feats,
-            visual_attention_mask=torch.ones(visual_feats.shape[:-1]),
+            visual_attention_mask=torch.ones(visual_feats.shape[:-1]).to('cuda'),
             token_type_ids=token_type_ids,
         )
 
-        loss = 0
-
-        label_list = []
-        for k,v in self.cls_dict.items():
-            label_list.append(k)
-
         results = {}
-        for i in range(len(self.cls_dict)):
-            label_targets = batch[label_list[i]]
-            label_preds = self.mlps[i](outputs.last_hidden_state[:, 0, :])
-            results[label_list[i]] = label_preds
-
-        if "labels" in batch:
-            results['labels'] = batch["labels"]
+        for idx, cls_name in enumerate(self.cls_dict.keys()):
+            preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
+            
+            results["img"] = batch["image_filename"].tolist()
+            results[f"{cls_name}_preds"] = torch.argmax(preds, dim=1).tolist()
+            results[f"{cls_name}_labels"] = batch[cls_name].tolist()
 
         return results
-    
+
     def configure_optimizers(self):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=2e-5)
-        return [self.optimizer]
+        opts = []
+        for opt_cfg in self.optimizers:
+            class_name = opt_cfg.pop("class_path")
+            
+            package_name = ".".join(class_name.split(".")[:-1])
+            package = importlib.import_module(package_name)
+            
+            class_name = class_name.split(".")[-1]
+            cls = getattr(package, class_name)
+
+            opts.append(cls(self.parameters(), **opt_cfg))
+
+        return opts

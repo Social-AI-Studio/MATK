@@ -1,0 +1,8 @@
+shuffle_train: true
+num_workers: 4
+batch_size: 32
+dataset_class: datamodules.datasets.fhm.TextClassificationDataset
+tokenizer_class_or_path: ???
+input_template: ???
+output_template: ???
+label2word: ???

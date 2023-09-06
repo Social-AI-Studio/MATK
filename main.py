@@ -1,3 +1,5 @@
+import os
+import json
 import logging
 import hydra
 import importlib
@@ -32,6 +34,12 @@ def main(cfg) -> None:
     datamodule = datamodule_class(dataset_cfg=cfg.dataset, **cfg.datamodule)
     trainer = Trainer(**cfg.trainer)
 
+    ## Count number of parameters
+    total_parameters = sum(p.numel() for p in model.parameters())
+    trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"[Model] Total Parameters: {total_parameters}")
+    print(f"[Model] Trainable Parameters: {trainable_parameters}")
+
     ## Sanity Checks
     datamodule.setup(stage="fit")
     logging.info("Logging an example record of the dataset")
@@ -40,12 +48,43 @@ def main(cfg) -> None:
     if cfg.action == "fit":
         logging.info("Training model...")
         trainer.fit(model, datamodule)
+
+        logging.info("Evaluating model - validate...")
+        trainer.validate(model, datamodule)
+
+        logging.info("Evaluating model - test...")
+        trainer.test(model, datamodule, ckpt_path='best')
     elif cfg.action == "test":
         logging.info("Evaluating model...")
         model = model_class.load_from_checkpoint(
             checkpoint_path=cfg.model_checkpoint,
         )
         trainer.test(model, datamodule)
+    elif cfg.action == "predict":
+        logging.info("Performing model inference...")
+        model = model_class.load_from_checkpoint(
+            checkpoint_path=cfg.model_checkpoint,
+        )
+        # trainer.test(model, datamodule)
+        predictions = trainer.predict(model, datamodule)
+
+
+        img_filenames = []
+        hate_preds = []
+        hate_labels = []
+        for d in predictions:
+            hate_preds += d['hate_preds']
+            hate_labels += d['hate_labels']
+            img_filenames += d['img']
+        
+        # print(os.getcwd())
+        result_filepath = os.path.join(os.getcwd(), f"{cfg.experiment_name}.json")
+        with open(result_filepath, "w+") as f:
+            json.dump({
+                "img": img_filenames,
+                "hate_preds": hate_preds,
+                "hate_labels": hate_labels
+            }, f)
     else:
         raise Exception(f"Requested action {cfg.action} unimplemented")
 

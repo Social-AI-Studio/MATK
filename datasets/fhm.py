@@ -46,24 +46,42 @@ class FHMBase(Dataset):
         return len(self.annotations)
 
 
-class FasterRCNNDataset(FHMBase):
+class FRCNNDataset(FHMBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        text_template: str,
         labels: List[str],
-        feats_dict: dict
+        text_template: str,
+        image_dir: str,
+        feats_dir: dict
     ):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
-        self.feats_dict = feats_dict
         self.text_template = text_template
+        self.image_dir = image_dir
+        self.feats_dict = self._load_feats(feats_dir) if feats_dir != None else None
+
+    def _load_feats(self, feats_dir: str):
+        data = {}
+        for record in tqdm.tqdm(self.annotations, desc="Loading FRCNN features"):
+            image_filename = record['img']
+
+            filename, _ = os.path.splitext(image_filename)
+            filepath = os.path.join(feats_dir, f"{filename}.pkl")
+            with open(filepath, "rb") as f:
+                data[image_filename] = pkl.load(f)
+
+        return data
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
         image_filename = record['img']
         id, _ = os.path.splitext(image_filename)
+
+        image_path = os.path.join(self.image_dir, image_filename)
+        image = Image.open(image_path)
+        image = image.convert("RGB") if image.mode != "RGB" else image
 
         # text formatting
         input_kwargs = {"text": record['text']}
@@ -74,10 +92,14 @@ class FasterRCNNDataset(FHMBase):
         item = {
             'id': id,
             'image_id': image_filename,
-            'text': text,
-            'roi_features': self.feats_dict[id]['roi_features'],
-            'normalized_boxes': self.feats_dict[id]['normalized_boxes']
+            'image': np.array(image),
+            'image_path': image_path,
+            'text': text
         }
+
+        if self.feats_dict:
+            item['roi_features'] = self.feats_dict[image_filename]['roi_features']
+            item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
 
         for l in self.labels:
             item[l] = record[l]
@@ -90,8 +112,8 @@ class ImageDataset(FHMBase):
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        text_template: str,
         labels: List[str],
+        text_template: str,
         image_dir: str
     ):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
@@ -134,14 +156,14 @@ class TextDataset(FHMBase):
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
+        text_template: str,
+        label_template: str,
         labels: List[str],
-        input_template: str,
-        output_template: str,
         label2word: dict
     ):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
-        self.input_template = input_template
-        self.output_template = output_template
+        self.text_template = text_template
+        self.label_template = label_template
         self.label2word = label2word
 
     def __getitem__(self, idx: int):
@@ -151,18 +173,17 @@ class TextDataset(FHMBase):
         input_kwargs = {"text": record['text']}
         for key, data in self.auxiliary_data.items():
             input_kwargs[key] = data[f"{id:05}"]
-
-        image_id, _ = os.path.splitext(record['img'])
+        text = self.text_template.format(**input_kwargs)
 
         item = {
             'id': record["id"],
-            'image_id': image_id,
-            'text': self.input_template.format(**input_kwargs)
+            'image_id': record['img'],
+            'text': text
         }
 
         for l in self.labels:
             label = record[l]
-            item[l] = self.output_template.format(label=self.label2word[label])
+            item[l] = self.label_template.format(label=self.label2word[label])
 
         return item
 

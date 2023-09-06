@@ -1,0 +1,5 @@
+class_path: models.visualbert.VisualBertClassificationModel
+model_class_or_path: uclanlp/visualbert-vqa-coco-pre
+frcnn_class_or_path: unc-nlp/frcnn-vg-finetuned
+cls_dict: ???
+optimizers: ???
