@@ -43,10 +43,7 @@ def frcnn_collate_fn(
         labels=labels
     )
 
-    images = []
-    for item in batch:
-        images.append(item["image_path"])
-
+    images = [item['image_path'] for item in batch]
     images, sizes, scales_yx = image_preprocess(images)
 
     inputs["images"] = images
