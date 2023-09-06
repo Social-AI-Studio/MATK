@@ -10,17 +10,17 @@ image_dirs:
   test: /mnt/sda/mshee/datasets/memes/harmeme/images
   predict: /mnt/sda/mshee/datasets/memes/harmeme/images
 
-feats_dirs:
-  train: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-  validate: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-  test: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-  predict: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-
 auxiliary_dicts:
   train: {}
   validate: {}
   test: {}
   predict: {}
+
+feats_dir:
+  train: null
+  validate: null
+  test: null
+  predict: null
 
 dataset_class: ???
 text_template: ???

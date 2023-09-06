@@ -51,8 +51,6 @@ class FRCNNDataModule(pl.LightningDataModule):
         )
         
     def setup(self, stage: Optional[str] = None):
-        print(self.dataset_cfg.feats_dir.train)
-
         if stage == "fit" or stage is None:
             self.train = self.dataset_cls(
                 image_dir=self.dataset_cfg.image_dirs.train,

@@ -1,9 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import lightning.pytorch as pl
-from lightning.pytorch.callbacks import Callback
-import torchmetrics
 import importlib
 from transformers import VisualBertModel
 
@@ -18,6 +15,7 @@ class VisualBertClassificationModel(BaseLightningModule):
             self, 
             model_class_or_path: str,
             frcnn_class_or_path: str,
+            frcnn_trainable: bool,
             metrics_cfg: dict,
             cls_dict: dict,
             optimizers: list
@@ -33,6 +31,10 @@ class VisualBertClassificationModel(BaseLightningModule):
         if frcnn_class_or_path:
             self.frcnn_cfg = Config.from_pretrained(frcnn_class_or_path)
             self.frcnn = GeneralizedRCNN.from_pretrained(frcnn_class_or_path, config=self.frcnn_cfg)
+
+            if not frcnn_trainable:
+                for param in self.frcnn.parameters():
+                    param.requires_grad = False
 
         # set up classification
         self.mlps = nn.ModuleList([
@@ -58,7 +60,7 @@ class VisualBertClassificationModel(BaseLightningModule):
             images = batch['images']
             sizes = batch['sizes']
             scales_yx = batch['scales_yx']
-            
+
             visual_dict = self.frcnn(
                 images,
                 sizes,
@@ -66,9 +68,10 @@ class VisualBertClassificationModel(BaseLightningModule):
                 padding="max_detections",
                 max_detections=self.frcnn_cfg.max_detections,
                 return_tensors="pt",
+                location=images.device
             )
 
-            visual_feats = visual_dict['visual_feats']
+            visual_feats = visual_dict['roi_features']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -113,9 +116,10 @@ class VisualBertClassificationModel(BaseLightningModule):
                 padding="max_detections",
                 max_detections=self.frcnn_cfg.max_detections,
                 return_tensors="pt",
+                location=images.device
             )
-
-            visual_feats = visual_dict['visual_feats']
+            
+            visual_feats = visual_dict['roi_features']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -160,9 +164,10 @@ class VisualBertClassificationModel(BaseLightningModule):
                 padding="max_detections",
                 max_detections=self.frcnn_cfg.max_detections,
                 return_tensors="pt",
+                location=images.device
             )
 
-            visual_feats = visual_dict['visual_feats']
+            visual_feats = visual_dict['roi_features']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -207,9 +212,10 @@ class VisualBertClassificationModel(BaseLightningModule):
                 padding="max_detections",
                 max_detections=self.frcnn_cfg.max_detections,
                 return_tensors="pt",
+                location=images.device
             )
 
-            visual_feats = visual_dict['visual_feats']
+            visual_feats = visual_dict['roi_features']
 
         outputs = self.model(
             input_ids=input_ids,

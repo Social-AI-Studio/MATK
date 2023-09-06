@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
   - /model: visualbert
-  - /dataset: fhm
+  - /dataset: mami
   - /datamodule: frcnn_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
@@ -13,33 +13,33 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    label: 2
+    misogynous: 2
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
   frcnn_class_or_path: null
 
 dataset:
-  dataset_class: datasets.fhm.FRCNNDataset
+  dataset_class: datasets.mami.FRCNNDataset
   text_template: "{text}"
   labels:
-    - label
+    - misogynous
   feats_dir:
-    train: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-    validate: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-    test: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-    predict: /mnt/sda/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+    train: /mnt/sda/mshee/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned
+    validate: /mnt/sda/mshee/datasets/memes/mami/features/trial/unc-nlp/frcnn-vg-finetuned
+    test: /mnt/sda/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
+    predict: /mnt/sda/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
 
 datamodule:
   tokenizer_class_or_path: bert-base-uncased
   frcnn_class_or_path: null
 
-monitor_metric: validate_label_average
+monitor_metric: validate_misogynous_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/fhm/visualbert
+experiment_name: baseline/mami/visualbert
 
 # Job settings
 hydra.verbose: True

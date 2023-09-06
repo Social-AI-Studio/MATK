@@ -10,17 +10,17 @@ image_dirs:
   test: /mnt/sda/mshee/datasets/memes/mami/images/img/test
   predict: /mnt/sda/mshee/datasets/memes/mami/images/img/test
 
-feats_dirs:
-  train: /mnt/sda/mshee/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned
-  validate: /mnt/sda/mshee/datasets/memes/mami/features/validate/unc-nlp/frcnn-vg-finetuned
-  test: /mnt/sda/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
-  predict: /mnt/sda/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
-
 auxiliary_dicts:
   train: {}
   validate: {}
   test: {}
   predict: {}
+
+feats_dir:
+  train: null
+  validate: null
+  test: null
+  predict: null
 
 dataset_class: ???
 text_template: ???
