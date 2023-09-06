@@ -1,0 +1,47 @@
+# @package _global_
+defaults:
+  - /model: t5_classification
+  - /dataset: harmeme
+  - /datamodule: text_classification_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+      - accuracy
+      - auroc
+  - /hydra: experiment
+  - _self_
+
+# Mandatory Configuration Parameters
+model:
+  cls_dict:
+    label: 2
+  optimizers:
+    - class_path: torch.optim.Adam
+      lr: 2e-5
+
+dataset:
+  dataset_class: datasets.fhm.TextClassificationDataset
+  tokenizer_class_or_path: t5-large
+  text_template: "{text}"
+  label_template: "{label}"
+  label2word:
+    0: "no"
+    1: "yes"
+  labels:
+    - label
+
+datamodule:
+  tokenizer_class_or_path: facebook/flava-full
+  frcnn_class_or_path: None
+
+monitor_metric: validate_label_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/fhm/t5-classification
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???

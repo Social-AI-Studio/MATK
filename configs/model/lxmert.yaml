@@ -1,0 +1,6 @@
+class_path: models.lxmert.LxmertClassificationModel
+model_class_or_path: unc-nlp/lxmert-base-uncased
+frcnn_trainable: false
+frcnn_class_or_path: ???
+cls_dict: ???
+optimizers: ???
