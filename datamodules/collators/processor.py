@@ -1,6 +1,6 @@
 import torch
 
-def image_collate_fn(batch, processor, labels):    
+def processor_collate_fn(batch, processor, labels):    
     texts, images = [], []
     for item in batch:
         texts.append(item["text"])

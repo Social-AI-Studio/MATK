@@ -2,7 +2,7 @@
 defaults:
 - /model: flava
 - /dataset: harmeme
-- /datamodule: image_datamodule
+- /datamodule: processor_datamodule
 - /trainer: single_gpu_trainer
 - /metric:
   - accuracy
@@ -25,8 +25,7 @@ dataset:
   - intensity
 
 datamodule:
-  tokenizer_class_or_path: facebook/flava-full
-  frcnn_class_or_path: None
+  processor_class_or_path: facebook/flava-full
 
 monitor_metric: validate_intensity_average
 monitor_mode: max

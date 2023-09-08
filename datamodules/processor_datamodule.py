@@ -1,21 +1,18 @@
 from torch.utils.data import DataLoader
 
-from datamodules.collators import get_collator
-
 from typing import Optional
 from functools import partial
-from .collators.flava import image_collate_fn
+from .collators.processor import processor_collate_fn
 from .utils import import_class
-from transformers import FlavaProcessor, AutoTokenizer
+from transformers import AutoProcessor
 
 import lightning.pytorch as pl
 
-class ImagesDataModule(pl.LightningDataModule):
+class ProcessorDataModule(pl.LightningDataModule):
     def __init__(
         self,
         dataset_cfg: str,
-        tokenizer_class_or_path: str,
-        frcnn_class_or_path: str,
+        processor_class_or_path: str,
         batch_size: int,
         shuffle_train: bool,
         num_workers: int
@@ -26,15 +23,10 @@ class ImagesDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
         self.num_workers= num_workers
-
         self.dataset_cls = import_class(dataset_cfg.dataset_class)
-        self.collate_fn = get_collator(
-            tokenizer_class_or_path,
-            labels=dataset_cfg.labels, 
-            frcnn_class_or_path=frcnn_class_or_path
-        )
-        processor = FlavaProcessor.from_pretrained(tokenizer_class_or_path)
-        return partial(image_collate_fn, processor=processor, labels=dataset_cfg.labels)
+
+        processor = AutoProcessor.from_pretrained(processor_class_or_path)
+        self.collate_fn = partial(processor_collate_fn, processor=processor, labels=dataset_cfg.labels)
         
     def setup(self, stage: Optional[str] = None):
 

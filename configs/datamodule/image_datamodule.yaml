@@ -1,6 +1,0 @@
-class_path: datamodules.image_datamodule.ImagesDataModule
-tokenizer_class_or_path: ???
-frcnn_class_or_path: ???
-num_workers: 4
-batch_size: 32
-shuffle_train: true
