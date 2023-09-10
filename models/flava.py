@@ -21,7 +21,7 @@ class FlavaClassificationModel(BaseLightningModule):
 
         self.model = FlavaModel.from_pretrained(model_class_or_path)
         self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
-        self.cls_dict = cls_dict
+        self.classes = list(cls_dict.keys())
         self.optimizers = optimizers
 
         # set up classification
@@ -45,7 +45,7 @@ class FlavaClassificationModel(BaseLightningModule):
 
         total_loss = 0.0
         
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
 
@@ -56,7 +56,7 @@ class FlavaClassificationModel(BaseLightningModule):
                 cls_name, "train", loss, targets, preds)
 
 
-        return total_loss / len(self.cls_dict)
+        return total_loss / len(self.classes)
 
     def validation_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -67,7 +67,7 @@ class FlavaClassificationModel(BaseLightningModule):
 
         total_loss = 0.0
 
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
 
@@ -77,12 +77,7 @@ class FlavaClassificationModel(BaseLightningModule):
             self.compute_metrics_step(
                 cls_name, "validate", loss, targets, preds)
 
-        return total_loss / len(self.cls_dict)
-
-    def on_validation_epoch_end(self):
-        print("TEST2")
-        for cls_name in self.cls_dict.keys():
-            self.compute_metrics_epoch(cls_name, "validate")
+        return total_loss / len(self.classes)
 
     def test_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -93,7 +88,7 @@ class FlavaClassificationModel(BaseLightningModule):
 
         total_loss = 0.0
 
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
 
@@ -103,7 +98,7 @@ class FlavaClassificationModel(BaseLightningModule):
             self.compute_metrics_step(
                 cls_name, "test", loss, targets, preds)
 
-        return total_loss / len(self.cls_dict)
+        return total_loss / len(self.classes)
 
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -113,7 +108,7 @@ class FlavaClassificationModel(BaseLightningModule):
         )
 
         results = {}
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
             
             results["img"] = batch["image_filename"].tolist()

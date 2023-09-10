@@ -151,20 +151,19 @@ class ImageDataset(FHMBase):
         return item
 
 
-class TextDataset(FHMBase):
+class TextClassificationDataset(FHMBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         text_template: str,
-        label_template: str,
-        labels: List[str],
-        label2word: dict
+        output_template: str,
+        cls_labels: dict
     ):
-        super().__init__(annotation_filepath, auxiliary_dicts, labels)
+        super().__init__(annotation_filepath, auxiliary_dicts, list(cls_labels.keys()))
         self.text_template = text_template
-        self.label_template = label_template
-        self.label2word = label2word
+        self.output_template = output_template
+        self.cls_labels = cls_labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
@@ -181,9 +180,9 @@ class TextDataset(FHMBase):
             'text': text
         }
 
-        for l in self.labels:
-            label = record[l]
-            item[l] = self.label_template.format(label=self.label2word[label])
+        for cls_name, label2word in self.cls_labels.items():
+            label = record[cls_name]
+            item[cls_name] = self.output_template.format(label=label2word[label])
 
         return item
 

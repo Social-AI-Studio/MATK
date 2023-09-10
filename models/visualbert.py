@@ -25,7 +25,7 @@ class VisualBertClassificationModel(BaseLightningModule):
 
         self.model = VisualBertModel.from_pretrained(model_class_or_path)
         self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
-        self.cls_dict = cls_dict
+        self.classes = list(cls_dict.keys())
         self.optimizers = optimizers
 
         if frcnn_class_or_path:
@@ -83,7 +83,7 @@ class VisualBertClassificationModel(BaseLightningModule):
 
         total_loss = 0
 
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             
             preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
@@ -93,7 +93,7 @@ class VisualBertClassificationModel(BaseLightningModule):
             self.compute_metrics_step(
                 cls_name, "train", loss, targets, preds)
 
-        return total_loss
+        return total_loss / len(self.classes)
     
     def validation_step(self, batch, batch_idx):
 
@@ -131,7 +131,7 @@ class VisualBertClassificationModel(BaseLightningModule):
 
         total_loss = 0
 
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
 
@@ -179,7 +179,7 @@ class VisualBertClassificationModel(BaseLightningModule):
 
         total_loss = 0
 
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
 
@@ -189,7 +189,7 @@ class VisualBertClassificationModel(BaseLightningModule):
             self.compute_metrics_step(
                 cls_name, "test", loss, targets, preds)
         
-        return loss
+        return total_loss / len(self.classes)
 
     def predict_step(self, batch, batch_idx):
 
@@ -226,7 +226,7 @@ class VisualBertClassificationModel(BaseLightningModule):
         )
 
         results = {}
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             preds = self.mlps[idx](outputs.last_hidden_state[:, 0, :])
             
             results["img"] = batch["image_filename"].tolist()

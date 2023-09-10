@@ -36,13 +36,13 @@ class BaseLightningModule(pl.LightningModule):
         logging.info(msg)
 
     def on_training_epoch_end(self):
-        for cls_name in self.cls_dict.keys():
+        for cls_name in self.classes:
             self.compute_metrics_epoch(cls_name, "train")
 
     def on_validation_epoch_end(self):
-        for cls_name in self.cls_dict.keys():
+        for cls_name in self.classes:
             self.compute_metrics_epoch(cls_name, "validate")
 
     def on_test_epoch_end(self):
-        for cls_name in self.cls_dict.keys():
+        for cls_name in self.classes:
             self.compute_metrics_epoch(cls_name, "test")

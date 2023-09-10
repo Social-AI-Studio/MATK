@@ -12,8 +12,10 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
-  cls_dict:
-    label: 2
+  cls_labels:
+    label:
+      0: "no"
+      1: "yes"
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
@@ -22,16 +24,16 @@ dataset:
   dataset_class: datasets.fhm.TextClassificationDataset
   tokenizer_class_or_path: t5-large
   text_template: "{text}"
-  label_template: "{label}"
-  label2word:
-    0: "no"
-    1: "yes"
+  output_template: "{label}"
+  cls_labels:
+    label:
+      0: "no"
+      1: "yes"
   labels:
-    - label
+  - label
 
 datamodule:
-  tokenizer_class_or_path: facebook/flava-full
-  frcnn_class_or_path: None
+  tokenizer_class_or_path: t5-large
 
 monitor_metric: validate_label_average
 monitor_mode: max
