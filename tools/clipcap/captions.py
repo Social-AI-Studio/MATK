@@ -5,15 +5,12 @@ from torch import nn
 import numpy as np
 import torch
 import torch.nn.functional as nnf
-import sys
 from typing import Tuple, List, Union, Optional
-from transformers import GPT2Tokenizer, GPT2LMHeadModel, AdamW, get_linear_schedule_with_warmup
+from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from tqdm import tqdm, trange
 from PIL import Image
-import IPython.display as display
-import json
-import random
 import pickle as pkl
+import tqdm
 
 
 def main(clean_img_dir ,model_path, output_dir, device):
@@ -227,9 +224,10 @@ def main(clean_img_dir ,model_path, output_dir, device):
 
     #generating image captions over all images
     files=os.listdir(clean_img_dir)
-    total={}
-    #random.shuffle(files)
-    for i,f in enumerate(files):
+    
+    os.makedirs(os.path.dirname(output_dir), exist_ok=True)
+
+    for f in tqdm.tqdm(files, desc="Generating ClipCap captions"):
         img_path=os.path.join(clean_img_dir,f)
         file_feat=Image.open(img_path)
         clip_feat=preprocess(file_feat).unsqueeze(0).to(device)
@@ -240,16 +238,11 @@ def main(clean_img_dir ,model_path, output_dir, device):
             generated_text_prefix = generate_beam(model, tokenizer, embed=prefix_embed)[0]
         else:
             generated_text_prefix = generate2(model, tokenizer, embed=prefix_embed)
-        total[f.split('.')[0]]=generated_text_prefix 
-    # Create the directory path if it doesn't exist
-    
-
-    output_filename = "captions.pkl"
-    output_filepath = os.path.join(output_dir, output_filename)
-    os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
-    # Dump the data to the specified path
-    with open(output_filepath, 'wb+') as file:
-        pkl.dump(total, file)
+        
+        output_filepath = os.path.join(output_dir, f"{f.split('.')[0]}.pkl")
+        os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
+        with open(output_filepath, "wb+") as file:
+            pkl.dump(generated_text_prefix, file)
 
 
 if __name__ == '__main__':
