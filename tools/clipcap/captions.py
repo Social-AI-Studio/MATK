@@ -16,25 +16,7 @@ import random
 import pickle as pkl
 
 
-def main(clean_img_dir ,model_path, output_dir):
-
-    def read_json(path):
-        data=json.load(open(path,'r'))
-        return data
-
-    def load_pkl(path):
-        data=pkl.load(open(path,'rb'))
-        return data
-
-    #set GPU id
-    CUDA_DEVICE=1
-    torch.cuda.set_device(CUDA_DEVICE)
-    device = torch.device("cuda:"+str(CUDA_DEVICE))
-
-    # pretrain_data='conceptual'#or coco
-    # save_path = os.path.join(os.path.dirname(''), "pretrained_models")
-    # os.makedirs(save_path, exist_ok=True)
-    # model_path = os.path.join(save_path, pretrain_data+'_weights.pt')
+def main(clean_img_dir ,model_path, output_dir, device):
 
     N = type(None)
     V = np.array
@@ -76,8 +58,7 @@ def main(clean_img_dir ,model_path, output_dir):
         def forward(self, tokens: T, prefix: T, mask: Optional[T] = None, labels: Optional[T] = None):
             embedding_text = self.gpt.transformer.wte(tokens)
             prefix_projections = self.clip_project(prefix).view(-1, self.prefix_length, self.gpt_embedding_size)
-            #print(embedding_text.size()) #torch.Size([5, 67, 768])
-            #print(prefix_projections.size()) #torch.Size([5, 1, 768])
+            
             embedding_cat = torch.cat((prefix_projections, embedding_text), dim=1)
             if labels is not None:
                 dummy_token = self.get_dummy_token(tokens.shape[0], tokens.device)
@@ -249,10 +230,6 @@ def main(clean_img_dir ,model_path, output_dir):
     total={}
     #random.shuffle(files)
     for i,f in enumerate(files):
-        if i%200==0:
-            print ('Already finished:',i*100.0/len(files))
-        if i == 200:
-            break
         img_path=os.path.join(clean_img_dir,f)
         file_feat=Image.open(img_path)
         clip_feat=preprocess(file_feat).unsqueeze(0).to(device)
@@ -265,21 +242,25 @@ def main(clean_img_dir ,model_path, output_dir):
             generated_text_prefix = generate2(model, tokenizer, embed=prefix_embed)
         total[f.split('.')[0]]=generated_text_prefix 
     # Create the directory path if it doesn't exist
-    os.makedirs(os.path.dirname(output_dir), exist_ok=True)
+    
 
+    output_filename = "captions.pkl"
+    output_filepath = os.path.join(output_dir, output_filename)
+    os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
     # Dump the data to the specified path
-    with open(output_dir, 'wb') as file:
+    with open(output_filepath, 'wb+') as file:
         pkl.dump(total, file)
 
 
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    # /mnt/sdb/aditi/mmf/data/datasets/memes/defaults/images
+
     # add arguments
     parser.add_argument('--clean-img-dir', type=str, help='Path to directory containing cleaned images',required=True)
     parser.add_argument('--model-dir', type=str, help='Path to file with pretrained model weights',required=True)
     parser.add_argument('--output-dir', type=str, help='Path that should contained cleaned captions',required=True)
+    parser.add_argument("--device", type=str, choices=["cuda", "cpu"], required=True)
     # parse arguments
     args = parser.parse_args()
 
@@ -287,6 +268,6 @@ if __name__ == '__main__':
     clean_img_dir = args.clean_img_dir
     model_dir = args.model_dir
     output_dir = args.output_dir
-    main(clean_img_dir, model_dir, output_dir)
-
+    device = args.device
+    main(clean_img_dir, model_dir, output_dir, device)
     
