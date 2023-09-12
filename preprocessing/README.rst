@@ -3,7 +3,7 @@ Meme Preprocessing
 
 In this subfolder, we have implemented the popular techniques that helps with:
 
-#. Text removal using *image in-painting* techniques
+#. Text removal using image in-painting techniques
     * keras_ocr to detect text, numpy for masking, and opencv for inpainting
     * mmediting (the open-source image editing toolbox) for inpainting
 #. Latent representation extraction using *image captioning* techniques
@@ -79,6 +79,55 @@ Next, clone repo and install:
 
 
 Download ocr.py and Pre-trained Model `DeepFillV2 <https://download.openmmlab.com/mmediting/inpainting/deepfillv2/deepfillv2_256x256_8x2_places_20200619-10d15793.pth>`_ and save in mmediting-meme folder. 
+
+
+Usage
+------------
+
+keras-ocr
+~~~~~~~~~
+
+.. code-block:: bash
+    python3 inpainting \
+        --img-dir <image-dir> \
+        --output-dir <output-dir> \
+
+mmediting
+~~~~~~~~~
+
+Let data be path to you images folder. Create and move your images to img folder such that the new source image path would be data\img. Later after running, the cleaned images will be in img_cleaned folder in data.
+cd to where you have ocr.py and run the followings. Remember to replace  with actual path.
+
+**Step 1**. Detect
+
+.. code-block:: bash
+    python3 ocr.py detect <data>
+
+
+**Step 2**. Convert point annotation to box
+
+.. code-block:: bash
+    python3 ocr.py point_to_box <data>/ocr.json
+
+
+**Step 3**. Create text segmentation mask
+
+.. code-block:: bash
+    python3 ocr.py generate_mask <data>/ocr.box.json <data>/img <data>/img_mask_3px
+
+**Step 4**. Inpainting
+
+.. code-block:: bash
+    python3 demo/inpainting_demo.py \
+    configs/inpainting/deepfillv2/deepfillv2_256x256_8x2_places.py \
+    deepfillv2_256x256_8x2_places_20200619-10d15793.pth \
+    <data>/img_mask_3px/ <data>/img_cleaned
+
+
+
+
+
+
 
 
 ****************
