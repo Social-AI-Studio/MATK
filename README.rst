@@ -63,9 +63,10 @@ Adding Custom Datasets
 2. Modify the base class implementation, specifically ``_preprocess_annotations`` to suit your dataset's needs.
 3. Create a new YAML config file and script that will reference your new dataset class and paths to your dataset files.
 
-**************************
-Meme Models and Evaluation
-**************************
+************************************
+Supported Meme Models and Evaluation
+************************************
+
 Supported Language Models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 +------------+-------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+-------+
@@ -90,21 +91,13 @@ Supported Vision-Language Models
 | FLAVA      | `[arxiv] <https://arxiv.org/pdf/2112.04482.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/flava#transformers.FlavaModel>`_            | 2021 |
 +------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
 
-Model configuration
-~~~~~~~~~~~~~~~~~~~
 
-#. Go to ``configs`` and pick the relevant dataset folder.
-#. Choose the YAML file relevant to the desired model.
-#. Look for the ``annotation_filepaths`` key and modify the values for ``train``, ``test``, ``predict``, ``validation`` based on your ``processed_dir``.
-#. If you wish to add any auxiliary information, modify the ``auxiliary_dict`` key.
-#. Modify the ``dirpath`` key under ``callbacks`` suitably.
-#. (Optional) If you wish to modify any of the training hyperparameters, look for the ``trainer`` key and modify the values as required.
-
-
+***********
 Model Usage
-~~~~~~~~~~~
+***********
 
 Step 1: Configure Dataset
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For each dataset, we define a file with the classes - **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**. The following table will help you choose the correct dataset class for your needs:
 
@@ -134,6 +127,7 @@ The following parameters can be defined when configuring your experiment because
 - **labels**.
 
 Step 2: Configure DataModule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The data modules initialize the tokenizer and the data loaders (which specify batch size, number of workers, etc.).
 
@@ -149,6 +143,7 @@ The following parameters can be defined when configuring your experiment because
 - **tokenizer_class_or_path**.
 
 Step 3: Configure Model
+~~~~~~~~~~~~~~~~~~~~~~~
 
 To configure the dataset, go to `configs/datamodule` and pick the file based on your model choice. The following parameters need to be specified:
 
@@ -161,6 +156,7 @@ The following parameters can be defined when configuring your experiment because
 - **optimizers**.
 
 Step 4: Configure Trainer
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Trainer helps automate several aspects of training. It handles all loop details for you, including:
 
@@ -178,6 +174,7 @@ To configure the trainer, go to `configs/trainer` and pick the trainer of your c
 - **callbacks**.
 
 Step 5: Configure Experiment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To configure your experiment, you can take a look at any of the dataset folders under `config/experiment`. The following parameters need to be specified:
 
@@ -207,6 +204,7 @@ Job Settings
 - **action**: Specifies whether you are training or testing a model. Can be specified at runtime.
 
 Step 6: Running your Experiment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 [Tutorial or instructions on how to run your experiment here]
 
