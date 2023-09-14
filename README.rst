@@ -223,9 +223,34 @@ Job Settings
 Step 6: Running your Experiment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[Tutorial or instructions on how to run your experiment here]
+To test your configurations for correctness, you can use ``debug trainer``:
 
- 
+.. code-block:: bash
+  python3 main.py --multirun \
+    +experiment={experiment config location} \
+    action=fit \
+    trainer=debug_trainer
+
+
+To run training, you can use ``single_gpu_trainer`` or ``multi_gpu_trainer``:
+
+.. code-block:: bash
+
+  python3 main.py --multirun \
+    +experiment={experiment config location} \
+    action=fit \
+    trainer=single_gpu_trainer
+
+Similarly, you can run inference by changing ``action`` to ``test``:
+
+.. code-block:: bash
+
+  python3 main.py --multirun \
+    +experiment={experiment config location} \
+    action=test \
+    trainer=single_gpu_trainer
+
+
 
 *****************
 Model Performance
