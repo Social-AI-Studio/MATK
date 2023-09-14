@@ -27,9 +27,9 @@ Main Features
 * Supports visualization by integrating with Tensorboard, allowing users to easily view and analyze metrics in a user-friendly GUI.
 
 
-***************
+**********************
 Examples and Tutorials
-***************
+**********************
 
 Coming soon...
 
@@ -90,25 +90,126 @@ Supported Vision-Language Models
 | FLAVA      | `[arxiv] <https://arxiv.org/pdf/2112.04482.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/flava#transformers.FlavaModel>`_            | 2021 |
 +------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
 
-Model configuration
-~~~~~~~~~~~~~~~~~~~
+Usage
+=====
 
-#. Go to ``configs`` and pick the relevant dataset folder.
-#. Choose the YAML file relevant to the desired model.
-#. Look for the ``annotation_filepaths`` key and modify the values for ``train``, ``test``, ``predict``, ``validation`` based on your ``processed_dir``.
-#. If you wish to add any auxiliary information, modify the ``auxiliary_dict`` key.
-#. Modify the ``dirpath`` key under ``callbacks`` suitably.
-#. (Optional) If you wish to modify any of the training hyperparameters, look for the ``trainer`` key and modify the values as required.
+Step 1: Configure Dataset
+-------------------------
+
+For each dataset, we define a file with the classes - **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**. The following table will help you choose the correct dataset class for your needs:
+
++-------------------+----------------------+----------------------------+
+| Dataset           | DataModule           | Usage                      |
++===================+======================+============================+
+| FasterRCNNDataset | FasterRCNNDataModule | For vision-language models |
++-------------------+----------------------+----------------------------+
+| ImagesDataset     | ImagesDataModule     | For vision-language models |
++-------------------+----------------------+----------------------------+
+| TextDataset       | TextDataModule       | For language models        |
++-------------------+----------------------+----------------------------+
+
+Within this dataset class, we preprocess the annotations, load any auxiliary information, load features, and format the data for the task.
+
+To configure the dataset, go to `configs/dataset` and pick the file based on your dataset choice. The following parameters need to be specified:
+
+- **annotation_filepaths**: Specifies the file paths containing the annotations for your dataset.
+- **image_dirs**: Specifies the directories containing the images for your dataset.
+- **auxiliary_dicts**: Specifies the directories containing additional information like captions.
+- **feats_dir**: Specifies the directories containing the features of your dataset's images.
+
+The following parameters can be defined when configuring your experiment because they depend on the task:
+
+- **dataset_class**: Specifies the class path of **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**.
+- **text_template**: Specifies something.
+- **labels**.
+
+Step 2: Configure DataModule
+------------------------------
+
+The data modules initialize the tokenizer and the data loaders (which specify batch size, number of workers, etc.).
+
+To configure the data module, go to `configs/datamodule` and pick the file based on your model choice. The following parameters need to be specified:
+
+- **shuffle_train**: Based on your needs.
+- **num_workers**: Based on your needs.
+- **batch_size**: Based on your needs.
+- **class_path**: Specifies the class path of the data module you choose.
+
+The following parameters can be defined when configuring your experiment because they depend on the task:
+
+- **tokenizer_class_or_path**.
+
+Step 3: Configure Model
+------------------------
+
+To configure the dataset, go to `configs/datamodule` and pick the file based on your model choice. The following parameters need to be specified:
+
+- **class_path**: Specifies the class path of the model you chose (e.g., **models.flava.FlavaClassificationModel**).
+- **model_class_or_path**: Specifies the class or path of the pretrained model (e.g., **facebook/flava-full**).
+
+The following parameters can be defined when configuring your experiment because they depend on the task:
+
+- **cls_dict**: Specifies a dictionary where each key-value pair is defined as `label : number of possible values`.
+- **optimizers**.
+
+Step 4: Configure Trainer
+--------------------------
+
+The Trainer helps automate several aspects of training. It handles all loop details for you, including:
+
+- Automatically enabling/disabling gradients.
+- Running the training, validation, and test data loaders.
+- Calling the Callbacks at the appropriate times.
+- Putting batches and computations on the correct devices.
+
+To configure the trainer, go to `configs/trainer` and pick the trainer of your choice. The following parameters need to be specified:
+
+- **accelerator**: Specifies the device used for computations.
+- **max_epochs**.
+- **enable_checkpointing**.
+- **logger**.
+- **callbacks**.
+
+Step 5: Configure Experiment
+------------------------------
+
+To configure your experiment, you can take a look at any of the dataset folders under `config/experiment`. The following parameters need to be specified:
+
+- **defaults**: This is a list in our input config that instructs Hydra on how to build the output config. The Defaults List is ordered:
+
+  - If multiple configs define the same value, the last one wins.
+  - If multiple configs contribute to the same dictionary, the result is the combined dictionary.
+
+The following parameters contribute to the parameter dictionaries of the values defined in the defaults list. Remember, some of these had keys that have '???' as their values. Taking the example of FLAVA on FHM:
+
+- **cls_dict**: Defines a dictionary of `{label_name}:{label_value}` pairs. For FHM, the label is called 'label,' and it can take 2 values.
+- **optimizers**: Specify based on requirements.
+- **dataset_class**: Class path of the dataset class you're using; in this case, **ImageDataset** from the **fhm** file under **datasets**.
+- **text_template**.
+- **labels**: Defines the list of labels in the dataset; in this case, 'label' is the only label.
+- **processor_class_path**: Class path of the pretrained image processor.
+- **monitor_metric**: Metrics are generated as `{stage}_{label_name}_{type}`. You can pick 1 metric to monitor.
+- **monitor_mode**: Specify based on requirements.
+- **save_top_ks**: Specify based on checkpoint requirements.
+- **experiment_name**: Name of the experiment you're running.
+
+Job Settings
+------------
+
+- **hydra.verbose**.
+- **seed_everything**.
+- **overwrite**.
+- **action**: Specifies whether you are training or testing a model. Can be specified at runtime.
+
+Step 6: Running your Experiment
+------------------------------
+
+[Tutorial or instructions on how to run your experiment here]
 
 
-Model Usage
-~~~~~~~~~~~
-Once you have created your model configuration, follow these steps to use the configured model:
 
-#. Go to ``scripts`` and pick the relevant dataset folder.
-#. Pick ``test``, ``train``, or ``inference`` based on your requirement and locate the script for your model.
-    * If you are chosing inference, make sure the ``ckpt_path`` key is present in the YAML config. 
-#. Run the scripts relevant to your model. 
+
+
 
 
 MATK Overview
