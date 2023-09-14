@@ -61,7 +61,7 @@ Adding Custom Datasets
 ~~~~~~~~~~~~~~~~~~~~~~
 1. To use a dataset lot listed above, copy the code given in one of the dataset files, eg; ``datamodules/datasets/fhm.py``. 
 2. Modify the base class implementation, specifically ``_preprocess_annotations`` to suit your dataset's needs.
-3. Create a new YAML config file and script that will reference your new dataset class and paths to your dataset files.
+3. Follow the steps in model usage to use the custom dataset in your experiment.
 
 ************************************
 Supported Meme Models and Evaluation
@@ -130,7 +130,7 @@ For each dataset, we define a file with the classes - **FRCNNDataset**, **ImageD
 
 Within this dataset class, we preprocess the annotations, load any auxiliary information, load features, and format the data for the task.
 
-To configure the dataset, go to `configs/dataset` and pick the file based on your dataset choice. The following parameters need to be specified:
+To configure the dataset, go to ``configs/dataset`` and pick the file based on your dataset choice. The following parameters need to be specified:
 
 - **annotation_filepaths**: Specifies the file paths containing the annotations for your dataset.
 - **image_dirs**: Specifies the directories containing the images for your dataset.
@@ -141,14 +141,14 @@ The following parameters can be defined when configuring your experiment because
 
 - **dataset_class**: Specifies the class path of **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**.
 - **text_template**: Specifies something.
-- **labels**.
+- **labels**
 
 Step 2: Configure DataModule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The data modules initialize the tokenizer and the data loaders (which specify batch size, number of workers, etc.).
 
-To configure the data module, go to `configs/datamodule` and pick the file based on your model choice. The following parameters need to be specified:
+To configure the datamodule, go to ``configs/datamodule`` and pick the file based on your model choice. The following parameters need to be specified:
 
 - **shuffle_train**: Based on your needs.
 - **num_workers**: Based on your needs.
@@ -157,12 +157,12 @@ To configure the data module, go to `configs/datamodule` and pick the file based
 
 The following parameters can be defined when configuring your experiment because they depend on the task:
 
-- **tokenizer_class_or_path**.
+- **tokenizer_class_or_path**
 
 Step 3: Configure Model
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To configure the dataset, go to `configs/datamodule` and pick the file based on your model choice. The following parameters need to be specified:
+To configure an existing model, go to ``configs/model`` and pick the file based on your model choice. The following parameters need to be specified:
 
 - **class_path**: Specifies the class path of the model you chose (e.g., **models.flava.FlavaClassificationModel**).
 - **model_class_or_path**: Specifies the class or path of the pretrained model (e.g., **facebook/flava-full**).
@@ -170,7 +170,7 @@ To configure the dataset, go to `configs/datamodule` and pick the file based on 
 The following parameters can be defined when configuring your experiment because they depend on the task:
 
 - **cls_dict**: Specifies a dictionary where each key-value pair is defined as `label : number of possible values`.
-- **optimizers**.
+- **optimizers**
 
 Step 4: Configure Trainer
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -182,18 +182,18 @@ The Trainer helps automate several aspects of training. It handles all loop deta
 - Calling the Callbacks at the appropriate times.
 - Putting batches and computations on the correct devices.
 
-To configure the trainer, go to `configs/trainer` and pick the trainer of your choice. The following parameters need to be specified:
+To configure the trainer, go to ``configs/trainer`` and pick the trainer of your choice. The following parameters need to be specified:
 
 - **accelerator**: Specifies the device used for computations.
-- **max_epochs**.
+- **max_epochs**
 - **enable_checkpointing**.
-- **logger**.
-- **callbacks**.
+- **logger**
+- **callbacks**
 
 Step 5: Configure Experiment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To configure your experiment, you can take a look at any of the dataset folders under `config/experiment`. The following parameters need to be specified:
+To configure your experiment, you can take a look at any of the dataset folders under ``configs/experiment``. The following parameters need to be specified:
 
 - **defaults**: This is a list in our input config that instructs Hydra on how to build the output config. The Defaults List is ordered:
 
@@ -205,7 +205,7 @@ The following parameters contribute to the parameter dictionaries of the values 
 - **cls_dict**: Defines a dictionary of `{label_name}:{label_value}` pairs. For FHM, the label is called 'label,' and it can take 2 values.
 - **optimizers**: Specify based on requirements.
 - **dataset_class**: Class path of the dataset class you're using; in this case, **ImageDataset** from the **fhm** file under **datasets**.
-- **text_template**.
+- **text_template**
 - **labels**: Defines the list of labels in the dataset; in this case, 'label' is the only label.
 - **processor_class_path**: Class path of the pretrained image processor.
 - **monitor_metric**: Metrics are generated as `{stage}_{label_name}_{type}`. You can pick 1 metric to monitor.
@@ -215,9 +215,9 @@ The following parameters contribute to the parameter dictionaries of the values 
 
 Job Settings
 
-- **hydra.verbose**.
-- **seed_everything**.
-- **overwrite**.
+- **hydra.verbose**
+- **seed_everything**
+- **overwrite**
 - **action**: Specifies whether you are training or testing a model. Can be specified at runtime.
 
 Step 6: Running your Experiment
