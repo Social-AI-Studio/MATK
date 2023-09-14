@@ -27,9 +27,9 @@ Main Features
 * Supports visualization by integrating with Tensorboard, allowing users to easily view and analyze metrics in a user-friendly GUI.
 
 
-**********************
+***************
 Examples and Tutorials
-**********************
+***************
 
 Coming soon...
 
@@ -90,11 +90,21 @@ Supported Vision-Language Models
 | FLAVA      | `[arxiv] <https://arxiv.org/pdf/2112.04482.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/flava#transformers.FlavaModel>`_            | 2021 |
 +------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
 
-Usage
-=====
+Model configuration
+~~~~~~~~~~~~~~~~~~~
+
+#. Go to ``configs`` and pick the relevant dataset folder.
+#. Choose the YAML file relevant to the desired model.
+#. Look for the ``annotation_filepaths`` key and modify the values for ``train``, ``test``, ``predict``, ``validation`` based on your ``processed_dir``.
+#. If you wish to add any auxiliary information, modify the ``auxiliary_dict`` key.
+#. Modify the ``dirpath`` key under ``callbacks`` suitably.
+#. (Optional) If you wish to modify any of the training hyperparameters, look for the ``trainer`` key and modify the values as required.
+
+
+Model Usage
+~~~~~~~~~~~
 
 Step 1: Configure Dataset
--------------------------
 
 For each dataset, we define a file with the classes - **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**. The following table will help you choose the correct dataset class for your needs:
 
@@ -124,7 +134,6 @@ The following parameters can be defined when configuring your experiment because
 - **labels**.
 
 Step 2: Configure DataModule
-------------------------------
 
 The data modules initialize the tokenizer and the data loaders (which specify batch size, number of workers, etc.).
 
@@ -140,7 +149,6 @@ The following parameters can be defined when configuring your experiment because
 - **tokenizer_class_or_path**.
 
 Step 3: Configure Model
-------------------------
 
 To configure the dataset, go to `configs/datamodule` and pick the file based on your model choice. The following parameters need to be specified:
 
@@ -153,7 +161,6 @@ The following parameters can be defined when configuring your experiment because
 - **optimizers**.
 
 Step 4: Configure Trainer
---------------------------
 
 The Trainer helps automate several aspects of training. It handles all loop details for you, including:
 
@@ -171,7 +178,6 @@ To configure the trainer, go to `configs/trainer` and pick the trainer of your c
 - **callbacks**.
 
 Step 5: Configure Experiment
-------------------------------
 
 To configure your experiment, you can take a look at any of the dataset folders under `config/experiment`. The following parameters need to be specified:
 
@@ -194,7 +200,6 @@ The following parameters contribute to the parameter dictionaries of the values 
 - **experiment_name**: Name of the experiment you're running.
 
 Job Settings
-------------
 
 - **hydra.verbose**.
 - **seed_everything**.
@@ -202,14 +207,10 @@ Job Settings
 - **action**: Specifies whether you are training or testing a model. Can be specified at runtime.
 
 Step 6: Running your Experiment
-------------------------------
 
 [Tutorial or instructions on how to run your experiment here]
 
-
-
-
-
+ 
 
 
 MATK Overview
