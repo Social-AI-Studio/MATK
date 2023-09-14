@@ -130,32 +130,32 @@ For each dataset, we define a file with the classes - **FRCNNDataset**, **ImageD
 
 Within this dataset class, we preprocess the annotations, load any auxiliary information, load features, and format the data for the task.
 
-To configure the dataset, go to ``configs/dataset`` and pick the file based on your dataset choice. The following parameters need to be specified:
+To configure the dataset, go to ``configs/dataset``, pick the file based on your dataset choice and specify:
 
-- **annotation_filepaths**: Specifies the file paths containing the annotations for your dataset.
-- **image_dirs**: Specifies the directories containing the images for your dataset.
-- **auxiliary_dicts**: Specifies the directories containing additional information like captions.
-- **feats_dir**: Specifies the directories containing the features of your dataset's images.
+- ``**annotation_filepaths**``: file paths containing the annotations for your dataset.
+- **image_dirs**:  directories containing the images for your dataset.
+- **auxiliary_dicts**: directories containing additional information like captions.
+- **feats_dir**: directories containing the features of your dataset's images.
 
-The following parameters can be defined when configuring your experiment because they depend on the task:
+The following parameters are specified as '???' because they are specific to the experiment configuration:
 
-- **dataset_class**: Specifies the class path of **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**.
-- **text_template**: Specifies something.
+- **dataset_class**: class path of **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**.
+- **text_template**: 
 - **labels**
 
 Step 2: Configure DataModule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The data modules initialize the tokenizer and the data loaders (which specify batch size, number of workers, etc.).
+The data modules initialize the tokenizer and the data loaders (which handle batch size, number of workers, etc.).
 
-To configure the datamodule, go to ``configs/datamodule`` and pick the file based on your model choice. The following parameters need to be specified:
+To configure the datamodule, go to ``configs/datamodule`` and pick the file based on your model choice and specify:
 
 - **shuffle_train**: Based on your needs.
 - **num_workers**: Based on your needs.
 - **batch_size**: Based on your needs.
-- **class_path**: Specifies the class path of the data module you choose.
+- **class_path**: class path of the data module you choose.
 
-The following parameters can be defined when configuring your experiment because they depend on the task:
+The following parameters are specified as '???' because they are specific to the experiment configuration:
 
 - **tokenizer_class_or_path**
 
@@ -167,7 +167,7 @@ To configure an existing model, go to ``configs/model`` and pick the file based 
 - **class_path**: Specifies the class path of the model you chose (e.g., **models.flava.FlavaClassificationModel**).
 - **model_class_or_path**: Specifies the class or path of the pretrained model (e.g., **facebook/flava-full**).
 
-The following parameters can be defined when configuring your experiment because they depend on the task:
+The following parameters are specified as '???' because they are specific to the experiment configuration:
 
 - **cls_dict**: Specifies a dictionary where each key-value pair is defined as `label : number of possible values`.
 - **optimizers**
@@ -182,11 +182,11 @@ The Trainer helps automate several aspects of training. It handles all loop deta
 - Calling the Callbacks at the appropriate times.
 - Putting batches and computations on the correct devices.
 
-To configure the trainer, go to ``configs/trainer`` and pick the trainer of your choice. The following parameters need to be specified:
+To configure the trainer, go to ``configs/trainer``, pick the trainer of your choice and specify:
 
-- **accelerator**: Specifies the device used for computations.
+- **accelerator**: device used for computations.
 - **max_epochs**
-- **enable_checkpointing**.
+- **enable_checkpointing**
 - **logger**
 - **callbacks**
 
