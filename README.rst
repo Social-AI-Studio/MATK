@@ -109,9 +109,9 @@ MATK Overview
 +------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
 
 
-***********
-Model Usage
-***********
+*****
+Usage
+*****
 
 To configure the different elements of the toolkit, we use ``Hydra``, an open-source Python framework that simplifies the development of research and other complex applications. 
 Its key feature is the ability to dynamically create a hierarchical configuration by composition and override it through both config files and the command line.
@@ -144,7 +144,7 @@ To configure the dataset, go to ``configs/dataset``, pick the file based on your
 - ``auxiliary_dicts (dict)``
 - ``feats_dir (dict)``
 
-For all other optional parametesr listed below please refer to the experiment config files in ``configs/experiment``:
+For all other optional parameters listed below please refer to the experiment config files in ``configs/experiment``:
 
 - ``dataset_class``: class path of the dataset you choose, eg; ``datasets.fhm.ImageDataset``.
 - ``text_template``
@@ -162,21 +162,21 @@ To configure the datamodule, go to ``configs/datamodule`` and pick the file base
 - ``batch_size (int)``: the number of samples the model processes at once during training
 - ``class_path``: class path of the datamodule you choose (e.g., ``datamodules.frcnn_datamodule.FRCNNDataModule``).
 
-For all other optional parametesr listed below please refer to the experiment config files in ``configs/experiment``:
+For all other optional parameters listed below please refer to the experiment config files in ``configs/experiment``:
 
 - ``tokenizer_class_or_path``: class or path of the pretrained tokenizer (e.g., ``t5-large``).
 
 Step 3: Configure Model
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To configure an existing model, go to ``configs/model`` and pick the file based on your model choice. The following parameters need to be specified:
+To configure a model, go to ``configs/model`` and pick the file based on your model choice. The following parameters need to be specified:
 
 - ``class_path``: class path of the model you chose (e.g., ``models.flava.FlavaClassificationModel``).
 - ``model_class_or_path``: class or path of the pretrained model (e.g., ``facebook/flava-full``).
 
-For all other optional parametesr listed below please refer to the experiment config files in ``configs/experiment``:
+For all other optional parameters listed below please refer to the experiment config files in ``configs/experiment``:
 
-- ``cls_dict (dict)``: dictionary where each key-value pair is defined as ``{label}:#number of class``.
+- ``cls_dict (dict)``: dictionary where each key-value pair is defined as ``{label}:{#number of class}``.
 - ``optimizers``
 
 Step 4: Configure Trainer
@@ -208,17 +208,17 @@ To configure your experiment, you can take a look at any of the dataset folders 
   - If multiple configs define the same value, the last one wins.
   - If multiple configs contribute to the same dictionary, the result is the combined dictionary.
 
-The following parameters contribute to the parameter dictionaries of the values defined in the defaults list. Remember, some of these had keys that have '???' as their values. Taking the example of FLAVA on FHM:
+The following parameters specify values for parameters that were optional in their respective config files:
 
-- ``cls_dict (dict)``: dictionary where each key-value pair is defined as ``{label}:#number of class``. For FHM, the label is called 'label,' and it can take 2 values.
+- ``cls_dict (dict)``
 - ``optimizers``
-- ``dataset_class``: class path of the dataset class you're using, eg;  ``datasets.fhm..
+- ``dataset_class``
 - ``text_template``
-- ``labels (list)``: the list of labels in the dataset; in this case, 'label' is the only label.
-- ``processor_class_path``: class path of the pretrained image processor.
-- ``monitor_metric``: metric to monitor. Metrics are generated as `{stage}_{label_name}_{type}`
-- ``monitor_mode``: one of {min, max} - the decision to overwrite the saved file is made based on the maximization/minimization of the monitored metric
-- ``save_top_ks (int)``:  the best k models to save according to the metric monitored
+- ``labels (list)``
+- ``processor_class_path``: class path of the pretrained image processor, eg; ``facebook/flava-full``.
+- ``monitor_metric``: metric to monitor. Metrics are generated as ``{stage}_{label_name}_{type}``
+- ``monitor_mode``: one of ``{min, max}`` - the decision to overwrite the saved file is made based on the maximization/minimization of the monitored metric
+- ``save_top_ks (int)``:  the best k models to save based on monitored metric .
 - ``experiment_name``
 
 Job Settings
