@@ -113,35 +113,39 @@ MATK Overview
 Model Usage
 ***********
 
+To configure the different elements of the toolkit, we use ``Hydra``, an open-source Python framework that simplifies the development of research and other complex applications. 
+Its key feature is the ability to dynamically create a hierarchical configuration by composition and override it through both config files and the command line.
+
 Step 1: Configure Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The purpose of the dataset class is to store the samples and their corresponding labels. Within this dataset class we:
-- preprocess the annotations
+- preprocess the annotations: remove any hyperlinks, standardize label names, remove samples without labels, etc
 - load any auxiliary information: for example, .pkl files of captions for each image
 - load features
-- format the data for the task
 
-For each dataset, we support the following dataset types **FRCNNDataset**, **ImageDataset**, and **TextClassificationDataset**. 
+For each dataset, we support the following dataset types ``FRCNNDataset``, ``ImageDataset``, and ``TextClassificationDataset``. 
 
-+-------------------+----------------------+----------------------------+
-| Dataset           | DataModule           | Usage                      |
-+===================+======================+============================+
-| FasterRCNNDataset | FasterRCNNDataModule | For vision-language models |
-+-------------------+----------------------+----------------------------+
-| ImagesDataset     | ImagesDataModule     | For vision-language models |
-+-------------------+----------------------+----------------------------+
-| TextDataset       | TextDataModule       | For language models        |
-+-------------------+----------------------+----------------------------+
++---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| Dataset                   | Usage                  | Remarks                                                                                                               |
++===========================+========================+=======================================================================================================================+
+| FasterRCNNDataset         | For LXMERT, VisualBert | To handle `Faster-RCNN <https://github.com/eladsegal/gqa_lxmert/blob/main/notebook.ipynb>`_ features of images + text |
++---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| ImageDataset              | For FLAVA, VisualBert  | To handle raw images + text                                                                                           |
++---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
+| TextClassificationDataset | For T5                 | To handle text                                                                                                        |
++---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
+
+
 
 To configure the dataset, go to ``configs/dataset``, pick the file based on your dataset choice and specify:
 
 - ``annotation_filepaths (dict)``
-- ``image_dirs  (dict)``
-- ``auxiliary_dicts  (dict)``
+- ``image_dirs (dict)``
+- ``auxiliary_dicts (dict)``
 - ``feats_dir (dict)``
 
-The following parameters are specified as '???' because they are specific to the experiment configuration:
+For all other optional parametesr listed below please refer to the experiment config files we provide:
 
 - ``dataset_class``: class path of the dataset you choose, eg; ``datasets.fhm.ImageDataset``.
 - ``text_template``
@@ -154,7 +158,7 @@ The data modules initialize the tokenizer and the data loaders (which handle bat
 
 To configure the datamodule, go to ``configs/datamodule`` and pick the file based on your model choice and specify:
 
-- ``shuffle_train (bool)`: set to True to make sure we aren’t exposing our model to the same cycle (order) of data in every epoch
+- ``shuffle_train (bool)``: set to True to make sure we aren’t exposing our model to the same cycle (order) of data in every epoch
 - ``num_workers (int)``: how many subprocesses to use for data loading
 - ``batch_size (int)``: the number of samples the model processes at once during training
 - ``class_path``: class path of the datamodule you choose (e.g., ``datamodules.frcnn_datamodule.FRCNNDataModule``).
@@ -171,7 +175,7 @@ To configure an existing model, go to ``configs/model`` and pick the file based 
 - ``class_path``: class path of the model you chose (e.g., ``models.flava.FlavaClassificationModel``).
 - ``model_class_or_path``: class or path of the pretrained model (e.g., ``facebook/flava-full``).
 
-The following parameters are specified as '???' because they are specific to the experiment configuration:
+For all other optional parametesr listed below please refer to the experiment config files we provide:
 
 - ``cls_dict (dict)``: dictionary where each key-value pair is defined as ``{label}:#number of class``.
 - ``optimizers``
@@ -186,12 +190,12 @@ The Trainer helps automate several aspects of training. It handles all loop deta
 - Calling the Callbacks at the appropriate times.
 - Putting batches and computations on the correct devices.
 
-To configure the trainer, go to ``configs/trainer``, pick the trainer of your choice. Shown below is the list of required parameters and the default values we use. 
+To configure the trainer, go to ``configs/trainer``, pick the trainer of your choice. Below are the **required** parameters and the **default** values we use. 
 You can also tweak the trainer by adding parameters from here: `[Trainer API] <https://lightning.ai/docs/pytorch/stable/common/trainer.html#trainer-class-api>`_
 
-- ``accelerator``: cuda
-- ``max_epochs (int)``: 30
-- ``enable_checkpointing (bool)``: True
+- ``accelerator``: ``cuda``
+- ``max_epochs (int)``: ``30``
+- ``enable_checkpointing (bool)``: ``True``
 - ``logger``
 - ``callbacks``
 
@@ -214,8 +218,8 @@ The following parameters contribute to the parameter dictionaries of the values 
 - ``labels (list)``: the list of labels in the dataset; in this case, 'label' is the only label.
 - ``processor_class_path``: class path of the pretrained image processor.
 - ``monitor_metric``: metric to monitor. Metrics are generated as `{stage}_{label_name}_{type}`
-- ``monitor_mode``: one of {min, max} - the decision to overwrite the saved file is made based on either the maximization or the minimization of the monitored metric
-- ``save_top_ks`` (int):  the best k models to save according to the metric monitored
+- ``monitor_mode``: one of {min, max} - the decision to overwrite the saved file is made based on the maximization/minimization of the monitored metric
+- ``save_top_ks (int)``:  the best k models to save according to the metric monitored
 - ``experiment_name``
 
 Job Settings
@@ -236,7 +240,7 @@ To test your configurations for correctness, you can use ``debug trainer``:
     action=fit \
     trainer=debug_trainer
 
-To run training, you can use ``single_gpu_trainer`` or ``multi_gpu_trainer``:
+To run **training**, you can use ``single_gpu_trainer`` or ``multi_gpu_trainer``:
 
 .. code-block:: bash
 
@@ -245,7 +249,7 @@ To run training, you can use ``single_gpu_trainer`` or ``multi_gpu_trainer``:
     action=fit \
     trainer={single_gpu_trainer, multi_gpu_trainer}
 
-For example, to train VisualBERT on FHM using the ``multi_gpu_trainer``:
+For example, to **train** VisualBERT on FHM using the ``multi_gpu_trainer``:
 
 .. code-block:: bash
 
@@ -254,7 +258,7 @@ For example, to train VisualBERT on FHM using the ``multi_gpu_trainer``:
     action=fit \
     trainer=multi_gpu_trainer
 
-Similarly, you can run inference by changing ``action`` to ``test``:
+Similarly, you can run **inference** by changing ``action`` to ``test``:
 
 .. code-block:: bash
 
@@ -263,7 +267,7 @@ Similarly, you can run inference by changing ``action`` to ``test``:
     action=test \
     trainer={single_gpu_trainer, multi_gpu_trainer}
 
-For example, to run inference for VisualBERT on FHM:
+For example, to run **inference** for VisualBERT on FHM:
 
 .. code-block:: bash
 
