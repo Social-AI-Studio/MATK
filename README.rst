@@ -124,7 +124,7 @@ The purpose of the dataset class is to store the samples and their corresponding
 - load any auxiliary information: for example, .pkl files of captions for each image
 - load features
 
-For each dataset, we support the following dataset types ``FRCNNDataset``, ``ImageDataset``, and ``TextClassificationDataset``. 
+For each dataset, we support the following dataset types: ``FRCNNDataset``, ``ImageDataset``, and ``TextClassificationDataset``. 
 
 +---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
 | Dataset                   | Usage                  | Remarks                                                                                                               |
@@ -137,7 +137,6 @@ For each dataset, we support the following dataset types ``FRCNNDataset``, ``Ima
 +---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
 
 
-
 To configure the dataset, go to ``configs/dataset``, pick the file based on your dataset choice and specify:
 
 - ``annotation_filepaths (dict)``
@@ -145,7 +144,7 @@ To configure the dataset, go to ``configs/dataset``, pick the file based on your
 - ``auxiliary_dicts (dict)``
 - ``feats_dir (dict)``
 
-For all other optional parametesr listed below please refer to the experiment config files we provide:
+For all other optional parametesr listed below please refer to the experiment config files in ``configs/experiment``:
 
 - ``dataset_class``: class path of the dataset you choose, eg; ``datasets.fhm.ImageDataset``.
 - ``text_template``
@@ -154,7 +153,7 @@ For all other optional parametesr listed below please refer to the experiment co
 Step 2: Configure DataModule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The data modules initialize the tokenizer and the data loaders (which handle batch size, number of workers, etc.).
+The datamodules initialize the tokenizer and the data loaders (which handle batch size, number of workers, etc.).
 
 To configure the datamodule, go to ``configs/datamodule`` and pick the file based on your model choice and specify:
 
@@ -163,7 +162,7 @@ To configure the datamodule, go to ``configs/datamodule`` and pick the file base
 - ``batch_size (int)``: the number of samples the model processes at once during training
 - ``class_path``: class path of the datamodule you choose (e.g., ``datamodules.frcnn_datamodule.FRCNNDataModule``).
 
-The following parameters are specified as '???' because they are specific to the experiment configuration:
+For all other optional parametesr listed below please refer to the experiment config files in ``configs/experiment``:
 
 - ``tokenizer_class_or_path``: class or path of the pretrained tokenizer (e.g., ``t5-large``).
 
@@ -175,7 +174,7 @@ To configure an existing model, go to ``configs/model`` and pick the file based 
 - ``class_path``: class path of the model you chose (e.g., ``models.flava.FlavaClassificationModel``).
 - ``model_class_or_path``: class or path of the pretrained model (e.g., ``facebook/flava-full``).
 
-For all other optional parametesr listed below please refer to the experiment config files we provide:
+For all other optional parametesr listed below please refer to the experiment config files in ``configs/experiment``:
 
 - ``cls_dict (dict)``: dictionary where each key-value pair is defined as ``{label}:#number of class``.
 - ``optimizers``
