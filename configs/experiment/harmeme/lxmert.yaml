@@ -25,10 +25,10 @@ dataset:
   labels:
     - intensity
   feats_dir:
-    train: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    validate: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    test: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    predict: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    train: /mnt/data1/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    validate: /mnt/data1/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    test: /mnt/data1/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    predict: /mnt/data1/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
 
 
 datamodule:
