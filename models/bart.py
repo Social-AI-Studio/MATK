@@ -1,120 +1,132 @@
 import torch
+import importlib
 import torch.nn as nn
 import torch.nn.functional as F
 import lightning.pytorch as pl
-import torchmetrics
 
 from typing import List
 from transformers import BartForConditionalGeneration, AutoTokenizer
 
-class BARTCasualModel(pl.LightningModule):
-    def __init__(self, model_class_or_path, labels: List[str], label2word: dict):
+from .model_utils import setup_metrics
+from .base import BaseLightningModule
+
+
+class BartClassificationModel(BaseLightningModule):
+    def __init__(
+        self,
+        model_class_or_path: str,
+        metrics_cfg: dict,
+        cls_labels: dict,
+        optimizers: list
+    ):
         super().__init__()
         self.save_hyperparameters()
-        self.labels = labels
 
-        self.model = BartForConditionalGeneration.from_pretrained(model_class_or_path)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_class_or_path, use_fast=False)
+        self.model = BartForConditionalGeneration.from_pretrained(
+            model_class_or_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_class_or_path, use_fast=False)
+        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.classes = list(cls_labels.keys())
+        self.optimizers = optimizers
 
-        num_unique_words = len(set(label2word.values()))
-        self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_unique_words)
-        self.val_auroc = torchmetrics.AUROC(task="multiclass", num_classes=num_unique_words)
+        # set up metric
+        cls_stats = {cls: len(label2word)
+                     for cls, label2word in cls_labels.items()}
+        setup_metrics(self, cls_stats, metrics_cfg, "train")
+        setup_metrics(self, cls_stats, metrics_cfg, "validate")
+        setup_metrics(self, cls_stats, metrics_cfg, "test")
 
-        self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_unique_words)
-        self.test_auroc = torchmetrics.AUROC(task="multiclass", num_classes=num_unique_words)
+        self.cls_tokens = {}
+        for cls_name, label2word in cls_labels.items():
+            self.cls_tokens[cls_name] = {}
+            for label, word in label2word.items():
+                tokens = self.tokenizer.encode(word, add_special_tokens=False)
+                self.cls_tokens[cls_name][tokens[0]] = label
 
-        self.token2label = {}
-        for label, word in label2word.items():
-            token = self.tokenizer.encode(word, add_special_tokens=False)[0]
-            self.token2label[token] = label
+                assert len(tokens) == 1
 
-        print(label2word)
-        print(self.token2label)
+    def get_logits(self, outputs, tokens):
+        first_word = outputs.logits[:, 1, :].cpu()
+
+        logits = []
+        for token in tokens:
+            logits.append(first_word[:,
+                                     token
+                                     ].unsqueeze(-1))
+        logits = torch.cat(logits, -1)
+        return logits
     
+    def get_labels(self, labels, token2label):
+        targets = [x[1].item() for x in labels]
+        targets = [token2label[x] for x in targets]
+        return torch.tensor(targets, dtype=torch.int64)
+
     def training_step(self, batch, batch_idx):
-        # TODO: Address this for multi-task learning
-        labels = self.labels[0]
-        labels = batch[labels]
+        total_loss = 0.0
 
-        outputs = self.model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
-            labels=labels
-        )
+        for cls_name, token2label in self.cls_tokens.items():
+            labels = batch[cls_name]
 
-        self.log('train_loss', outputs.loss, prog_bar=True)
-        return outputs.loss
-    
-    
+            model_outputs = self.model(
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                labels=labels
+            )
+            total_loss += model_outputs.loss
+
+            preds = self.get_logits(model_outputs, list(token2label.keys()))
+            labels = self.get_labels(labels, token2label)
+            preds, labels = preds.cpu(), labels.cpu()
+
+            self.compute_metrics_step(
+                cls_name, "train", model_outputs.loss, labels, preds)
+
+        return total_loss / len(self.cls_tokens)
+
     def validation_step(self, batch, batch_idx):
-        # TODO: Address this for multi-task learning
-        labels = self.labels[0]
-        labels = batch[labels]
+        total_loss = 0.0
 
-        outputs = self.model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
-            labels=labels
-        )
+        for cls_name, token2label in self.cls_tokens.items():
+            labels = batch[cls_name]
+            
+            model_outputs = self.model(
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                labels=labels
+            )
+            total_loss += model_outputs.loss
 
-        first_word = outputs.logits[:,0,:].cpu()
-        labels = labels.cpu()
-        
-        logits = []
-        for token in self.token2label.keys():
-            logits.append(first_word[:,
-                                   token
-                                  ].unsqueeze(-1))
-        logits = torch.cat(logits, -1)
+            preds = self.get_logits(model_outputs, list(token2label.keys()))
+            labels = self.get_labels(labels, token2label)
+            preds, labels = preds.cpu(), labels.cpu()
 
-        preds = logits.argmax(dim=-1)
-        targets = [x[0].item() for x in labels]
-        targets = [self.token2label[x] for x in targets]
-        targets = torch.tensor(targets, dtype=torch.int64)
-        
-        self.val_acc(preds, targets)
-        self.val_auroc(logits, targets)
-        
-        self.log('val_loss', outputs.loss, prog_bar=True, sync_dist=True)
-        self.log('val_acc', self.val_acc, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
-        self.log('val_auroc', self.val_auroc, prog_bar=True, on_step=True, on_epoch=True, sync_dist=True)
+            self.compute_metrics_step(
+                cls_name, "validate", model_outputs.loss, labels, preds)
 
-        return outputs.loss
-    
+        return total_loss / len(self.cls_tokens)
+
     def test_step(self, batch, batch_idx):
-        # TODO: Address this for multi-task learning
-        labels = self.labels[0]
-        labels = batch[labels]
+        total_loss = 0.0
 
-        outputs = self.model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
-            labels=labels
-        )
+        for cls_name, token2label in self.cls_tokens.items():
+            labels = batch[cls_name]
+            
+            model_outputs = self.model(
+                input_ids=batch["input_ids"],
+                attention_mask=batch["attention_mask"],
+                labels=labels
+            )
+            total_loss += model_outputs.loss
 
-        first_word = outputs.logits[:,0,:].cpu()
-        labels = labels.cpu()
-        
-        logits = []
-        for token in self.token2label.keys():
-            logits.append(first_word[:,
-                                   token
-                                  ].unsqueeze(-1))
-        logits = torch.cat(logits, -1)
+            preds = self.get_logits(model_outputs, list(token2label.keys()))
+            labels = self.get_labels(labels, token2label)
+            preds, labels = preds.cpu(), labels.cpu()
 
-        preds = logits.argmax(dim=-1)
-        targets = [x[0].item() for x in labels]
-        targets = [self.token2label[x] for x in targets]
-        targets = torch.tensor(targets, dtype=torch.int64)
-        
-        self.test_acc(preds, targets)
-        self.test_auroc(logits, targets)
+            self.compute_metrics_step(
+                cls_name, "test", model_outputs.loss, labels, preds)
 
-        return None
-
-    def on_test_epoch_end(self):
-        print("test_acc:", self.test_acc.compute())
-        print("test_auroc:", self.test_auroc.compute())
+        return total_loss / len(self.cls_tokens)
 
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -129,8 +141,18 @@ class BARTCasualModel(pl.LightningModule):
             results['labels'] = batch["labels"]
 
         return results
-    
+
     def configure_optimizers(self):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=2e-5)
-        # self.optimizer = torch.optim.Adam(self.parameters(), lr=1e-4)
-        return [self.optimizer]
+        opts = []
+        for opt_cfg in self.optimizers:
+            class_name = opt_cfg.pop("class_path")
+            
+            package_name = ".".join(class_name.split(".")[:-1])
+            package = importlib.import_module(package_name)
+            
+            class_name = class_name.split(".")[-1]
+            cls = getattr(package, class_name)
+
+            opts.append(cls(self.parameters(), **opt_cfg))
+
+        return opts

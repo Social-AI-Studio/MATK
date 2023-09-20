@@ -141,7 +141,7 @@ class VisualBertClassificationModel(BaseLightningModule):
             self.compute_metrics_step(
                 cls_name, "validate", loss, targets, preds)
 
-        return total_loss / len(self.cls_dict)
+        return total_loss / len(self.classes)
     
     def test_step(self, batch, batch_idx):
 
