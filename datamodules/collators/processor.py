@@ -1,10 +1,12 @@
 import torch
 
-def processor_collate_fn(batch, processor, labels):    
+def processor_collate_fn(batches, processor, labels):    
     texts, images = [], []
-    for item in batch:
-        texts.append(item["text"])
-        images.append(item["image"])
+
+    for batch in batches:
+        for item in batch:
+            texts.append(item["text"])
+            images.append(item["image"])
     
     inputs = processor(  
         text=texts, images=images, return_tensors="pt", padding=True, truncation=True

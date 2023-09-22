@@ -8,17 +8,20 @@ from . import utils
 
 from typing import List
 from torch.utils.data import Dataset
+from .base import CommonBase
 
-class FHMBase(Dataset):
+class FHMBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         labels: List[str]
     ):
+        super().__init__("fhm", labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = labels
+        self.labels = self._encode_labels("fhm")
+        # self.labels = labels
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -29,7 +32,6 @@ class FHMBase(Dataset):
         # translate labels into numeric values
         for record in tqdm.tqdm(data, desc="Preprocessing labels"):
             record["img"] = os.path.basename(record["img"])
-
             annotations.append(record)
         
         return annotations
@@ -119,6 +121,7 @@ class ImageDataset(FHMBase):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.image_dir = image_dir
         self.text_template = text_template
+        self.raw_labels = labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
@@ -144,10 +147,10 @@ class ImageDataset(FHMBase):
             'image': np.array(image),
             'image_path': image_path
         }
-
-        for l in self.labels:
-            item[l] = record[l]
-
+        
+        for encoded_label, raw_label in zip(self.labels, self.raw_labels):
+            item[encoded_label] = record[raw_label]
+        
         return item
 
 

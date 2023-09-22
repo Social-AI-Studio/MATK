@@ -1,5 +1,5 @@
 class_path: datamodules.processor_datamodule.ProcessorDataModule
 num_workers: 4
-batch_size: 32
+batch_size: 1
 shuffle_train: true
 processor_class_or_path: ???

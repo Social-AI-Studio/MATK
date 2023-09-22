@@ -1,7 +1,8 @@
 # @package _global_
 defaults:
 - /model: flava
-- /dataset: fhm
+- /dataset: 
+  - fhm
 - /datamodule: processor_datamodule
 - /trainer: single_gpu_trainer
 - /metric:
@@ -13,21 +14,24 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    label: 2
+    fhm:
+      label: 2
+    
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
 
 dataset:
-  dataset_class: datasets.fhm.ImageDataset
-  text_template: "{text}"
-  labels:
-  - label
+  fhm: 
+    dataset_class: datasets.fhm.ImageDataset
+    text_template: "{text}"
+    labels:
+    - label
 
 datamodule:
   processor_class_or_path: facebook/flava-full
 
-monitor_metric: validate_label_average
+monitor_metric: validate_fhm_label_average
 monitor_mode: max
 save_top_ks: 1
 

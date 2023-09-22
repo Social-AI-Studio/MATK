@@ -1,27 +1,28 @@
-annotation_filepaths:
-  train: /mnt/sda/mshee/datasets/memes/fhm/annotations/train.jsonl
-  validate: /mnt/sda/mshee/datasets/memes/fhm/annotations/dev_seen.jsonl
-  test: /mnt/sda/mshee/datasets/memes/fhm/annotations/test_seen.jsonl
-  predict: /mnt/sda/mshee/datasets/memes/fhm/annotations/test_seen.jsonl
+fhm:
+  annotation_filepaths:
+    train: /mnt/sda/datasets/memes/fhm/annotations/train.jsonl
+    validate: /mnt/sda/datasets/memes/fhm/annotations/dev_seen.jsonl
+    test: /mnt/sda/datasets/memes/fhm/annotations/test_seen.jsonl
+    predict: /mnt/sda/datasets/memes/fhm/annotations/test_seen.jsonl
 
-image_dirs:
-  train: /mnt/sda/mshee/datasets/memes/fhm/images/img
-  validate: /mnt/sda/mshee/datasets/memes/fhm/images/img
-  test: /mnt/sda/mshee/datasets/memes/fhm/images/img
-  predict: /mnt/sda/mshee/datasets/memes/fhm/images/img
+  image_dirs:
+    train: /mnt/sda/datasets/memes/fhm/images/img
+    validate: /mnt/sda/datasets/memes/fhm/images/img
+    test: /mnt/sda/datasets/memes/fhm/images/img
+    predict: /mnt/sda/datasets/memes/fhm/images/img
 
-auxiliary_dicts:
-  train: {}
-  validate: {}
-  test: {}
-  predict: {}
+  auxiliary_dicts:
+    train: {}
+    validate: {}
+    test: {}
+    predict: {}
 
-feats_dir:
-  train: null
-  validate: null
-  test: null
-  predict: null
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
 
-dataset_class: ???
-text_template: ???
-labels: ???
+  dataset_class: ???
+  text_template: ???
+  labels: ???
