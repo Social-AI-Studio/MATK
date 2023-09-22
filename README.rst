@@ -120,6 +120,7 @@ Step 1: Configure Dataset
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The purpose of the dataset class is to store the samples and their corresponding labels. Within this dataset class we:
+
 - preprocess the annotations: remove any hyperlinks, standardize label names, remove samples without labels, etc
 - load any auxiliary information: for example, .pkl files of captions for each image
 - load features
