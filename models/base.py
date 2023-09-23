@@ -26,11 +26,11 @@ class BaseLightningModule(pl.LightningModule):
             # reset the metrics
             metric.reset()
 
+        avg_metric_score = avg_metric_score / len(self.metric_names)
 
         self.log(f'{stage}_{cls_name}_average', avg_metric_score,
                     prog_bar=True, sync_dist=True)
         
-        avg_metric_score = avg_metric_score / len(self.metric_names)
         msg += f"\t{stage}_{cls_name}_average: {avg_metric_score}\n"
 
         logging.info(msg)
