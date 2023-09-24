@@ -9,13 +9,16 @@ classification, hateful memes explanation generation).
 .. contents:: Table of Contents 
    :depth: 2
 
-***************
+************
 Installation
-***************
+************
 
 To get started, run the following command::
 
   pip install -r requirements.txt
+
+
+For installation instructions related to image feature extraction, inpainting and captioning, please refer to the ``preprocessing`` directory. 
 
 ***************
 Main Features
@@ -23,7 +26,7 @@ Main Features
 
 * Provides a framework for training and evaluating a different language and vision-language models on well known hateful memes datasets.
 * Allows for efficient experimentation and parameter tuning through modification of configuration files. 
-* Evaluate models using different state-of-the-art evaluation metrics such as Accuracy and AUROC. 
+* Evaluates models using different state-of-the-art evaluation metrics such as Accuracy and AUROC. 
 * Supports visualization by integrating with Tensorboard, allowing users to easily view and analyze metrics in a user-friendly GUI.
 
 
@@ -57,11 +60,6 @@ Supported Datasets
 | MAMI                         | `[arxiv] <https://aclanthology.org/2022.semeval-1.74.pdf>`_     | `[CodaLab] <https://competitions.codalab.org/competitions/34175>`_                                             | 2022 | 10001 |               |
 +------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
 
-Adding Custom Datasets
-~~~~~~~~~~~~~~~~~~~~~~
-1. To use a dataset lot listed above, copy the code given in one of the dataset files, eg; ``datamodules/datasets/fhm.py``. 
-2. Modify the base class implementation, specifically ``_preprocess_annotations`` to suit your dataset's needs.
-3. Follow the steps in model usage to use the custom dataset in your experiment.
 
 ************************************
 Supported Meme Models and Evaluation
@@ -109,11 +107,14 @@ MATK Overview
 +------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
 
 
-*****
-Usage
-*****
+**************
+Beginner Usage
+**************
 
-To configure the different elements of the toolkit, we use ``Hydra``, an open-source Python framework that simplifies the development of research and other complex applications. 
+This section will cover how to use the toolkit to run training and inference with the currently supported models and datasets. 
+For more advanced usage, such as evaluating a model on a custom dataset or a introducing a new model, please go to the Advanced Usage section.
+
+To configure the different elements of the toolkit, we use ``Hydra``, an open-source Python framework that simplifies the development of complex research applications. 
 Its key feature is the ability to dynamically create a hierarchical configuration by composition and override it through both config files and the command line.
 
 Step 1: Configure Dataset
@@ -138,7 +139,7 @@ For each dataset, we support the following dataset types: ``FRCNNDataset``, ``Im
 +---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
 
 
-To configure the dataset, go to ``configs/dataset``, pick the file based on your dataset choice and specify:
+To configure the dataset, go to ``configs/dataset`` and specify the following parameters in the dataset file:
 
 - ``annotation_filepaths (dict)``
 - ``image_dirs (dict)``
@@ -156,7 +157,7 @@ Step 2: Configure DataModule
 
 The datamodules initialize the tokenizer and the data loaders (which handle batch size, number of workers, etc.).
 
-To configure the datamodule, go to ``configs/datamodule`` and pick the file based on your model choice and specify:
+To configure the datamodule, go to ``configs/datamodule`` and specify the following parameters in the datamodule file:
 
 - ``shuffle_train (bool)``: set to True to make sure we aren’t exposing our model to the same cycle (order) of data in every epoch
 - ``num_workers (int)``: how many subprocesses to use for data loading
@@ -170,7 +171,7 @@ For all other optional parameters listed below please refer to the experiment co
 Step 3: Configure Model
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To configure a model, go to ``configs/model`` and pick the file based on your model choice. The following parameters need to be specified:
+To configure a model, go to ``configs/model`` and specify the following parameters in the model file:
 
 - ``class_path``: class path of the model you chose (e.g., ``models.flava.FlavaClassificationModel``).
 - ``model_class_or_path``: class or path of the pretrained model (e.g., ``facebook/flava-full``).
@@ -190,7 +191,7 @@ The Trainer helps automate several aspects of training. It handles all loop deta
 - Calling the Callbacks at the appropriate times.
 - Putting batches and computations on the correct devices.
 
-To configure the trainer, go to ``configs/trainer``, pick the trainer of your choice. Below are the **required** parameters and the **default** values we use. 
+To configure the trainer, go to ``configs/trainer``. Below are the **required** parameters and the **default** values we use. 
 You can also tweak the trainer by adding parameters from here: `[Trainer API] <https://lightning.ai/docs/pytorch/stable/common/trainer.html#trainer-class-api>`_
 
 - ``accelerator``: ``cuda``
@@ -275,6 +276,150 @@ For example, to run **inference** for VisualBERT on FHM:
     +experiment={experiment config location} \
     action=test \
     trainer={single_gpu_trainer, multi_gpu_trainer}
+
+
+**************
+Advanced Usage
+**************
+
+This section will cover evaluating a model on a custom dataset and introducing a new model. 
+For beginner usage, how to use the toolkit to run training and inference with the currently supported models and datasets, please go to the Beginner Usage section.
+
+Add a new dataset
+~~~~~~~~~~~~~~~~~
+
+You will need to make the following changes in the ``datasets`` directory if you are a introducing a dataset named ABC.
+
+#. Create a new file with the implementations of ``ABCBase`` and ``FRCNNDataset``, ``ImageDataset``, ``TextClassificationDataset``. Your ABCBase implementation should have the following structure:
+
+    .. code-block:: python
+
+        class ABCBase(Dataset):
+            def __init__(
+                self,
+                annotation_filepath: str,
+                auxiliary_dicts: dict,
+                labels: List[str]
+            ):
+
+            def _preprocess_annotations(self, annotation_filepath: str):
+                """
+                Standardize label names, remove unlabelled samples, etc
+                Args:
+                    annotation_filepath (str): Path to the annotation file.
+
+                Returns:
+                    list: Processed annotations.
+                """
+            
+
+            def _load_auxiliary(self, auxiliary_dicts: dict):
+                """
+                Load auxiliary data sources such as image captions
+
+                Args:
+                    auxiliary_dicts (dict): Dictionary of auxiliary data sources.
+
+                Returns:
+                    dict: Loaded auxiliary data.
+                """
+            
+            def __len__(self):
+                """
+                Get the number of annotations in the dataset.
+
+                Returns:
+                    int: Number of annotations.
+                """
+
+    Next, the ``ImageDataset`` class must follow the following structure:
+
+    .. code-block:: python
+
+        class ImageDataset(ABCBase):
+            def __init__(
+                self,
+                annotation_filepath: str,
+                auxiliary_dicts: dict,
+                labels: List[str],
+                text_template: str,
+                image_dir: str
+            ):
+                super().__init__(annotation_filepath, auxiliary_dicts, labels)
+
+            def __getitem__(self, idx: int):
+                """
+                Get a specific item from the dataset.
+
+                Args:
+                    idx (int): Index of the item to retrieve.
+
+                Returns:
+                    dict: A dictionary containing data for the specified item.
+                """
+          
+
+    Similarly, please mimic the implementations of ``FRCNNDataset`` and ``TextClassificationDataset``. You can follow ``datasets/fhm.py`` as an example.
+
+
+#. Create a config file called abc.yaml inside ``configs/dataset`` for your dataset ABC. The key-value pairs in this file define the values each argument in your dataset class takes.
+You can use ``configs/dataset/fhm.yaml`` as a reference. 
+
+#. Here on, you can refer to this section: :ref:`Step 2: Configure DataModule`.
+
+Add a new model
+~~~~~~~~~~~~~~~
+
+You will need to make the following changes in the ``models`` directory if you are a introducing a model named XYZ:
+
+#. Your file should contain a model class with the following structure:
+
+    ..code-block:: python
+
+        class XYZClassificationModel(BaseLightningModule):
+        def __init__(
+            self,
+            model_class_or_path: str,
+            metrics_cfg: dict,
+            cls_dict: dict,
+            optimizers: list
+        ):
+            super().__init__()
+            # set up classification
+            # set up metric
+
+        def training_step(self, batch, batch_idx):
+            """
+            Training step for the Flava classification model.
+
+            Args:
+                batch: Input batch from the data loader.
+                batch_idx: Index of the current batch.
+
+            Returns:
+                torch.Tensor: Total loss for the batch.
+            """
+        
+        def validation_step(self, batch, batch_idx):
+
+        def test_step(self, batch, batch_idx): 
+
+        def predict_step(self, batch, batch_idx):
+        
+        def configure_optimizers(self):
+            """
+            Configure optimizers for the Flava classification model.
+
+            Returns:
+                list: List of optimizer instances.
+            """
+
+
+#. Create a config file called xyz.yaml inside ``configs/model`` for your model XYZ. The key-value pairs in this file define the values each argument in your model class takes.
+You can use ``configs/model/flava.yaml`` as a reference. 
+        
+#. Here on, you can refer to this section: :ref:`Step 2: Configure DataModule`.
+
 
 *****************
 Model Performance
