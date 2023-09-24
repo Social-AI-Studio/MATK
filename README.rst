@@ -332,7 +332,7 @@ You will need to make the following changes in the ``datasets`` directory if you
                     int: Number of annotations.
                 """
 
-  Next, the ``ImageDataset`` class must follow the following structure:
+Next, the ``ImageDataset`` class must follow the following structure:
 
     .. code-block:: python
 
@@ -359,7 +359,7 @@ You will need to make the following changes in the ``datasets`` directory if you
                 """
           
 
-  Similarly, please mimic the implementations of ``FRCNNDataset`` and ``TextClassificationDataset``. You can follow ``datasets/fhm.py`` as an example.
+Similarly, please mimic the implementations of ``FRCNNDataset`` and ``TextClassificationDataset``. You can follow ``datasets/fhm.py`` as an example.
 
 
 #. Create a config file called abc.yaml inside ``configs/dataset`` for your dataset ABC. The key-value pairs in this file define the values each argument in your dataset class takes.
