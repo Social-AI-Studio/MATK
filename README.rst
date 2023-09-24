@@ -359,66 +359,66 @@ You will need to make the following changes in the ``datasets`` directory if you
                 """
           
 
-    Similarly, please mimic the implementations of ``FRCNNDataset`` and ``TextClassificationDataset``. You can follow ``datasets/fhm.py`` as an example.
+  Similarly, please mimic the implementations of ``FRCNNDataset`` and ``TextClassificationDataset``. You can follow ``datasets/fhm.py`` as an example.
 
 
 #. Create a config file called abc.yaml inside ``configs/dataset`` for your dataset ABC. The key-value pairs in this file define the values each argument in your dataset class takes.
 You can use ``configs/dataset/fhm.yaml`` as a reference. 
 
-#. Here on, you can refer to this section: :ref:`Step 2: Configure DataModule`.
+#. Here on, you can refer to :ref:`Step 2: Configure DataModule`.
 
 Add a new model
 ~~~~~~~~~~~~~~~
 
-You will need to make the following changes in the ``models`` directory if you are a introducing a model named XYZ:
+You will need to make the following changes in the ``models`` directory if you are a introducing a model named XYZ.
 
 #. Your file should contain a model class with the following structure:
 
-    ..code-block:: python
+    .. code-block:: python
 
         class XYZClassificationModel(BaseLightningModule):
-            def __init__(
-                self,
-                model_class_or_path: str,
-                metrics_cfg: dict,
-                cls_dict: dict,
-                optimizers: list
-            ):
-                super().__init__()
-                # set up classification
-                # set up metric
+        def __init__(
+            self,
+            model_class_or_path: str,
+            metrics_cfg: dict,
+            cls_dict: dict,
+            optimizers: list
+        ):
+            super().__init__()
+            # set up classification
+            # set up metric
 
-            def training_step(self, batch, batch_idx):
-                """
-                Training step for the Flava classification model.
+        def training_step(self, batch, batch_idx):
+            """
+            Training step for the Flava classification model.
 
-                Args:
-                    batch: Input batch from the data loader.
-                    batch_idx: Index of the current batch.
+            Args:
+                batch: Input batch from the data loader.
+                batch_idx: Index of the current batch.
 
-                Returns:
-                    torch.Tensor: Total loss for the batch.
-                """
-            
-            def validation_step(self, batch, batch_idx):
+            Returns:
+                torch.Tensor: Total loss for the batch.
+            """
+        
+        def validation_step(self, batch, batch_idx):
 
-            def test_step(self, batch, batch_idx): 
+        def test_step(self, batch, batch_idx): 
 
-            def predict_step(self, batch, batch_idx):
-            
-            def configure_optimizers(self):
-                """
-                Configure optimizers for the Flava classification model.
+        def predict_step(self, batch, batch_idx):
+        
+        def configure_optimizers(self):
+            """
+            Configure optimizers for the Flava classification model.
 
-                Returns:
-                    list: List of optimizer instances.
-                """
+            Returns:
+                list: List of optimizer instances.
+            """
 
 
 #. Create a config file called xyz.yaml inside ``configs/model`` for your model XYZ. The key-value pairs in this file define the values each argument in your model class takes.
 You can use ``configs/model/flava.yaml`` as a reference. 
         
-#. Here on, you can refer to this section: :ref:`Step 2: Configure DataModule`.
+#. Here on, you can refer to :ref:`Step 2: Configure DataModule`.
 
 
 *****************
