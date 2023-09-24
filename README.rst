@@ -290,7 +290,7 @@ Add a new dataset
 
 You will need to make the following changes in the ``datasets`` directory if you are a introducing a dataset named ABC.
 
-#. Create a new file with the implementations of ``ABCBase`` and ``FRCNNDataset``, ``ImageDataset``, ``TextClassificationDataset``. Your ABCBase implementation should have the following structure:
+#. Create a new file with the implementations of ``ABCBase`` and ``FRCNNDataset``, ``ImageDataset``, ``TextClassificationDataset``. Your ``ABCBase`` implementation should have the following structure:
 
     .. code-block:: python
 
@@ -401,10 +401,19 @@ You will need to make the following changes in the ``models`` directory if you a
             """
         
         def validation_step(self, batch, batch_idx):
+            """
+            Similar to training step
+            """
 
         def test_step(self, batch, batch_idx): 
+            """
+            Similar to training step
+            """
 
         def predict_step(self, batch, batch_idx):
+            """
+            Similar to training step
+            """
         
         def configure_optimizers(self):
             """
