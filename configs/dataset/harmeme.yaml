@@ -1,27 +1,28 @@
-annotation_filepaths:
-  train: /mnt/sda/mshee/datasets/memes/harmeme/annotations/train.jsonl
-  validate: /mnt/sda/mshee/datasets/memes/harmeme/annotations/val.jsonl
-  test: /mnt/sda/mshee/datasets/memes/harmeme/annotations/test.jsonl
-  predict: /mnt/sda/mshee/datasets/memes/harmeme/annotations/test.jsonl
+harmeme:  
+  annotation_filepaths:
+    train: /mnt/sda/datasets/memes/harmemes/annotations/train.jsonl
+    validate: /mnt/sda/datasets/memes/harmemes/annotations/val.jsonl
+    test: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl
+    predict: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl
 
-image_dirs:
-  train: /mnt/sda/mshee/datasets/memes/harmeme/images
-  validate: /mnt/sda/mshee/datasets/memes/harmeme/images
-  test: /mnt/sda/mshee/datasets/memes/harmeme/images
-  predict: /mnt/sda/mshee/datasets/memes/harmeme/images
+  image_dirs:
+    train: /mnt/sda/datasets/memes/harmemes/images
+    validate: /mnt/sda/datasets/memes/harmemes/images
+    test: /mnt/sda/datasets/memes/harmemes/images
+    predict: /mnt/sda/datasets/memes/harmemes/images
 
-auxiliary_dicts:
-  train: {}
-  validate: {}
-  test: {}
-  predict: {}
+  auxiliary_dicts:
+    train: {}
+    validate: {}
+    test: {}
+    predict: {}
 
-feats_dir:
-  train: null
-  validate: null
-  test: null
-  predict: null
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
 
-dataset_class: ???
-text_template: ???
-labels: ???
+  dataset_class: ???
+  text_template: ???
+  labels: ???

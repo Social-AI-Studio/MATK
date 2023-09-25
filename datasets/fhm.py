@@ -20,8 +20,7 @@ class FHMBase(CommonBase):
         super().__init__("fhm", labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = self._encode_labels("fhm")
-        # self.labels = labels
+        self.labels = self._encode_labels()
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []

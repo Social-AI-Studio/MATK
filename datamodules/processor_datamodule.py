@@ -32,10 +32,15 @@ class ProcessorDataModule(pl.LightningDataModule):
             self.dataset_cfg[dataset].dataset_class = temp
 
         processor = AutoProcessor.from_pretrained(processor_class_or_path)
+        concat_labels = []
         for dataset in self.dataset_cfg:
             dataset_labels = self.dataset_cfg[dataset].labels
             encoded_labels = encode_labels(str(dataset), dataset_labels)
-            self.collate_functions.append(partial(processor_collate_fn, processor=processor, labels=encoded_labels))
+            concat_labels.extend(encoded_labels)
+        print("oooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+        print(concat_labels)
+        self.collate_fn = partial(processor_collate_fn, processor=processor, labels=concat_labels)
+        self.num_datasets = len(self.dataset_cfg)
         
     def setup(self, stage: Optional[str] = None):
 
@@ -92,15 +97,15 @@ class ProcessorDataModule(pl.LightningDataModule):
                 )
                 self.predict.append(dataset_obj)
 
-    def train_dataloader(self):
-        return DataLoader(ConcatDataset(*self.train), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_functions[0], shuffle=self.shuffle_train)
+    def train_dataloader(self): # change the division - make it batch size per dataset
+        return DataLoader(ConcatDataset(*self.train), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
        
     def val_dataloader(self):
-        return DataLoader(ConcatDataset(*self.validate), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_functions[0])
+        return DataLoader(ConcatDataset(*self.validate), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
         
     def test_dataloader(self):
-        return DataLoader(ConcatDataset(*self.test), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_functions[0])
+        return DataLoader(ConcatDataset(*self.test), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
         
     def predict_dataloader(self):
-        return DataLoader(ConcatDataset(*self.predict), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_functions[0])
+        return DataLoader(ConcatDataset(*self.predict), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
        

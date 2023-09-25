@@ -8,7 +8,7 @@ from . import utils
 
 from typing import List
 from torch.utils.data import Dataset
-
+from .base import CommonBase
 
 INTENSITY_MAP = {
     'not harmful': 0, 
@@ -23,17 +23,17 @@ TARGET_MAP = {
     'society': 3
 }
 
-class HarmemeBase(Dataset):
+class HarmemeBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         labels: List[str]
     ):  
-        self.labels = labels
+        super().__init__("harmeme", labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        
+        self.labels = self._encode_labels()
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -148,6 +148,7 @@ class ImageDataset(HarmemeBase):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.image_dir = image_dir
         self.text_template = text_template
+        self.raw_labels = labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
@@ -173,8 +174,8 @@ class ImageDataset(HarmemeBase):
             'image_path': image_path
         }
 
-        for l in self.labels:
-            item[l] = record[l]
+        for encoded_label, raw_label in zip(self.labels, self.raw_labels):
+            item[encoded_label] = record[raw_label]
 
         return item
 

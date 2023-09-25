@@ -45,9 +45,7 @@ class FlavaClassificationModel(BaseLightningModule):
             attention_mask=batch["attention_mask"],
             pixel_values=batch['pixel_values']
         )
-
         total_loss = 0.0
-        
         for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx]((model_outputs.multimodal_embeddings[:, 0]))
@@ -64,12 +62,10 @@ class FlavaClassificationModel(BaseLightningModule):
             attention_mask=batch["attention_mask"],
             pixel_values=batch['pixel_values']
         )
-
+       
         total_loss = 0.0
-        
         for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
-            print(targets)
             preds = self.mlps[idx]((model_outputs.multimodal_embeddings[:, 0]))
             loss = F.cross_entropy(preds, targets)
             total_loss += loss

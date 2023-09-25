@@ -15,10 +15,11 @@ class CommonBase(Dataset):
         labels: List[str]
     ):
         self.labels = labels
+        self.dataset_prefix = dataset_prefix
 
-    def _encode_labels(self, prefix):
+    def _encode_labels(self):
         encoded_labels = []
         for label in self.labels:
-            new_label = prefix + "_"+label
+            new_label = self.dataset_prefix + "_"+label
             encoded_labels.append(new_label)
         return encoded_labels
