@@ -1,0 +1,5 @@
+shuffle_train: true
+num_workers: 4
+batch_size: 32
+class_path: datamodules.frcnn_datamodule.FRCNNDataModule
+tokenizer_class_or_path: ???

@@ -1,0 +1,27 @@
+annotation_filepaths:
+  train: /mnt/data1/mshee/datasets/memes/mami/annotations/train.jsonl
+  validate: /mnt/data1/mshee/datasets/memes/mami/annotations/trial.jsonl
+  test: /mnt/data1/mshee/datasets/memes/mami/annotations/test.jsonl
+  predict: /mnt/data1/mshee/datasets/memes/mami/annotations/test.jsonl
+
+image_dirs:
+  train: /mnt/data1/mshee/datasets/memes/mami/images/img/train
+  validate: /mnt/data1/mshee/datasets/memes/mami/images/img/trial
+  test: /mnt/data1/mshee/datasets/memes/mami/images/img/test
+  predict: /mnt/data1/mshee/datasets/memes/mami/images/img/test
+
+auxiliary_dicts:
+  train: {}
+  validate: {}
+  test: {}
+  predict: {}
+
+feats_dir:
+  train: null
+  validate: null
+  test: null
+  predict: null
+
+dataset_class: ???
+text_template: ???
+labels: ???

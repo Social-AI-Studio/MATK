@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-def _image_collate_fn(
+def _common_collate(
         batch, 
         tokenizer,
         labels
@@ -30,23 +30,20 @@ def _image_collate_fn(
             
     return inputs
 
-def image_collate_fn(
+def frcnn_collate_fn(
         batch, 
         tokenizer,
         image_preprocess,
         labels
     ):
     
-    inputs = _image_collate_fn(
+    inputs = _common_collate(
         batch=batch,
         tokenizer=tokenizer,
         labels=labels
     )
 
-    images = []
-    for item in batch:
-        images.append(item["image_path"])
-
+    images = [item['image_path'] for item in batch]
     images, sizes, scales_yx = image_preprocess(images)
 
     inputs["images"] = images
@@ -55,12 +52,12 @@ def image_collate_fn(
     
     return inputs
 
-def image_collate_fn_fast(
+def frcnn_collate_fn_fast(
         batch, 
         tokenizer,
         labels
     ):
-    inputs = _image_collate_fn(
+    inputs = _common_collate(
         batch=batch,
         tokenizer=tokenizer,
         labels=labels

@@ -1,0 +1,4 @@
+class_path: models.flava.FlavaClassificationModel
+model_class_or_path: facebook/flava-full
+cls_dict: ???
+optimizers: ???

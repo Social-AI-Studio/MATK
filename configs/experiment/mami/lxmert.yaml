@@ -1,0 +1,49 @@
+# @package _global_
+defaults:
+  - /model: lxmert
+  - /dataset: mami
+  - /datamodule: frcnn_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+      - accuracy
+      - auroc
+  - /hydra: experiment
+  - _self_
+
+# Mandatory Configuration Parameters
+model:
+  cls_dict:
+    misogynous: 2
+  optimizers:
+    - class_path: torch.optim.Adam
+      lr: 2e-5
+  frcnn_class_or_path: null
+
+dataset:
+  dataset_class: datasets.mami.FRCNNDataset
+  text_template: "{text}"
+  labels:
+    - misogynous
+  feats_dir:
+    train: /mnt/data1/mshee/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned
+    validate: /mnt/data1/mshee/datasets/memes/mami/features/trial/unc-nlp/frcnn-vg-finetuned
+    test: /mnt/data1/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
+    predict: /mnt/data1/mshee/datasets/memes/mami/features/test/unc-nlp/frcnn-vg-finetuned
+
+
+datamodule:
+  tokenizer_class_or_path: facebook/flava-full
+  frcnn_class_or_path: null
+
+monitor_metric: validate_misogynous_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/mami/lxmert
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???

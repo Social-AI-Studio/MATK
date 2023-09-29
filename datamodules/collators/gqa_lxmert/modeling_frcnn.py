@@ -25,7 +25,6 @@ from typing import Dict, List, Tuple
 import numpy as np
 import torch
 from torch import nn
-from torch.nn import functional as F
 from torch.nn.modules.batchnorm import BatchNorm2d
 from torchvision.ops import RoIPool
 from torchvision.ops.boxes import batched_nms, nms
@@ -39,8 +38,10 @@ def norm_box(boxes, raw_sizes):
         normalized_boxes = boxes.copy()
     else:
         normalized_boxes = boxes.clone()
+    
     normalized_boxes[:, :, (0, 2)] /= raw_sizes[:, 1].view(-1, 1, 1)
     normalized_boxes[:, :, (1, 3)] /= raw_sizes[:, 0].view(-1, 1, 1)
+    
     return normalized_boxes
 
 
@@ -85,7 +86,7 @@ def pad_list_tensors(
             too_small = True
             tensor_i = tensor_i.unsqueeze(-1)
         assert isinstance(tensor_i, torch.Tensor)
-        tensor_i = F.pad(
+        tensor_i = nn.functional.pad(
             input=tensor_i,
             pad=(0, 0, 0, max_detections - preds_per_image[i]),
             mode="constant",
@@ -170,7 +171,6 @@ def get_norm(norm, out_channels):
 
 
 def _create_grid_offsets(size: List[int], stride: int, offset: float, device):
-
     grid_height, grid_width = size
     shifts_x = torch.arange(
         offset * stride,
@@ -391,7 +391,6 @@ def assign_boxes_to_levels(
     canonical_box_size: int,
     canonical_level: int,
 ):
-
     box_sizes = torch.sqrt(torch.cat([boxes.area() for boxes in box_lists]))
     # Eqn.(1) in FPN paper
     level_assignments = torch.floor(canonical_level + torch.log2(box_sizes / canonical_box_size + 1e-8))
@@ -557,8 +556,8 @@ class Matcher(object):
         assert thresholds[0] > 0
         thresholds.insert(0, -float("inf"))
         thresholds.append(float("inf"))
-        assert all([low <= high for (low, high) in zip(thresholds[:-1], thresholds[1:])])
-        assert all([label_i in [-1, 0, 1] for label_i in labels])
+        assert all(low <= high for (low, high) in zip(thresholds[:-1], thresholds[1:]))
+        assert all(label_i in [-1, 0, 1] for label_i in labels)
         assert len(labels) == len(thresholds) - 1
         self.thresholds = thresholds
         self.labels = labels
@@ -593,7 +592,7 @@ class Matcher(object):
 
         match_labels = matches.new_full(matches.size(), 1, dtype=torch.int8)
 
-        for (l, low, high) in zip(self.labels, self.thresholds[:-1], self.thresholds[1:]):
+        for l, low, high in zip(self.labels, self.thresholds[:-1], self.thresholds[1:]):
             low_high = (matched_vals >= low) & (matched_vals < high)
             match_labels[low_high] = l
 
@@ -701,7 +700,7 @@ class RPNOutputs(object):
 
 
 # Main Classes
-class Conv2d(torch.nn.Conv2d):
+class Conv2d(nn.Conv2d):
     def __init__(self, *args, **kwargs):
         norm = kwargs.pop("norm", None)
         activation = kwargs.pop("activation", None)
@@ -712,9 +711,9 @@ class Conv2d(torch.nn.Conv2d):
 
     def forward(self, x):
         if x.numel() == 0 and self.training:
-            assert not isinstance(self.norm, torch.nn.SyncBatchNorm)
+            assert not isinstance(self.norm, nn.SyncBatchNorm)
         if x.numel() == 0:
-            assert not isinstance(self.norm, torch.nn.GroupNorm)
+            assert not isinstance(self.norm, nn.GroupNorm)
             output_shape = [
                 (i + 2 * p - (di * (k - 1) + 1)) // s + 1
                 for i, p, di, k, s in zip(
@@ -752,7 +751,7 @@ class LastLevelMaxPool(nn.Module):
         self.in_feature = "p5"
 
     def forward(self, x):
-        return [F.max_pool2d(x, kernel_size=1, stride=2, padding=0)]
+        return [nn.functional.max_pool2d(x, kernel_size=1, stride=2, padding=0)]
 
 
 class LastLevelP6P7(nn.Module):
@@ -769,7 +768,7 @@ class LastLevelP6P7(nn.Module):
 
     def forward(self, c5):
         p6 = self.p6(c5)
-        p7 = self.p7(F.relu(p6))
+        p7 = self.p7(nn.functional.relu(p6))
         return [p6, p7]
 
 
@@ -790,11 +789,11 @@ class BasicStem(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = F.relu_(x)
+        x = nn.functional.relu_(x)
         if self.caffe_maxpool:
-            x = F.max_pool2d(x, kernel_size=3, stride=2, padding=0, ceil_mode=True)
+            x = nn.functional.max_pool2d(x, kernel_size=3, stride=2, padding=0, ceil_mode=True)
         else:
-            x = F.max_pool2d(x, kernel_size=3, stride=2, padding=1)
+            x = nn.functional.max_pool2d(x, kernel_size=3, stride=2, padding=1)
         return x
 
     @property
@@ -881,10 +880,10 @@ class BottleneckBlock(ResNetBlockBase):
 
     def forward(self, x):
         out = self.conv1(x)
-        out = F.relu_(out)
+        out = nn.functional.relu_(out)
 
         out = self.conv2(out)
-        out = F.relu_(out)
+        out = nn.functional.relu_(out)
 
         out = self.conv3(out)
 
@@ -894,7 +893,7 @@ class BottleneckBlock(ResNetBlockBase):
             shortcut = x
 
         out += shortcut
-        out = F.relu_(out)
+        out = nn.functional.relu_(out)
         return out
 
 
@@ -1038,9 +1037,9 @@ class ResNet(Backbone):
             curr_kwargs = {}
             for k, v in kwargs.items():
                 if k.endswith("_per_block"):
-                    assert len(v) == num_blocks, (
-                        f"Argument '{k}' of make_stage should have the " f"same length as num_blocks={num_blocks}."
-                    )
+                    assert (
+                        len(v) == num_blocks
+                    ), f"Argument '{k}' of make_stage should have the same length as num_blocks={num_blocks}."
                     newk = k[: -len("_per_block")]
                     assert newk not in kwargs, f"Cannot call make_stage with both {k} and {newk}!"
                     curr_kwargs[newk] = v[i]
@@ -1098,7 +1097,7 @@ class ROIPooler(nn.Module):
         Returns:
             A tensor of shape(N*B, Channels, output_size, output_size)
         """
-        x = [v for v in feature_maps.values()]
+        x = list(feature_maps.values())
         num_level_assignments = len(self.level_poolers)
         assert len(x) == num_level_assignments and len(boxes) == x[0].size(0)
 
@@ -1159,7 +1158,7 @@ class ROIOutputs(object):
         return boxes.view(num_pred, K * B).split(preds_per_image, dim=0)
 
     def _predict_objs(self, obj_logits, preds_per_image):
-        probs = F.softmax(obj_logits, dim=-1)
+        probs = nn.functional.softmax(obj_logits, dim=-1)
         probs = probs.split(preds_per_image, dim=0)
         return probs
 
@@ -1235,8 +1234,8 @@ class ROIOutputs(object):
         sizes,
         scales=None,
     ):
-        if self.training:
-            raise NotImplementedError()
+        # if self.training:
+        #     raise NotImplementedError()
         return self.inference(
             obj_logits,
             attr_logits,
@@ -1265,7 +1264,7 @@ class Res5ROIHeads(nn.Module):
         self.feature_strides = {k: v.stride for k, v in input_shape.items()}
         self.feature_channels = {k: v.channels for k, v in input_shape.items()}
         self.cls_agnostic_bbox_reg = cfg.ROI_BOX_HEAD.CLS_AGNOSTIC_BBOX_REG
-        self.stage_channel_factor = 2 ** 3  # res5 is 8x res2
+        self.stage_channel_factor = 2**3  # res5 is 8x res2
         self.out_channels = cfg.RESNETS.RES2_OUT_CHANNELS * self.stage_channel_factor
 
         # self.proposal_matcher = Matcher(
@@ -1335,12 +1334,12 @@ class Res5ROIHeads(nn.Module):
         return self.res5(x)
 
     def forward(self, features, proposal_boxes, gt_boxes=None):
-        if self.training:
-            """
-            see https://github.com/airsplay/py-bottom-up-attention/\
-                    blob/master/detectron2/modeling/roi_heads/roi_heads.py
-            """
-            raise NotImplementedError()
+        # if self.training:
+        #     """
+        #     see https://github.com/airsplay/py-bottom-up-attention/\
+        #             blob/master/detectron2/modeling/roi_heads/roi_heads.py
+        #     """
+        #     raise NotImplementedError()
 
         assert not proposal_boxes[0].requires_grad
         box_features = self._shared_roi_transform(features, proposal_boxes)
@@ -1402,7 +1401,7 @@ class AnchorGenerator(nn.Module):
 
     def grid_anchors(self, grid_sizes):
         anchors = []
-        for (size, stride, base_anchors) in zip(grid_sizes, self.strides, self.cell_anchors):
+        for size, stride, base_anchors in zip(grid_sizes, self.strides, self.cell_anchors):
             shift_x, shift_y = _create_grid_offsets(size, stride, self.offset, base_anchors.device)
             shifts = torch.stack((shift_x, shift_y, shift_x, shift_y), dim=1)
 
@@ -1420,13 +1419,13 @@ class AnchorGenerator(nn.Module):
 
         anchors = []
         for size in sizes:
-            area = size ** 2.0
+            area = size**2.0
             for aspect_ratio in aspect_ratios:
                 w = math.sqrt(area / aspect_ratio)
                 h = aspect_ratio * w
                 x0, y0, x1, y1 = -w / 2.0, -h / 2.0, w / 2.0, h / 2.0
                 anchors.append([x0, y0, x1, y1])
-        return nn.Parameter(torch.Tensor(anchors))
+        return nn.Parameter(torch.tensor(anchors))
 
     def forward(self, features):
         """
@@ -1490,7 +1489,7 @@ class RPNHead(nn.Module):
         pred_objectness_logits = []
         pred_anchor_deltas = []
         for x in features:
-            t = F.relu(self.conv(x))
+            t = nn.functional.relu(self.conv(x))
             pred_objectness_logits.append(self.objectness_logits(t))
             pred_anchor_deltas.append(self.anchor_deltas(t))
         return pred_objectness_logits, pred_anchor_deltas
@@ -1583,11 +1582,11 @@ class RPN(nn.Module):
         )
         # For RPN-only models, the proposals are the final output
 
-        if self.training:
-            raise NotImplementedError()
-            return self.training(outputs, images, image_shapes, features, gt_boxes)
-        else:
-            return self.inference(outputs, images, image_shapes, features, gt_boxes)
+        # if self.training:
+        #     raise NotImplementedError()
+        #     return self.training(outputs, images, image_shapes, features, gt_boxes)
+        # else:
+        return self.inference(outputs, images, image_shapes, features, gt_boxes)
 
 
 class FastRCNNOutputLayers(nn.Module):
@@ -1650,7 +1649,7 @@ class FastRCNNOutputLayers(nn.Module):
             cls_emb = self.cls_embedding(max_class)  # [b] --> [b, 256]
             roi_features = torch.cat([roi_features, cls_emb], -1)  # [b, 2048] + [b, 256] --> [b, 2304]
             roi_features = self.fc_attr(roi_features)
-            roi_features = F.relu(roi_features)
+            roi_features = nn.functional.relu(roi_features)
             attr_scores = self.attr_score(roi_features)
             return scores, attr_scores, proposal_deltas
         else:
@@ -1798,26 +1797,28 @@ class GeneralizedRCNN(nn.Module):
 
         if len(unexpected_keys) > 0:
             print(
-                f"Some weights of the model checkpoint at {pretrained_model_name_or_path} were not used when "
-                f"initializing {model.__class__.__name__}: {unexpected_keys}\n"
-                f"- This IS expected if you are initializing {model.__class__.__name__} from the checkpoint of a model trained on another task "
-                f"or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).\n"
-                f"- This IS NOT expected if you are initializing {model.__class__.__name__} from the checkpoint of a model that you expect "
-                f"to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model)."
+                f"Some weights of the model checkpoint at {pretrained_model_name_or_path} were not used when"
+                f" initializing {model.__class__.__name__}: {unexpected_keys}\n- This IS expected if you are"
+                f" initializing {model.__class__.__name__} from the checkpoint of a model trained on another task or"
+                " with another architecture (e.g. initializing a BertForSequenceClassification model from a"
+                " BertForPreTraining model).\n- This IS NOT expected if you are initializing"
+                f" {model.__class__.__name__} from the checkpoint of a model that you expect to be exactly identical"
+                " (initializing a BertForSequenceClassification model from a BertForSequenceClassification model)."
             )
         else:
             print(f"All model checkpoint weights were used when initializing {model.__class__.__name__}.\n")
         if len(missing_keys) > 0:
             print(
-                f"Some weights of {model.__class__.__name__} were not initialized from the model checkpoint at {pretrained_model_name_or_path} "
-                f"and are newly initialized: {missing_keys}\n"
-                f"You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference."
+                f"Some weights of {model.__class__.__name__} were not initialized from the model checkpoint at"
+                f" {pretrained_model_name_or_path} and are newly initialized: {missing_keys}\nYou should probably"
+                " TRAIN this model on a down-stream task to be able to use it for predictions and inference."
             )
         else:
             print(
-                f"All the weights of {model.__class__.__name__} were initialized from the model checkpoint at {pretrained_model_name_or_path}.\n"
-                f"If your task is similar to the task the model of the checkpoint was trained on, "
-                f"you can already use {model.__class__.__name__} for predictions without further training."
+                f"All the weights of {model.__class__.__name__} were initialized from the model checkpoint at"
+                f" {pretrained_model_name_or_path}.\nIf your task is similar to the task the model of the checkpoint"
+                f" was trained on, you can already use {model.__class__.__name__} for predictions without further"
+                " training."
             )
         if len(error_msgs) > 0:
             raise RuntimeError(
@@ -1844,8 +1845,8 @@ class GeneralizedRCNN(nn.Module):
             max_detections (int), return_tensors {"np", "pt", None}, padding {None,
             "max_detections"}, pad_value (int), location = {"cuda", "cpu"}
         """
-        if self.training:
-            raise NotImplementedError()
+        # if self.training:
+        #     raise NotImplementedError()
         return self.inference(
             images=images,
             image_shapes=image_shapes,
@@ -1895,6 +1896,7 @@ class GeneralizedRCNN(nn.Module):
             "return_tensors": kwargs.get("return_tensors", None),
             "pad_value": kwargs.get("pad_value", 0),
             "padding": kwargs.get("padding", None),
+            "location": kwargs.get("location")
         }
         preds_per_image = torch.tensor([p.size(0) for p in boxes])
         boxes = pad_list_tensors(boxes, preds_per_image, **subset_kwargs)

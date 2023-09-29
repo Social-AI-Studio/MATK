@@ -1,0 +1,3 @@
+accuracy:
+  name: Accuracy
+  task: multiclass

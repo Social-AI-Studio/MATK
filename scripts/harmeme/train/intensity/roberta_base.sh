@@ -1,1 +1,0 @@
-python3 main.py fit --config configs/harmeme/intensity/roberta_base.yaml --seed_everything 1111

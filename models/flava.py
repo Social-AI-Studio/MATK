@@ -1,64 +1,42 @@
-import importlib
 import torch
+import importlib
 import torch.nn as nn
 import torch.nn.functional as F
-import lightning.pytorch as pl
-from lightning.pytorch.callbacks import Callback
-import torchmetrics
 
 from transformers import FlavaModel
+from .model_utils import setup_metrics
+from .base import BaseLightningModule
 
 
-class FlavaClassificationModel(pl.LightningModule):
+class FlavaClassificationModel(BaseLightningModule):
     def __init__(
-            self, 
-            model_class_or_path: str,
-            cls_dict: dict,
-            metrics: list
-        ):
+        self,
+        model_class_or_path: str,
+        metrics_cfg: dict,
+        cls_dict: dict,
+        optimizers: list
+    ):
         super().__init__()
         self.save_hyperparameters()
 
         self.model = FlavaModel.from_pretrained(model_class_or_path)
+        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.classes = list(cls_dict.keys())
+        self.optimizers = optimizers
 
         # set up classification
         self.mlps = nn.ModuleList([
-            nn.Linear(self.model.config.multimodal_config.hidden_size, value) 
-            for value in cls_dict.values()
+            nn.Linear(self.model.config.multimodal_config.hidden_size, num_classes)
+            for num_classes in cls_dict.values()
         ])
-        
+
         # set up metric
-        self.cls_dict = cls_dict
-        
-        # TEMP HACK
-        package_name = "torchmetrics"
-        module = importlib.import_module(package_name)
-        self.metric_dict = metrics # metric details : metric class
-        
-        for stage in ["train", "validate", "test"]:
-            for key, value in cls_dict.items():
-                for metric_details in self.metric_dict:
-                    metric_class = getattr(module, metric_details['name'])
-                    args = metric_details['args']
-                    args["num_classes"] = value
-                    setattr(self, f"{key}_{stage}_{metric_details['name']}", metric_class(**args))
-
-
-    def compute_metrics_and_logs(self, cls_name, stage, loss, targets, preds):
-        for metric_details in self.metric_dict:
-            metric_name = metric_details['name']
-            metric = getattr(self, f"{cls_name}_{stage}_{metric_name}")
-
-            if metric_name == 'Accuracy':
-                metric(preds.argmax(dim=-1), targets)
-            elif metric_name == 'AUROC':
-                metric(preds, targets)
-            self.log(f'{cls_name}_{stage}_{metric_name}', metric, prog_bar=True, on_step=False, on_epoch=True, sync_dist=True)
-        self.log(f'{cls_name}_{stage}_loss', loss, prog_bar=True)
+        setup_metrics(self, cls_dict, metrics_cfg, "train")
+        setup_metrics(self, cls_dict, metrics_cfg, "validate")
+        setup_metrics(self, cls_dict, metrics_cfg, "test")
 
 
     def training_step(self, batch, batch_idx):
-
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
@@ -66,18 +44,20 @@ class FlavaClassificationModel(pl.LightningModule):
         )
 
         total_loss = 0.0
-
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
-            loss = F.cross_entropy(preds, targets)
-            self.compute_metrics_and_logs(cls_name, "train", loss, targets, preds)
 
+            loss = F.cross_entropy(preds, targets)
             total_loss += loss
-        
-        return total_loss / len(self.cls_dict)
-    
-    
+            
+            self.compute_metrics_step(
+                cls_name, "train", loss, targets, preds)
+
+
+        return total_loss / len(self.classes)
+
     def validation_step(self, batch, batch_idx):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
@@ -87,15 +67,17 @@ class FlavaClassificationModel(pl.LightningModule):
 
         total_loss = 0.0
 
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
-            loss = F.cross_entropy(preds, targets)
-            self.compute_metrics_and_logs(cls_name, "validate", loss, targets, preds)
 
+            loss = F.cross_entropy(preds, targets)
             total_loss += loss
-        
-        return total_loss / len(self.cls_dict)
+
+            self.compute_metrics_step(
+                cls_name, "validate", loss, targets, preds)
+
+        return total_loss / len(self.classes)
 
     def test_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -106,15 +88,17 @@ class FlavaClassificationModel(pl.LightningModule):
 
         total_loss = 0.0
 
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
+        for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
             preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
-            loss = F.cross_entropy(preds, targets)
-            self.compute_metrics_and_logs(cls_name, "test", loss, targets, preds)
 
+            loss = F.cross_entropy(preds, targets)
             total_loss += loss
-        
-        return total_loss / len(self.cls_dict)
+
+            self.compute_metrics_step(
+                cls_name, "test", loss, targets, preds)
+
+        return total_loss / len(self.classes)
 
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(
@@ -124,15 +108,26 @@ class FlavaClassificationModel(pl.LightningModule):
         )
 
         results = {}
-        for idx, cls_name in enumerate(self.cls_dict.keys()):
-            label_preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
-            results[cls_name] = label_preds
-
-        if "labels" in batch:
-            results['labels'] = batch["labels"]
+        for idx, cls_name in enumerate(self.classes):
+            preds = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
+            
+            results["img"] = batch["image_filename"].tolist()
+            results[f"{cls_name}_preds"] = torch.argmax(preds, dim=1).tolist()
+            results[f"{cls_name}_labels"] = batch[cls_name].tolist()
 
         return results
-    
+
     def configure_optimizers(self):
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=2e-5)
-        return [self.optimizer]
+        opts = []
+        for opt_cfg in self.optimizers:
+            class_name = opt_cfg.pop("class_path")
+            
+            package_name = ".".join(class_name.split(".")[:-1])
+            package = importlib.import_module(package_name)
+            
+            class_name = class_name.split(".")[-1]
+            cls = getattr(package, class_name)
+
+            opts.append(cls(self.parameters(), **opt_cfg))
+
+        return opts
