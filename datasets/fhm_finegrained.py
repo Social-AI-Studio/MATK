@@ -194,20 +194,19 @@ class ImageDataset(FHMFGBase):
         return item
 
 
-class TextDataset(FHMFGBase):
+class TextClassificationDataset(FHMFGBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        labels: List[str],
-        input_template: str,
+        text_template: str,
         output_template: str,
-        label2word: dict
+        cls_labels: dict
     ):
-        super().__init__(annotation_filepath, auxiliary_dicts, labels)
-        self.input_template = input_template
+        super().__init__(annotation_filepath, auxiliary_dicts, list(cls_labels.keys()))
+        self.text_template = text_template
         self.output_template = output_template
-        self.label2word = label2word
+        self.cls_labels = cls_labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
@@ -216,17 +215,16 @@ class TextDataset(FHMFGBase):
         input_kwargs = {"text": record['text']}
         for key, data in self.auxiliary_data.items():
             input_kwargs[key] = data[f"{id:05}"]
-
-        image_id, _ = os.path.splitext(record['img'])
+        text = self.text_template.format(**input_kwargs)
 
         item = {
             'id': record["id"],
-            'image_id': image_id,
-            'text': self.input_template.format(**input_kwargs)
+            'image_id': record['img'],
+            'text': text
         }
 
-        for l in self.labels:
-            label = record[l]
-            item[l] = self.output_template.format(label=self.label2word[label])
+        for cls_name, label2word in self.cls_labels.items():
+            label = record[cls_name]
+            item[cls_name] = self.output_template.format(label=label2word[label])
 
         return item

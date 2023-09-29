@@ -20,7 +20,7 @@ class BartClassificationModel(BaseLightningModule):
         optimizers: list
     ):
         super().__init__()
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
         self.model = BartForConditionalGeneration.from_pretrained(
             model_class_or_path)
@@ -66,18 +66,21 @@ class BartClassificationModel(BaseLightningModule):
         total_loss = 0.0
 
         for cls_name, token2label in self.cls_tokens.items():
+            input_ids = batch["input_ids"]
+            attention_mask = batch["attention_mask"]
             labels = batch[cls_name]
 
             model_outputs = self.model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
+                input_ids=input_ids,
+                attention_mask=attention_mask,
                 labels=labels
             )
             total_loss += model_outputs.loss
 
             preds = self.get_logits(model_outputs, list(token2label.keys()))
             labels = self.get_labels(labels, token2label)
-            preds, labels = preds.cpu(), labels.cpu()
+            preds = preds.to(input_ids.device)
+            labels = labels.to(input_ids.device)
 
             self.compute_metrics_step(
                 cls_name, "train", model_outputs.loss, labels, preds)
@@ -88,18 +91,21 @@ class BartClassificationModel(BaseLightningModule):
         total_loss = 0.0
 
         for cls_name, token2label in self.cls_tokens.items():
+            input_ids = batch["input_ids"]
+            attention_mask = batch["attention_mask"]
             labels = batch[cls_name]
-            
+
             model_outputs = self.model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
+                input_ids=input_ids,
+                attention_mask=attention_mask,
                 labels=labels
             )
             total_loss += model_outputs.loss
 
             preds = self.get_logits(model_outputs, list(token2label.keys()))
             labels = self.get_labels(labels, token2label)
-            preds, labels = preds.cpu(), labels.cpu()
+            preds = preds.to(input_ids.device)
+            labels = labels.to(input_ids.device)
 
             self.compute_metrics_step(
                 cls_name, "validate", model_outputs.loss, labels, preds)
@@ -121,7 +127,7 @@ class BartClassificationModel(BaseLightningModule):
 
             preds = self.get_logits(model_outputs, list(token2label.keys()))
             labels = self.get_labels(labels, token2label)
-            preds, labels = preds.cpu(), labels.cpu()
+            # preds, labels = preds.cpu(), labels.cpu()
 
             self.compute_metrics_step(
                 cls_name, "test", model_outputs.loss, labels, preds)

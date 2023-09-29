@@ -44,6 +44,7 @@ class T5ClassificationModel(BaseLightningModule):
             for label, word in label2word.items():
                 tokens = self.tokenizer.encode(word, add_special_tokens=False)
                 self.cls_tokens[cls_name][tokens[0]] = label
+                print(word, tokens)
 
                 assert len(tokens) == 1
             
@@ -69,6 +70,7 @@ class T5ClassificationModel(BaseLightningModule):
 
         for cls_name, token2label in self.cls_tokens.items():
             labels = batch[cls_name]
+            print(batch["input_ids"].shape)
 
             model_outputs = self.model(
                 input_ids=batch["input_ids"],

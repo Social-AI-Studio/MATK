@@ -3,7 +3,7 @@ import lightning.pytorch as pl
 
 class BaseLightningModule(pl.LightningModule):
     def compute_metrics_step(self, cls_name, stage, loss, targets, preds):
-        self.log(f'{stage}_{cls_name}_loss', loss, prog_bar=True)
+        self.log(f'{stage}_{cls_name}_loss', loss, prog_bar=True, sync_dist=True)
 
         for metric_name in self.metric_names:
             metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
