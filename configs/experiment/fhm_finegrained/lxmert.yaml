@@ -13,7 +13,7 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    label: 2
+    hate: 2
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
@@ -23,7 +23,7 @@ dataset:
   dataset_class: datasets.fhm_finegrained.FRCNNDataset
   text_template: "{text}"
   labels:
-    - label
+    - hate
   feats_dir:
     train: /mnt/data1/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
     validate: /mnt/data1/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
@@ -35,7 +35,7 @@ datamodule:
   tokenizer_class_or_path: facebook/flava-full
   frcnn_class_or_path: null
 
-monitor_metric: validate_label_average
+monitor_metric: validate_hate_average
 monitor_mode: max
 save_top_ks: 1
 
