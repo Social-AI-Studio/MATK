@@ -22,7 +22,6 @@ class FlavaClassificationModel(BaseLightningModule):
         self.model = FlavaModel.from_pretrained(model_class_or_path)
         self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
         self.optimizers = optimizers
-        self.cls_dict = cls_dict
         
         collapsed_label_dict = collapse_cls_dict(cls_dict)
         self.classes = list(collapsed_label_dict) ## fhm_label, mami_misogyny .....
@@ -38,7 +37,7 @@ class FlavaClassificationModel(BaseLightningModule):
         setup_metrics(self, collapsed_label_dict, metrics_cfg, "test")
 
 
-    def training_step(self, batch, batch_idx): ## might need to use batch_idx
+    def training_step(self, batch, batch_idx): 
         
         model_outputs = self.model(
             input_ids=batch["input_ids"],
@@ -46,12 +45,15 @@ class FlavaClassificationModel(BaseLightningModule):
             pixel_values=batch['pixel_values']
         )
         total_loss = 0.0
+        label_index = 0
+        start = 0
         for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
-            preds = self.mlps[idx]((model_outputs.multimodal_embeddings[:, 0]))
+            label_index += len(targets)
+            preds = self.mlps[idx]((model_outputs.multimodal_embeddings[start:label_index, :][:, 0]))
             loss = F.cross_entropy(preds, targets)
             total_loss += loss
-            
+            start = label_index
             self.compute_metrics_step(cls_name, "train", loss, targets, preds)
 
         return total_loss / len(self.classes)
@@ -64,12 +66,15 @@ class FlavaClassificationModel(BaseLightningModule):
         )
        
         total_loss = 0.0
+        label_index = 0
+        start = 0
         for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
-            preds = self.mlps[idx]((model_outputs.multimodal_embeddings[:, 0]))
+            label_index += len(targets)
+            preds = self.mlps[idx]((model_outputs.multimodal_embeddings[start:label_index, :][:, 0]))
             loss = F.cross_entropy(preds, targets)
             total_loss += loss
-            
+            start = label_index
             self.compute_metrics_step(cls_name, "validate", loss, targets, preds)
 
     def test_step(self, batch, batch_idx):
@@ -80,12 +85,15 @@ class FlavaClassificationModel(BaseLightningModule):
         )
 
         total_loss = 0.0
-
+        label_index = 0
+        start = 0
         for idx, cls_name in enumerate(self.classes):
             targets = batch[cls_name]
-            preds = self.mlps[idx]((model_outputs.multimodal_embeddings[:, 0]))
+            label_index += len(targets)
+            preds = self.mlps[idx]((model_outputs.multimodal_embeddings[start:label_index, :][:, 0]))
             loss = F.cross_entropy(preds, targets)
             total_loss += loss
+            start = label_index
             
             self.compute_metrics_step(cls_name, "test", loss, targets, preds)
 

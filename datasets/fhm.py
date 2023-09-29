@@ -7,7 +7,6 @@ from PIL import Image
 from . import utils
 
 from typing import List
-from torch.utils.data import Dataset
 from .base import CommonBase
 
 class FHMBase(CommonBase):
@@ -61,6 +60,7 @@ class FRCNNDataset(FHMBase):
         self.text_template = text_template
         self.image_dir = image_dir
         self.feats_dict = self._load_feats(feats_dir) if feats_dir != None else None
+        self.raw_labels = labels
 
     def _load_feats(self, feats_dir: str):
         data = {}
@@ -102,8 +102,8 @@ class FRCNNDataset(FHMBase):
             item['roi_features'] = self.feats_dict[image_filename]['roi_features']
             item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
 
-        for l in self.labels:
-            item[l] = record[l]
+        for encoded_label, raw_label in zip(self.labels, self.raw_labels):
+            item[encoded_label] = record[raw_label]
 
         return item
 

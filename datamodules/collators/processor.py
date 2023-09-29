@@ -11,13 +11,18 @@ def processor_collate_fn(batches, processor, labels):
     inputs = processor(  
         text=texts, images=images, return_tensors="pt", padding=True, truncation=True
     )
-    
-    for l in labels:
+    indices_list = [item + "_indices" for item in labels]
+
+    i = 0
+    for l, label_indices_list_name in zip(labels, indices_list):
         label_values = [] 
+        label_indices = []
         for batch in batches:
             for dataset_item in batch:
-                if l in dataset_item:
+                if l in dataset_item: #get index of record from here
                     label_values.append(dataset_item[l])
-        
+                    label_indices.append(i)
+                    i+=1
         inputs[l] = torch.tensor(label_values, dtype=torch.int64)
+        inputs[label_indices_list_name] = torch.tensor(label_indices, dtype=torch.int64)
     return inputs

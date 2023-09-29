@@ -18,7 +18,7 @@ model:
     fhm:
       label: 2
     harmeme:
-      intensity: 2
+      intensity: 3
     
   optimizers: 
   - class_path: torch.optim.Adam

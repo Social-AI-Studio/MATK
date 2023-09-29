@@ -25,11 +25,9 @@ class ProcessorDataModule(pl.LightningDataModule):
         self.shuffle_train = shuffle_train
         self.num_workers= num_workers
 
-        self.collate_functions = []
-
         for dataset in self.dataset_cfg:
-            temp = import_class(self.dataset_cfg[dataset].dataset_class)
-            self.dataset_cfg[dataset].dataset_class = temp
+            dataset_class = import_class(self.dataset_cfg[dataset].dataset_class)
+            self.dataset_cfg[dataset].dataset_class = dataset_class
 
         processor = AutoProcessor.from_pretrained(processor_class_or_path)
         concat_labels = []
@@ -37,7 +35,6 @@ class ProcessorDataModule(pl.LightningDataModule):
             dataset_labels = self.dataset_cfg[dataset].labels
             encoded_labels = encode_labels(str(dataset), dataset_labels)
             concat_labels.extend(encoded_labels)
-        print("oooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
         print(concat_labels)
         self.collate_fn = partial(processor_collate_fn, processor=processor, labels=concat_labels)
         self.num_datasets = len(self.dataset_cfg)
