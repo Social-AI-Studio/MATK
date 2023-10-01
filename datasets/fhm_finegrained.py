@@ -9,6 +9,7 @@ from . import utils
 
 from typing import List
 from torch.utils.data import Dataset
+from .base import CommonBase
 
 # binary classification
 HATEFULNESS = {
@@ -44,16 +45,17 @@ PROTECTED_ATTACK = {
     ])
 }
 
-class FHMFGBase(Dataset):
+class FHMFGBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         labels: List[str]
     ):
+        super().__init__("fhm_finegrained", labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = labels
+        self.labels = self._encode_labels()
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -103,6 +105,7 @@ class FRCNNDataset(FHMFGBase):
         self.text_template = text_template
         self.image_dir = image_dir
         self.feats_dict = self._load_feats(feats_dir) if feats_dir != None else None
+        self.raw_labels = labels
 
     def _load_feats(self, feats_dir: str):
         data = {}
@@ -144,8 +147,8 @@ class FRCNNDataset(FHMFGBase):
             item['roi_features'] = self.feats_dict[image_filename]['roi_features']
             item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
 
-        for l in self.labels:
-            item[l] = record[l]
+        for encoded_label, raw_label in zip(self.labels, self.raw_labels):
+            item[encoded_label] = record[raw_label]
 
         return item
 
@@ -162,6 +165,7 @@ class ImageDataset(FHMFGBase):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.image_dir = image_dir
         self.text_template = text_template
+        self.raw_labels = labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
@@ -188,9 +192,9 @@ class ImageDataset(FHMFGBase):
             'image_path': image_path
         }
 
-        for l in self.labels:
-            item[l] = record[l]
-
+        for encoded_label, raw_label in zip(self.labels, self.raw_labels):
+            item[encoded_label] = record[raw_label]
+        
         return item
 
 

@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from functools import partial
 from typing import Optional
-from .utils import import_class
+from .utils import import_class, concatenate_labels, ConcatDataset
 from transformers import AutoTokenizer
 
 import lightning.pytorch as pl
@@ -30,9 +30,17 @@ class FRCNNDataModule(pl.LightningDataModule):
         self.shuffle_train = shuffle_train
         self.num_workers= num_workers
 
-        self.dataset_cls = import_class(dataset_cfg.dataset_class)
+        for dataset in self.dataset_cfg:
+            dataset_class = import_class(self.dataset_cfg[dataset].dataset_class)
+            self.dataset_cfg[dataset].dataset_class = dataset_class
 
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
+        concat_labels = []
+        for dataset in self.dataset_cfg:
+            dataset_labels = self.dataset_cfg[dataset].labels
+            encoded_labels = concatenate_labels(str(dataset), dataset_labels)
+            concat_labels.extend(encoded_labels)
+
         collate_fn = frcnn_collate_fn_fast
 
         kwargs = {}
@@ -46,59 +54,73 @@ class FRCNNDataModule(pl.LightningDataModule):
         self.collate_fn = partial(
             collate_fn, 
             tokenizer=tokenizer, 
-            labels=dataset_cfg.labels,
+            labels=concat_labels,
             **kwargs
         )
         
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
-            self.train = self.dataset_cls(
-                image_dir=self.dataset_cfg.image_dirs.train,
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.train,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.train,
-                labels=self.dataset_cfg.labels,
-                text_template=self.dataset_cfg.text_template,
-                feats_dir=self.dataset_cfg.feats_dir.train
-            )
+            self.train = []
+            for dataset in self.dataset_cfg:
+                dataset_obj = self.dataset_cfg[dataset].dataset_class(
+                    image_dir=self.dataset_cfg[dataset].image_dirs.train,
+                    annotation_filepath=self.dataset_cfg[dataset].annotation_filepaths.train,
+                    auxiliary_dicts=self.dataset_cfg[dataset].auxiliary_dicts.train,
+                    labels=self.dataset_cfg[dataset].labels,
+                    text_template=self.dataset_cfg[dataset].text_template,
+                    feats_dir=self.dataset_cfg[dataset].feats_dir.train
+                )
+                self.train.append(dataset_obj)
 
-            self.validate = self.dataset_cls(
-                image_dir=self.dataset_cfg.image_dirs.validate,
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.validate,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.validate,
-                labels=self.dataset_cfg.labels,
-                text_template=self.dataset_cfg.text_template,
-                feats_dir=self.dataset_cfg.feats_dir.validate
-            )
+            self.validate = []
+            for dataset in self.dataset_cfg:
+                dataset_obj = self.dataset_cfg[dataset].dataset_class(
+                    image_dir=self.dataset_cfg[dataset].image_dirs.validate,
+                    annotation_filepath=self.dataset_cfg[dataset].annotation_filepaths.validate,
+                    auxiliary_dicts=self.dataset_cfg[dataset].auxiliary_dicts.validate,
+                    labels=self.dataset_cfg[dataset].labels,
+                    text_template=self.dataset_cfg[dataset].text_template,
+                    feats_dir=self.dataset_cfg[dataset].feats_dir.validate
+                )
+                self.validate.append(dataset_obj)
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            self.test = self.dataset_cls(
-                image_dir=self.dataset_cfg.image_dirs.test,
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.test,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.test,
-                labels=self.dataset_cfg.labels,
-                text_template=self.dataset_cfg.text_template,
-                feats_dir=self.dataset_cfg.feats_dir.test
-            )
+            self.test = []
+            for dataset in self.dataset_cfg:
+                dataset_obj = self.dataset_cfg[dataset].dataset_class(
+                    image_dir=self.dataset_cfg[dataset].image_dirs.test,
+                    annotation_filepath=self.dataset_cfg[dataset].annotation_filepaths.test,
+                    auxiliary_dicts=self.dataset_cfg[dataset].auxiliary_dicts.test,
+                    labels=self.dataset_cfg[dataset].labels,
+                    text_template=self.dataset_cfg[dataset].text_template,
+                    feats_dir=self.dataset_cfg[dataset].feats_dir.test
+                )
+                self.test.append(dataset_obj)
 
         if stage == "predict" or stage is None:
-            self.predict = self.dataset_cls(
-                image_dir=self.dataset_cfg.image_dirs.predict,
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.predict,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.predict,
-                labels=self.dataset_cfg.labels,
-                text_template=self.dataset_cfg.text_template,
-                feats_dir=self.dataset_cfg.feats_dir.predict
-            )
+            self.predict = []
+            for dataset in self.dataset_cfg:
+                dataset_obj = self.dataset_cfg[dataset].dataset_class(
+                    image_dir=self.dataset_cfg[dataset].image_dirs.predict,
+                    annotation_filepath=self.dataset_cfg[dataset].annotation_filepaths.predict,
+                    auxiliary_dicts=self.dataset_cfg[dataset].auxiliary_dicts.predict,
+                    labels=self.dataset_cfg[dataset].labels,
+                    text_template=self.dataset_cfg[dataset].text_template,
+                    feats_dir=self.dataset_cfg[dataset].feats_dir.predict
+                )
+                self.predict.append(dataset_obj)
 
-    def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
 
+    def train_dataloader(self): # change the division - make it batch size per dataset
+        return DataLoader(ConcatDataset(*self.train), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
+       
     def val_dataloader(self):
-        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
-
+        return DataLoader(ConcatDataset(*self.validate), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
-
+        return DataLoader(ConcatDataset(*self.test), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        
     def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        return DataLoader(ConcatDataset(*self.predict), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+       

@@ -3,8 +3,7 @@ from torch.utils.data import DataLoader
 from typing import Optional
 from functools import partial
 from .collators.processor import processor_collate_fn
-from .utils import import_class, encode_labels, ConcatDataset
-from .dataloaders.cat_dataloader import cat_dataloaders
+from .utils import import_class, concatenate_labels, ConcatDataset
 from transformers import AutoProcessor
 
 import lightning.pytorch as pl
@@ -33,9 +32,9 @@ class ProcessorDataModule(pl.LightningDataModule):
         concat_labels = []
         for dataset in self.dataset_cfg:
             dataset_labels = self.dataset_cfg[dataset].labels
-            encoded_labels = encode_labels(str(dataset), dataset_labels)
+            encoded_labels = concatenate_labels(str(dataset), dataset_labels)
             concat_labels.extend(encoded_labels)
-        print(concat_labels)
+        
         self.collate_fn = partial(processor_collate_fn, processor=processor, labels=concat_labels)
         self.num_datasets = len(self.dataset_cfg)
         

@@ -8,7 +8,7 @@ def import_class(dataset_class):
     
     return getattr(m, class_name)
 
-def encode_labels(prefix, initial_labels):
+def concatenate_labels(prefix, initial_labels):
     encoded_labels = []
     for label in initial_labels:
         new_label = prefix + "_"+label

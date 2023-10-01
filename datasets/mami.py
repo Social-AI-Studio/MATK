@@ -7,21 +7,21 @@ from PIL import Image
 from . import utils
 
 from typing import List
-from torch.utils.data import Dataset
+from .base import CommonBase
 
 
 
-class MamiBase(Dataset):
+class MamiBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         labels: List[str]
     ):
-        self.labels = labels
+        super().__init__("harmeme", labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        
+        self.labels = self._encode_labels()
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
