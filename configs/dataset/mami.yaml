@@ -1,27 +1,28 @@
-annotation_filepaths:
-  train: /mnt/sda/mshee/datasets/memes/mami/annotations/train.jsonl
-  validate: /mnt/sda/mshee/datasets/memes/mami/annotations/trial.jsonl
-  test: /mnt/sda/mshee/datasets/memes/mami/annotations/test.jsonl
-  predict: /mnt/sda/mshee/datasets/memes/mami/annotations/test.jsonl
+mami:
+  annotation_filepaths:
+    train: /mnt/sda/datasets/memes/mami/annotations/train.jsonl
+    validate: /mnt/sda/datasets/memes/mami/annotations/trial.jsonl
+    test: /mnt/sda/datasets/memes/mami/annotations/test.jsonl
+    predict: /mnt/sda/datasets/memes/mami/annotations/test.jsonl
 
-image_dirs:
-  train: /mnt/sda/mshee/datasets/memes/mami/images/img/train
-  validate: /mnt/sda/mshee/datasets/memes/mami/images/img/trial
-  test: /mnt/sda/mshee/datasets/memes/mami/images/img/test
-  predict: /mnt/sda/mshee/datasets/memes/mami/images/img/test
+  image_dirs:
+    train: /mnt/sda/datasets/memes/mami/images/img/train
+    validate: /mnt/sda/datasets/memes/mami/images/img/trial
+    test: /mnt/sda/datasets/memes/mami/images/img/test
+    predict: /mnt/sda/datasets/memes/mami/images/img/test
 
-auxiliary_dicts:
-  train: {}
-  validate: {}
-  test: {}
-  predict: {}
+  auxiliary_dicts:
+    train: {}
+    validate: {}
+    test: {}
+    predict: {}
 
-feats_dir:
-  train: null
-  validate: null
-  test: null
-  predict: null
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
 
-dataset_class: ???
-text_template: ???
-labels: ???
+  dataset_class: ???
+  text_template: ???
+  labels: ???

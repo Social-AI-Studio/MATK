@@ -1,7 +1,8 @@
 # @package _global_
 defaults:
 - /model: flava
-- /dataset: mami
+- /dataset: 
+  - mami
 - /datamodule: processor_datamodule
 - /trainer: single_gpu_trainer
 - /metric:
@@ -13,21 +14,23 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    misogynous: 2
+    mami: 
+      misogynous: 2
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
 
 dataset:
-  dataset_class: datasets.mami.ImageDataset
-  text_template: "{text}"
-  labels:
-  - misogynous
+  mami:
+    dataset_class: datasets.mami.ImageDataset
+    text_template: "{text}"
+    labels:
+    - misogynous
 
 datamodule:
   processor_class_or_path: facebook/flava-full
 
-monitor_metric: validate_misogynous_average
+monitor_metric: validate_mami_misogynous_average
 monitor_mode: max
 save_top_ks: 1
 

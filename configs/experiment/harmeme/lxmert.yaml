@@ -1,7 +1,8 @@
 # @package _global_
 defaults:
   - /model: lxmert
-  - /dataset: harmeme
+  - /dataset: 
+    - harmeme
   - /datamodule: frcnn_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
@@ -13,7 +14,8 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    intensity: 2
+    harmeme: 
+      intensity: 2
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
@@ -25,17 +27,17 @@ dataset:
   labels:
     - intensity
   feats_dir:
-    train: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    validate: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    test: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    predict: /mnt/sda/mshee/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    train: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    validate: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    test: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+    predict: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
 
 
 datamodule:
   tokenizer_class_or_path: facebook/flava-full
   frcnn_class_or_path: null
 
-monitor_metric: validate_intensity_average
+monitor_metric: validate_harmeme_intensity_average
 monitor_mode: max
 save_top_ks: 1
 

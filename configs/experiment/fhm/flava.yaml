@@ -3,7 +3,6 @@ defaults:
 - /model: flava
 - /dataset: 
   - fhm
-  - harmeme
 - /datamodule: processor_datamodule
 - /trainer: single_gpu_trainer
 - /metric:
@@ -17,8 +16,6 @@ model:
   cls_dict:
     fhm:
       label: 2
-    harmeme:
-      intensity: 3
     
   optimizers: 
   - class_path: torch.optim.Adam
@@ -30,11 +27,6 @@ dataset:
     text_template: "{text}"
     labels:
     - label
-  harmeme: 
-    dataset_class: datasets.harmeme.ImageDataset
-    text_template: "{text}"
-    labels:
-    - intensity
 
 datamodule:
   processor_class_or_path: facebook/flava-full
