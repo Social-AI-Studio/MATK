@@ -22,15 +22,16 @@ model:
   frcnn_class_or_path: null
 
 dataset:
-  dataset_class: datasets.harmeme.FRCNNDataset
-  text_template: "{text}"
-  labels:
-    - intensity
-  feats_dir:
-    train: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    validate: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    test: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
-    predict: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+  harmeme:
+    dataset_class: datasets.harmeme.FRCNNDataset
+    text_template: "{text}"
+    labels:
+      - intensity
+    feats_dir:
+      train: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+      validate: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+      test: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
+      predict: /mnt/sda/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
 
 
 datamodule:
