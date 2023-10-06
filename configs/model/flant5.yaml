@@ -1,0 +1,4 @@
+class_path: models.flant5.FlanT5ClassificationModel
+model_class_or_path: google/flan-t5-base
+cls_labels: ???
+optimizers: ???
