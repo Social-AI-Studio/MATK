@@ -226,6 +226,18 @@ To use BLIP-2 or InstructBLIP for image captioning, you are required to install 
 
 **Note**: InstructBLIP is currently not supported by the PyPI installation. Hence, you will need to re-install LAVIS using source installation.
 
+OFA
+~~~~~~~
+
+To use OFA-Sys for image captioning, you are required to run the following commands:
+
+.. code-block:: bash
+    
+    git clone --single-branch --branch feature/add_transformers https://github.com/OFA-Sys/OFA.git
+    pip install OFA/transformers/
+    git lfs install
+    git clone https://huggingface.co/OFA-Sys/OFA-Huge
+
 
 Vision-Language Assistant Set-Up
 --------------------------------
