@@ -1,15 +1,15 @@
 harmeme:  
   annotation_filepaths:
-    train: /mnt/sda/datasets/memes/harmemes/annotations/train.jsonl
-    validate: /mnt/sda/datasets/memes/harmemes/annotations/val.jsonl
-    test: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl
-    predict: /mnt/sda/datasets/memes/harmemes/annotations/test.jsonl
+    train: /mnt/data1/datasets/memes/harmeme/annotations/train.jsonl
+    validate: /mnt/data1/datasets/memes/harmeme/annotations/val.jsonl
+    test: /mnt/data1/datasets/memes/harmeme/annotations/test.jsonl
+    predict: /mnt/data1/datasets/memes/harmeme/annotations/test.jsonl
 
   image_dirs:
-    train: /mnt/sda/datasets/memes/harmemes/images
-    validate: /mnt/sda/datasets/memes/harmemes/images
-    test: /mnt/sda/datasets/memes/harmemes/images
-    predict: /mnt/sda/datasets/memes/harmemes/images
+    train: /mnt/data1/datasets/memes/harmeme/images
+    validate: /mnt/data1/datasets/memes/harmeme/images
+    test: /mnt/data1/datasets/memes/harmeme/images
+    predict: /mnt/data1/datasets/memes/harmeme/images
 
   auxiliary_dicts:
     train: {}

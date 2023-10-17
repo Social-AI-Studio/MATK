@@ -1,15 +1,15 @@
 fhm_finegrained:
   annotation_filepaths:
-    train: /mnt/sda/datasets/memes/fhm_finegrained/annotations/train.json
-    validate: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json
-    test: /mnt/sda/datasets/memes/fhm_finegrained/annotations/dev_seen.json
-    predict: /mnt/sda/datasets/memes/fhm_finegrained/annotations/test.jsonl
+    train: /mnt/data1/datasets/memes/fhm_finegrained/annotations/train.json
+    validate: /mnt/data1/datasets/memes/fhm_finegrained/annotations/dev_seen.json
+    test: /mnt/data1/datasets/memes/fhm_finegrained/annotations/dev_seen.json
+    predict: /mnt/data1/datasets/memes/fhm_finegrained/annotations/test.jsonl
 
   image_dirs:
-    train: /mnt/sda/datasets/memes/fhm/images/img
-    validate: /mnt/sda/datasets/memes/fhm/images/img
-    test: /mnt/sda/datasets/memes/fhm/images/img
-    predict: /mnt/sda/datasets/memes/fhm/images/img
+    train: /mnt/data1/datasets/memes/fhm/images/img
+    validate: /mnt/data1/datasets/memes/fhm/images/img
+    test: /mnt/data1/datasets/memes/fhm/images/img
+    predict: /mnt/data1/datasets/memes/fhm/images/img
 
   auxiliary_dicts:
     train: {}

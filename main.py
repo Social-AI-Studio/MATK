@@ -3,9 +3,6 @@ import json
 import logging
 import hydra
 import importlib
-import lightning.pytorch
-
-from omegaconf import DictConfig, OmegaConf
 from lightning.pytorch import Trainer, seed_everything
 
 def get_class(class_path):
@@ -31,19 +28,20 @@ def main(cfg) -> None:
 
     ## Instantiation of model and datamodule
     model = model_class(metrics_cfg=cfg.metric, **cfg.model)
-    datamodule = datamodule_class(dataset_cfg=cfg.dataset, **cfg.datamodule)
-    trainer = Trainer(**cfg.trainer)
-
-    ## Count number of parameters
     total_parameters = sum(p.numel() for p in model.parameters())
     trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"[Model] Total Parameters: {total_parameters}")
-    print(f"[Model] Trainable Parameters: {trainable_parameters}")
+    logging.info(f"Model's Parameters: {total_parameters}")
+    logging.info(f"Model's Trainable Parameters: {trainable_parameters}")
 
     ## Sanity Checks
+    datamodule = datamodule_class(dataset_cfg=cfg.dataset, **cfg.datamodule)
     datamodule.setup(stage="fit")
     logging.info("Logging an example record of the dataset")
     logging.info(datamodule.train_dataloader().dataset[0])
+
+    logging.info(next(iter(datamodule.train_dataloader())))
+
+    trainer = Trainer(**cfg.trainer)
 
     if cfg.action == "fit":
         logging.info("Training model...")

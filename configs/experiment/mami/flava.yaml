@@ -14,8 +14,7 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    mami: 
-      misogynous: 2
+    mami_misogynous: 2
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
@@ -25,7 +24,7 @@ dataset:
     dataset_class: datasets.mami.ImageDataset
     text_template: "{text}"
     labels:
-    - misogynous
+    - mami_misogynous
 
 datamodule:
   processor_class_or_path: facebook/flava-full

@@ -1,12 +1,14 @@
+import tqdm
 from torch.utils.data import DataLoader
 
 from typing import Optional
 from functools import partial
 from .collators.text import text_collate_fn
-from .utils import import_class
 from transformers import AutoTokenizer
+from .utils import import_class, ConcatDataset
 
 import lightning.pytorch as pl
+
 
 class TextClassificationDataModule(pl.LightningDataModule):
     """
@@ -26,62 +28,92 @@ class TextClassificationDataModule(pl.LightningDataModule):
         self.dataset_cfg = dataset_cfg
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
-        self.num_workers= num_workers
-        self.dataset_cls = import_class(dataset_cfg.dataset_class)
+        self.num_workers = num_workers
 
+        # Initialise tokenizer
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
-        self.collate_fn = partial(text_collate_fn, tokenizer=tokenizer, labels=dataset_cfg.labels)
 
-        # ensure that word for each label is a single token.
-        for word in dataset_cfg.labels:
-            encoded = tokenizer.encode(word, add_special_tokens=False)
-            assert len(encoded) == 1
+        labels = []
+        for dataset in dataset_cfg:
+            # ensure that word for each label is a single token.
+            for label2word in dataset_cfg[dataset].labels.values():
+                for _, word in label2word.items():
+                    encoded = tokenizer.encode(word, add_special_tokens=False)
+                    assert len(encoded) == 1
+
+            # Import the individual dataset classes
+            dataset_cfg[dataset].dataset_class = import_class(
+                dataset_cfg[dataset].dataset_class
+            )
+
+            # Retrieve labels
+            dataset_labels = list(dataset_cfg[dataset].labels.keys())
+            labels.extend(dataset_labels)
+
+        # Partially load the collate functions
+        self.collate_fn = partial(
+            text_collate_fn, tokenizer=tokenizer, labels=labels)
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
-            self.train = self.dataset_cls(
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.train,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.train,
-                text_template=self.dataset_cfg.text_template,
-                output_template=self.dataset_cfg.output_template,
-                cls_labels=self.dataset_cfg.cls_labels
-            )
+            self.train = []
+            self.validate = []
 
-            self.validate = self.dataset_cls(
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.validate,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.validate,
-                text_template=self.dataset_cfg.text_template,
-                output_template=self.dataset_cfg.output_template,
-                cls_labels=self.dataset_cfg.cls_labels
-            )
+            for dataset in self.dataset_cfg:
+                cfg = self.dataset_cfg[dataset]
+                dataset_obj = cfg.dataset_class(
+                    annotation_filepath=cfg.annotation_filepaths.train,
+                    auxiliary_dicts=cfg.auxiliary_dicts.train,
+                    text_template=cfg.text_template,
+                    output_template=cfg.output_template,
+                    cls_labels=cfg.labels
+                )
+                self.train.append(dataset_obj)
+
+                dataset_obj = cfg.dataset_class(
+                    annotation_filepath=cfg.annotation_filepaths.validate,
+                    auxiliary_dicts=cfg.auxiliary_dicts.validate,
+                    text_template=cfg.text_template,
+                    output_template=cfg.output_template,
+                    cls_labels=cfg.labels
+                )
+                self.validate.append(dataset_obj)
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            self.test = self.dataset_cls(
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.test,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.test,
-                text_template=self.dataset_cfg.text_template,
-                output_template=self.dataset_cfg.output_template,
-                cls_labels=self.dataset_cfg.cls_labels
-            )
+            self.test = []
+            for dataset in self.dataset_cfg:
+                cfg = self.dataset_cfg[dataset]
+                dataset_obj = cfg.dataset_class(
+                    annotation_filepath=cfg.annotation_filepaths.test,
+                    auxiliary_dicts=cfg.auxiliary_dicts.test,
+                    text_template=cfg.text_template,
+                    output_template=cfg.output_template,
+                    cls_labels=cfg.labels
+                )
+                self.test.append(dataset_obj)
 
         if stage == "predict" or stage is None:
-            self.predict = self.dataset_cls(
-                annotation_filepath=self.dataset_cfg.annotation_filepaths.predict,
-                auxiliary_dicts=self.dataset_cfg.auxiliary_dicts.predict,
-                text_template=self.dataset_cfg.text_template,
-                output_template=self.dataset_cfg.output_template,
-                cls_labels=self.dataset_cfg.cls_labels
-            )
+            self.predict = []
+            for dataset in self.dataset_cfg:
+                cfg = self.dataset_cfg[dataset]
+                dataset_obj = cfg.dataset_class(
+                    annotation_filepath=cfg.annotation_filepaths.predict,
+                    auxiliary_dicts=cfg.auxiliary_dicts.predict,
+                    text_template=cfg.text_template,
+                    output_template=cfg.output_template,
+                    cls_labels=cfg.labels
+                )
+                self.predict.append(dataset_obj)
 
     def train_dataloader(self):
-        return DataLoader(self.train, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
+        return DataLoader(ConcatDataset(*self.train), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
 
     def val_dataloader(self):
-        return DataLoader(self.validate, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        return DataLoader(ConcatDataset(*self.validate), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
-        return DataLoader(self.test, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        return DataLoader(ConcatDataset(*self.test), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
-        return DataLoader(self.predict, batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        return DataLoader(ConcatDataset(*self.predict), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)

@@ -9,7 +9,7 @@ from . import utils
 from typing import List
 from .base import CommonBase
 
-
+DATASET_PREFIX = "mami"
 
 class MamiBase(CommonBase):
     def __init__(
@@ -18,10 +18,9 @@ class MamiBase(CommonBase):
         auxiliary_dicts: dict,
         labels: List[str]
     ):
-        super().__init__("harmeme", labels)
+        super().__init__(labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = self._encode_labels()
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -29,24 +28,18 @@ class MamiBase(CommonBase):
         # load the default annotations
         data = utils._load_jsonl(annotation_filepath)
 
-        ## handle id stuff
-        
         # translate labels into numeric values
-        record_id = 0
         for record in tqdm.tqdm(data, desc="Preprocessing labels"):
             record["img"] = record.pop("file_name")
             record["text"] = record.pop("Text Transcription")
-            record["id"] = record_id
 
-            if "misogynous" in self.labels:
-                record["misogynous"] = int(record.pop("misogynous"))
-            else:
-                record["shaming"] = int(record.pop("shaming"))
-                record["objectification"] = int(record.pop("objectification"))
-                record["violence"] = int(record.pop("violence"))
-                record["stereotype"] = int(record.pop("stereotype"))
+            filename, _ = os.path.splitext(record['img'])
+            record["id"] = filename
 
-            record_id+=1
+            label = f"{DATASET_PREFIX}_misogynous"
+            if label in self.labels:
+                record[label] = int(record.pop("misogynous"))
+
             annotations.append(record)
         
         return annotations
@@ -92,12 +85,9 @@ class FRCNNDataset(MamiBase):
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
+        # retrieve id
         image_filename = record['img']
         id, _ = os.path.splitext(image_filename)
-
-        image_path = os.path.join(self.image_dir, image_filename)
-        image = Image.open(image_path)
-        image = image.convert("RGB") if image.mode != "RGB" else image
 
         # text formatting
         input_kwargs = {"text": record['text']}
@@ -107,16 +97,21 @@ class FRCNNDataset(MamiBase):
 
         item = {
             'id': id,
-            'image_id': image_filename,
-            'image': np.array(image),
-            'image_path': image_path,
+            'image_filename': image_filename,
             'text': text
         }
 
+        # Load image or image features
         if self.feats_dict:
             item['roi_features'] = self.feats_dict[image_filename]['roi_features']
             item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
+        else:
+            image_path = os.path.join(self.image_dir, image_filename)
+            image = Image.open(image_path)
+            image = image.convert("RGB") if image.mode != "RGB" else image
+            item['image'] = np.array(image)
 
+        # Load labels
         for l in self.labels:
             item[l] = record[l]
 
@@ -139,8 +134,11 @@ class ImageDataset(MamiBase):
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
+        # retrieve id
         image_filename = record['img']
+        id, _ = os.path.splitext(image_filename)
 
+        # image loading and processing
         image_path = os.path.join(self.image_dir, image_filename)
         image = Image.open(image_path)
         image = image.resize((224, 224))
@@ -153,33 +151,32 @@ class ImageDataset(MamiBase):
         text = self.text_template.format(**input_kwargs)
 
         item = {
-            'id': record['id'],
+            'id': id,
             'image_filename': image_filename,
             'text': text,
             'image': np.array(image),
             'image_path': image_path
         }
 
+        # Load labels
         for l in self.labels:
             item[l] = record[l]
 
         return item
 
-
-class TextDataset(MamiBase):
+class TextClassificationDataset(MamiBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        labels: List[str],
-        input_template: str,
+        text_template: str,
         output_template: str,
-        label2word: dict
+        cls_labels: dict
     ):
-        super().__init__(annotation_filepath, auxiliary_dicts, labels)
-        self.input_template = input_template
+        super().__init__(annotation_filepath, auxiliary_dicts, list(cls_labels.keys()))
+        self.text_template = text_template
         self.output_template = output_template
-        self.label2word = label2word
+        self.cls_labels = cls_labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
@@ -188,17 +185,16 @@ class TextDataset(MamiBase):
         input_kwargs = {"text": record['text']}
         for key, data in self.auxiliary_data.items():
             input_kwargs[key] = data[f"{id:05}"]
-
-        image_id, _ = os.path.splitext(record['img'])
+        text = self.text_template.format(**input_kwargs)
 
         item = {
             'id': record["id"],
-            'image_id': image_id,
-            'text': self.input_template.format(**input_kwargs)
+            'image_id': record['img'],
+            'text': text
         }
 
-        for l in self.labels:
-            label = record[l]
-            item[l] = self.output_template.format(label=self.label2word[label])
+        for cls_name, label2word in self.cls_labels.items():
+            label = record[cls_name]
+            item[cls_name] = self.output_template.format(label=label2word[label])
 
         return item

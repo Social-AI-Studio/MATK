@@ -9,13 +9,6 @@ classification, hateful memes explanation generation).
 .. contents:: Table of Contents 
    :depth: 2
 
-***************
-Installation
-***************
-
-To get started, run the following command::
-
-  pip install -r requirements.txt
 
 ***************
 Main Features
@@ -23,263 +16,197 @@ Main Features
 
 * Provides a framework for training and evaluating a different language and vision-language models on well known hateful memes datasets.
 * Allows for efficient experimentation and parameter tuning through modification of configuration files. 
-* Evaluate models using different state-of-the-art evaluation metrics such as Accuracy and AUROC. 
+* Evaluates models using different state-of-the-art evaluation metrics such as Accuracy and AUROC. 
 * Supports visualization by integrating with Tensorboard, allowing users to easily view and analyze metrics in a user-friendly GUI.
 
 
-***************
-Examples and Tutorials
-***************
-
-Coming soon...
-
-**************************
-Datasets and Preprocessing
-**************************
-
-
-Supported Datasets
-~~~~~~~~~~~~~~~~~~
+**************
+MATK Overview
+**************
 .. |green_check| unicode:: U+2714
    :trim:
 
-+------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
-| Dataset                      | Paper                                                           | Source                                                                                                         | Year | Size  | Target/Group  |
-+==============================+=================================================================+================================================================================================================+======+=======+===============+
-| Facebook Hateful Memes (FHM) | `[arxiv] <https://arxiv.org/pdf/2005.04790.pdf>`_               | `[DrivenData] <https://www.drivendata.org/accounts/login/?next=/competitions/70/hateful-memes-phase-2/data/>`_ | 2020 | 10000 |               |
-+------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
-| Fine grained FHM             | `[arxiv] <https://aclanthology.org/2021.woah-1.21.pdf>`_        | `[GitHub] <https://github.com/facebookresearch/fine_grained_hateful_memes/tree/main/data>`_                    | 2021 | 10000 | |green_check| |
-+------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
-| HarMeme                      | `[arxiv] <https://aclanthology.org/2021.findings-acl.246.pdf>`_ | `[GitHub] <https://github.com/di-dimitrov/harmeme>`_                                                           | 2021 | 3544  | |green_check| |
-+------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
-| Harm-C + Harm-P              | `[arxiv] <https://arxiv.org/pdf/2109.05184v2.pdf>`_             | `[GitHub] <https://github.com/LCS2-IIITD/MOMENTA>`_                                                            | 2021 | 3552  | |green_check| |
-+------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
-| MAMI                         | `[arxiv] <https://aclanthology.org/2022.semeval-1.74.pdf>`_     | `[CodaLab] <https://competitions.codalab.org/competitions/34175>`_                                             | 2022 | 10001 |               |
-+------------------------------+-----------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+-------+---------------+
-
-Adding Custom Datasets
-~~~~~~~~~~~~~~~~~~~~~~
-1. To use a dataset lot listed above, copy the code given in one of the dataset files, eg; ``datamodules/datasets/fhm.py``. 
-2. Modify the base class implementation, specifically ``_preprocess_annotations`` to suit your dataset's needs.
-3. Follow the steps in model usage to use the custom dataset in your experiment.
-
-************************************
-Supported Meme Models and Evaluation
-************************************
-
-Supported Language Models
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-+------------+-------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+-------+
-| Model      | Paper                                                       | Source                                                                                                               | Year  |
-+============+=============================================================+======================================================================================================================+=======+
-| BART       | `[arxiv] <https://aclanthology.org/2020.acl-main.703.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/bart#transformers.BartForConditionalGeneration>`_ | 2019  |
-+------------+-------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+-------+
-| PromptHate | `[arxiv] <https://arxiv.org/pdf/2302.04156.pdf>`_           | `[GitLab] <https://gitlab.com/bottle_shop/safe/prompthate>`_                                                         | 2022  |
-+------------+-------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------+-------+
-
-Supported Vision-Language Models
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
-| Model      | Paper                                             | Source                                                                                                         | Year |
-+============+===================================================+================================================================================================================+======+
-| VisualBERT | `[arxiv] <https://arxiv.org/pdf/1908.03557.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/visual_bert#transformers.VisualBertModel>`_ | 2019 |
-+------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
-| LXMERT     | `[arxiv] <https://arxiv.org/pdf/1908.07490.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/lxmert#transformers.LxmertModel>`_          | 2019 |
-+------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
-| VL-T5      | `[arxiv] <https://arxiv.org/pdf/2102.02779.pdf>`_ | `[GitHub] <https://github.com/j-min/VL-T5>`_                                                                   | 2021 |
-+------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
-| FLAVA      | `[arxiv] <https://arxiv.org/pdf/2112.04482.pdf>`_ | `[HuggingFace] <https://huggingface.co/docs/transformers/model_doc/flava#transformers.FlavaModel>`_            | 2021 |
-+------------+---------------------------------------------------+----------------------------------------------------------------------------------------------------------------+------+
++-------------------------------------------------------------------------------------------------------+----------------------------------------------------------+-------------------------------------------------+--------------------------------------------------+------------------------------------------------------+----------------------------------------------------+
+|                                                                                                       | `BART <https://aclanthology.org/2020.acl-main.703.pdf>`_ | `FLAVA <https://arxiv.org/pdf/2112.04482.pdf>`_ | `LXMERT <https://arxiv.org/pdf/1908.07490.pdf>`_ | `VisualBERT <https://arxiv.org/pdf/1908.03557.pdf>`_ | Remarks                                            |
++=======================================================================================================+==========================================================+=================================================+==================================================+======================================================+====================================================+
+| `FHM <https://www.drivendata.org/accounts/login/?next=/competitions/70/hateful-memes-phase-2/data/>`_ | |green_check|                                            | |green_check|                                   | |green_check|                                    | |green_check|                                        |                                                    |
++-------------------------------------------------------------------------------------------------------+----------------------------------------------------------+-------------------------------------------------+--------------------------------------------------+------------------------------------------------------+----------------------------------------------------+
+| `Fine grained FHM <https://github.com/facebookresearch/fine_grained_hateful_memes/tree/main/data>`_   | |green_check|                                            | |green_check|                                   | |green_check|                                    | |green_check|                                        | Protected target and protected group not supported |
++-------------------------------------------------------------------------------------------------------+----------------------------------------------------------+-------------------------------------------------+--------------------------------------------------+------------------------------------------------------+----------------------------------------------------+
+| `HarMeme <https://github.com/di-dimitrov/harmeme>`_                                                   | |green_check|                                            | |green_check|                                   | |green_check|                                    | |green_check|                                        |                                                    |
++-------------------------------------------------------------------------------------------------------+----------------------------------------------------------+-------------------------------------------------+--------------------------------------------------+------------------------------------------------------+----------------------------------------------------+
+| `Harm-C + Harm-P <https://github.com/LCS2-IIITD/MOMENTA>`_                                            | |green_check|                                            | |green_check|                                   | |green_check|                                    | |green_check|                                        |                                                    |
++-------------------------------------------------------------------------------------------------------+----------------------------------------------------------+-------------------------------------------------+--------------------------------------------------+------------------------------------------------------+----------------------------------------------------+
+| `MAMI <https://competitions.codalab.org/competitions/34175>`_                                         | |green_check|                                            | |green_check|                                   | |green_check|                                    | |green_check|                                        |                                                    |
++-------------------------------------------------------------------------------------------------------+----------------------------------------------------------+-------------------------------------------------+--------------------------------------------------+------------------------------------------------------+----------------------------------------------------+
 
 
-MATK Overview
-~~~~~~~~~~~~~~
-+------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
-|                  | BART          | FLAVA         | LXMERT        | VisualBERT    | Remarks                                            |
-+==================+===============+===============+===============+===============+====================================================+
-| FHM              | |green_check| | |green_check| | |green_check| | |green_check| |                                                    |
-+------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
-| Fine Grained FHM | |green_check| | |green_check| | |green_check| | |green_check| | Protected target and protected group not supported |
-+------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
-| MAMI             | |green_check| | |green_check| | |green_check| | |green_check| |                                                    |
-+------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
-| HarMeme          | |green_check| | |green_check| | |green_check| | |green_check| |                                                    |
-+------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
-| Harm-C + Harm-P  | |green_check| | |green_check| | |green_check| | |green_check| |                                                    |
-+------------------+---------------+---------------+---------------+---------------+----------------------------------------------------+
+************
+Installation
+************
+
+To get started, run the following command::
+
+  pip install -r requirements.txt
 
 
-*****
-Usage
-*****
-
-To configure the different elements of the toolkit, we use ``Hydra``, an open-source Python framework that simplifies the development of research and other complex applications. 
-Its key feature is the ability to dynamically create a hierarchical configuration by composition and override it through both config files and the command line.
-
-Step 1: Configure Dataset
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The purpose of the dataset class is to store the samples and their corresponding labels. Within this dataset class we:
-
-- preprocess the annotations: remove any hyperlinks, standardize label names, remove samples without labels, etc
-- load any auxiliary information: for example, .pkl files of captions for each image
-- load features
-
-For each dataset, we support the following dataset types: ``FRCNNDataset``, ``ImageDataset``, and ``TextClassificationDataset``. 
-
-+---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
-| Dataset                   | Usage                  | Remarks                                                                                                               |
-+===========================+========================+=======================================================================================================================+
-| FasterRCNNDataset         | For LXMERT, VisualBert | To handle `Faster-RCNN <https://github.com/eladsegal/gqa_lxmert/blob/main/notebook.ipynb>`_ features of images + text |
-+---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
-| ImageDataset              | For FLAVA, VisualBert  | To handle raw images + text                                                                                           |
-+---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
-| TextClassificationDataset | For T5                 | To handle text                                                                                                        |
-+---------------------------+------------------------+-----------------------------------------------------------------------------------------------------------------------+
+For installation instructions related to image feature extraction, inpainting and captioning, please refer to the ``preprocessing`` directory. 
 
 
-To configure the dataset, go to ``configs/dataset``, pick the file based on your dataset choice and specify:
+***************
+Getting Started
+***************
+
+This section will cover how to use the toolkit to execute model training and inference using the currently supported models and datasets. 
+The toolkit uses `Hydra <https://hydra.cc/docs/intro/>`_ framework, ensuring a composable and hierarchical configuration setup. 
+The preconfigured settings for the existing models and datasets are available within the `configs/experiments` directory.
+
+Dataset Set-Up
+--------------
+
+Although preconfigured settings for both models and datasets have been provided, you will need to (1) `download the datasets <#matk-overview>`_ 
+and (2) update the directory paths pertaining to the datasets and their accompanying auxiliary information.
+Once you have downloaded the dataset, identify and update the respective configuration file under `dataset` folder (i.e., fhm_finegrained)
+
+
+Model Training
+--------------
+
+Subsequently, once you have identified the respective configuraton file (i.e., fhm_finegrained_flava), you can train the model using the following commands:
+
+.. code-block:: bash
+
+  python3 main.py \
+    +experiment=fhm_finegrained_flava \
+    action=train
+
+
+Model Inference
+---------------
+
+Similarly, you can run the model on your test set using the following command:
+
+.. code-block:: bash
+
+  python3 main.py \
+    +experiment=fhm_finegrained_flava \
+    action=test
+
+
+Simple Configuration Overriding
+-------------------------------
+
+If you encounter issues stemming from hardware limitations or want to experiment with alternative hyperparameters, 
+you have the option to modify the settings through either (1) the composed configuration file or (2) the command line interface in the terminal. 
+For executing one-time override commands, utilize the following command:
+
+.. code-block:: bash
+
+  python3 main.py \
+    +experiment=fhm_finegrained_flava \
+    action=test \
+    datamodule.batch_size=16 \
+    trainer.accumulate_grad_batches=1 \
+    model.optimizers.0.lr=2e-5
+
+
+*************************************************
+Advanced Usage (Implementing New Dataset / Model)
+*************************************************
+
+As researchers, you may wish to introduce and experiment with either new models or new datasets. 
+MATK offers an intuitive and modular framework equipped with designated components to streamline such implementations.
+
+Framework Outline
+-----------------
+
+The illustration outlines the core configurations and python code used in the composed `experiments` configuration.
+
+::
+
+    MATK
+    ├──configs
+    ├──── dataset
+    ├──── datamodule
+    ├──── model
+    ├──── metric      
+    └──── trainer
+    ├── datasets
+    ├── datamodules
+    └── models
+
+
+Implementing New Dataset
+------------------------
+
+To introduce a new dataset (i.e., fhm_finegrained), it is necessary to generate the following files:
+
+- `dataset/fhm_finegrained.py` 
+- `configs/dataset/fhm_finegrained.yaml`
+
+
+Python Code
+~~~~~~~~~~~
+
+The Python code facilitates (1) the loading of annotation files, (2) the loading of auxiliary files, and (3) performing dataset preprocessing (i.e., stopwords removal, lowercase). 
+To establish a unified interface for diverse model types, including unimodal and multimodal models, three common base classes are introduced in datasets/base.py: "ImageBase," "FeatureBase," and "TextBase."
+
+For most use cases, you can inherit one of these three base classes and implement the required core functions:
+
+- __len__(self)
+- __getitem__(self, idx: int)
+
+You can examine the existing implementations under the `dataset` folder for reference.
+
+YAML Configuration
+~~~~~~~~~~~~~~~~~~
+
+The configuration file stores the filepaths to the dataset and the relevant auxiliary information. In essense, you are required to provide:
 
 - ``annotation_filepaths (dict)``
 - ``image_dirs (dict)``
 - ``auxiliary_dicts (dict)``
 - ``feats_dir (dict)``
 
-For all other optional parameters listed below please refer to the experiment config files in ``configs/experiment``:
 
-- ``dataset_class``: class path of the dataset you choose, eg; ``datasets.fhm.ImageDataset``.
-- ``text_template``
-- ``labels (list)``
+Implementing New Model
+-----------------------
 
-Step 2: Configure DataModule
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To introduce a new model (i.e., flava), it is necessary to generate the following files:
 
-The datamodules initialize the tokenizer and the data loaders (which handle batch size, number of workers, etc.).
+- models/flava.py
+- configs/model/flava.yaml
 
-To configure the datamodule, go to ``configs/datamodule`` and pick the file based on your model choice and specify:
 
-- ``shuffle_train (bool)``: set to True to make sure we aren’t exposing our model to the same cycle (order) of data in every epoch
-- ``num_workers (int)``: how many subprocesses to use for data loading
-- ``batch_size (int)``: the number of samples the model processes at once during training
-- ``class_path``: class path of the datamodule you choose (e.g., ``datamodules.frcnn_datamodule.FRCNNDataModule``).
+Python Code
+~~~~~~~~~~~
 
-For all other optional parameters listed below please refer to the experiment config files in ``configs/experiment``:
+The Python code controls (1) the model architecture and (2) the various model training stages (i.e., train, validation and test). Under the hood, we used Pytorch's LightningModule to handle these processes. 
 
-- ``tokenizer_class_or_path``: class or path of the pretrained tokenizer (e.g., ``t5-large``).
+You can examine the existing implementations under the `models` folder for reference.
 
-Step 3: Configure Model
-~~~~~~~~~~~~~~~~~~~~~~~
+YAML Configuration
+~~~~~~~~~~~~~~~~~~
 
-To configure a model, go to ``configs/model`` and pick the file based on your model choice. The following parameters need to be specified:
+The configuration file defines the model classes and handles the the models' hyperparameters.
 
-- ``class_path``: class path of the model you chose (e.g., ``models.flava.FlavaClassificationModel``).
-- ``model_class_or_path``: class or path of the pretrained model (e.g., ``facebook/flava-full``).
-
-For all other optional parameters listed below please refer to the experiment config files in ``configs/experiment``:
-
-- ``cls_dict (dict)``: dictionary where each key-value pair is defined as ``{label}:{#number of class}``.
-- ``optimizers``
-
-Step 4: Configure Trainer
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Trainer helps automate several aspects of training. It handles all loop details for you, including:
-
-- Automatically enabling/disabling gradients.
-- Running the training, validation, and test data loaders.
-- Calling the Callbacks at the appropriate times.
-- Putting batches and computations on the correct devices.
-
-To configure the trainer, go to ``configs/trainer``, pick the trainer of your choice. Below are the **required** parameters and the **default** values we use. 
-You can also tweak the trainer by adding parameters from here: `[Trainer API] <https://lightning.ai/docs/pytorch/stable/common/trainer.html#trainer-class-api>`_
-
-- ``accelerator``: ``cuda``
-- ``max_epochs (int)``: ``30``
-- ``enable_checkpointing (bool)``: ``True``
-- ``logger``
-- ``callbacks``
-
-Step 5: Configure Experiment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To configure your experiment, you can take a look at any of the dataset folders under ``configs/experiment``. The following parameters need to be specified:
-
-- ``defaults``: This is a list in our input config that instructs Hydra on how to build the output config. The Defaults List is ordered:
-
-  - If multiple configs define the same value, the last one wins.
-  - If multiple configs contribute to the same dictionary, the result is the combined dictionary.
-
-The following parameters specify values for parameters that were optional in their respective config files:
-
-- ``cls_dict (dict)``
-- ``optimizers``
-- ``dataset_class``
-- ``text_template``
-- ``labels (list)``
-- ``processor_class_path``: class path of the pretrained image processor, eg; ``facebook/flava-full``.
-- ``monitor_metric``: metric to monitor. Metrics are generated as ``{stage}_{label_name}_{type}``
-- ``monitor_mode``: one of ``{min, max}`` - the decision to overwrite the saved file is made based on the maximization/minimization of the monitored metric
-- ``save_top_ks (int)``:  the best k models to save based on monitored metric .
-- ``experiment_name``
-
-Job Settings
-
-- ``hydra.verbose``
-- ``seed_everything (int)``
-- ``overwrite``
-- ``action``: Specifies whether you are training or testing a model. Can be specified at runtime.
-
-Step 6: Running your Experiment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To test your configurations for correctness, you can use ``debug trainer``:
-
-.. code-block:: bash
-  python3 main.py --multirun \
-    +experiment={experiment config location} \
-    action=fit \
-    trainer=debug_trainer
-
-To run **training**, you can use ``single_gpu_trainer`` or ``multi_gpu_trainer``:
-
-.. code-block:: bash
-
-  python3 main.py --multirun \
-    +experiment={experiment config location} \
-    action=fit \
-    trainer={single_gpu_trainer, multi_gpu_trainer}
-
-For example, to **train** VisualBERT on FHM using the ``multi_gpu_trainer``:
-
-.. code-block:: bash
-
-  python3 main.py --multirun \
-    +experiment=fhm/visualbert.yaml \
-    action=fit \
-    trainer=multi_gpu_trainer
-
-Similarly, you can run **inference** by changing ``action`` to ``test``:
-
-.. code-block:: bash
-
-  python3 main.py --multirun \
-    +experiment={experiment config location} \
-    action=test \
-    trainer={single_gpu_trainer, multi_gpu_trainer}
-
-For example, to run **inference** for VisualBERT on FHM:
-
-.. code-block:: bash
-
-  python3 main.py --multirun \
-    +experiment={experiment config location} \
-    action=test \
-    trainer={single_gpu_trainer, multi_gpu_trainer}
 
 *****************
 Model Performance
 *****************
-Coming soon...
+
++------------+---------------+-----------------+---------------+---------------+
+| AUROC      | FHM           | FHM Finegrained | HarMeme       | MAMI          |
++============+===============+=================+===============+===============+
+| LXMERT     | 0.689 (0.014) | 0.680 (0.007)   | 0.818 (0.014) | 0.763 (0.007) |
++------------+---------------+-----------------+---------------+---------------+
+| VisualBERT | 0.708 (0.014) | 0.672 (0.013)   | 0.821 (0.015) | 0.779 (0.007) |
++------------+---------------+-----------------+---------------+---------------+
+| FLAVA      | 0.786 (0.009) | 0.765 (0.011)   | 0.846 (0.015) | 0.803 (0.006) |
++------------+---------------+-----------------+---------------+---------------+
+
+
+The AUROC scores are presented in the format `average (std.dev)`, where both the average and standard deviation values are calculated across 10 random seeds, ranging from 1111 to 1120.
 
 **************************
 Meme Models Analysis

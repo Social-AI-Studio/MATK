@@ -8,13 +8,6 @@ def import_class(dataset_class):
     
     return getattr(m, class_name)
 
-def concatenate_labels(prefix, initial_labels):
-    encoded_labels = []
-    for label in initial_labels:
-        new_label = prefix + "_"+label
-        encoded_labels.append(new_label)
-    return encoded_labels
-
 class ConcatDataset(torch.utils.data.Dataset):
     def __init__(self, *datasets):
         self.datasets = datasets

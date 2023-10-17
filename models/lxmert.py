@@ -7,7 +7,7 @@ from transformers import LxmertModel
 from datamodules.collators.gqa_lxmert.modeling_frcnn import GeneralizedRCNN
 from datamodules.collators.gqa_lxmert.lxmert_utils import Config
 
-from .model_utils import setup_metrics, collapse_cls_dict
+from .model_utils import setup_metrics
 from .base import BaseLightningModule
 
 class LxmertClassificationModel(BaseLightningModule):
@@ -25,6 +25,7 @@ class LxmertClassificationModel(BaseLightningModule):
 
         self.model = LxmertModel.from_pretrained(model_class_or_path)
         self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.classes = list(cls_dict.keys())
         self.optimizers = optimizers
 
         if frcnn_class_or_path:
@@ -35,19 +36,16 @@ class LxmertClassificationModel(BaseLightningModule):
                 for param in self.frcnn.parameters():
                     param.requires_grad = False
         
-        collapsed_label_dict = collapse_cls_dict(cls_dict)
-        self.classes = list(collapsed_label_dict)
-
         # set up metric
         self.mlps = nn.ModuleList([
             nn.Linear(self.model.config.hidden_size, value)
-            for value in collapsed_label_dict.values()
+            for value in cls_dict.values()
         ])
         
         # set up metric
-        setup_metrics(self, collapsed_label_dict, metrics_cfg, "train")
-        setup_metrics(self, collapsed_label_dict, metrics_cfg, "validate")
-        setup_metrics(self, collapsed_label_dict, metrics_cfg, "test")
+        setup_metrics(self, cls_dict, metrics_cfg, "train")
+        setup_metrics(self, cls_dict, metrics_cfg, "validate")
+        setup_metrics(self, cls_dict, metrics_cfg, "test")
 
     def training_step(self, batch, batch_idx):
 
@@ -85,17 +83,19 @@ class LxmertClassificationModel(BaseLightningModule):
             token_type_ids = token_type_ids
         )
 
-        total_loss = 0.0
-        batch_end_index = 0
-        batch_start_index = 0
+        total_loss = 0
+
         for idx, cls_name in enumerate(self.classes):
+            indices = batch[f"{cls_name}_indices"]
+
             targets = batch[cls_name]
-            batch_end_index += len(targets)
-            preds = self.mlps[idx]((outputs[0][batch_start_index:batch_end_index, :][:, 0]))
+            preds = self.mlps[idx](outputs[0][indices, 0])
+
             loss = F.cross_entropy(preds, targets)
             total_loss += loss
-            batch_start_index = batch_end_index
-            self.compute_metrics_step(cls_name, "train", loss, targets, preds)
+
+            self.compute_metrics_step(
+                cls_name, "train", loss, targets, preds)
 
         return total_loss / len(self.classes)
         
@@ -135,20 +135,21 @@ class LxmertClassificationModel(BaseLightningModule):
             token_type_ids = token_type_ids
         )
 
-        total_loss = 0.0
-        batch_end_index = 0
-        batch_start_index = 0
+        total_loss = 0
+
         for idx, cls_name in enumerate(self.classes):
+            indices = batch[f"{cls_name}_indices"]
+
             targets = batch[cls_name]
-            batch_end_index += len(targets)
-            preds = self.mlps[idx]((outputs[0][batch_start_index:batch_end_index, :][:, 0]))
+            preds = self.mlps[idx](outputs[0][indices, 0])
+
             loss = F.cross_entropy(preds, targets)
             total_loss += loss
-            batch_start_index = batch_end_index
-            self.compute_metrics_step(cls_name, "validate", loss, targets, preds)
+            
+            self.compute_metrics_step(
+                cls_name, "validate", loss, targets, preds)
 
         return total_loss / len(self.classes)
-
     
     def test_step(self, batch, batch_idx):
 
@@ -186,19 +187,19 @@ class LxmertClassificationModel(BaseLightningModule):
             token_type_ids = token_type_ids
         )
 
-        total_loss = 0.0
-        batch_end_index = 0
-        batch_start_index = 0
+        total_loss = 0
+
         for idx, cls_name in enumerate(self.classes):
+            indices = batch[f"{cls_name}_indices"]
+
             targets = batch[cls_name]
-            batch_end_index += len(targets)
-            preds = self.mlps[idx]((outputs[0][batch_start_index:batch_end_index, :][:, 0]))
+            preds = self.mlps[idx](outputs[0][indices, 0])
+
             loss = F.cross_entropy(preds, targets)
             total_loss += loss
-            batch_start_index = batch_end_index
-            self.compute_metrics_step(cls_name, "test", loss, targets, preds)
 
-        return total_loss / len(self.classes)
+            self.compute_metrics_step(
+                cls_name, "test", loss, targets, preds)
         
         return total_loss / len(self.classes)
 

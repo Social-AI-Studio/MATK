@@ -1,0 +1,49 @@
+# @package _global_
+defaults:
+  - /model: t5_classification
+  - /dataset: 
+    - mami
+  - /datamodule: text_classification_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+      - accuracy
+      - auroc
+  - /hydra: experiment
+  - _self_
+
+# Mandatory Configuration Parameters
+model:
+  cls_labels:
+    mami_misogynous:
+      0: "no"
+      1: "yes"
+  optimizers:
+    - class_path: torch.optim.Adam
+      lr: 2e-5
+
+dataset:
+  mami:
+    dataset_class: datasets.mami.TextClassificationDataset
+    tokenizer_class_or_path: t5-large
+    text_template: "{text}"
+    output_template: "{label}"
+    labels:
+      mami_misogynous:
+        0: "no"
+        1: "yes"
+
+datamodule:
+  tokenizer_class_or_path: t5-large
+
+monitor_metric: validate_mami_misogynous_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/mami/t5-classification
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???

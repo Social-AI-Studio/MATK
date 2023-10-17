@@ -1,0 +1,51 @@
+# @package _global_
+defaults:
+  - /model: bart_classification
+  - /dataset: 
+    - fhm_finegrained
+  - /datamodule: text_classification_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+      - accuracy
+      - auroc
+  - /hydra: experiment
+  - _self_
+
+# Mandatory Configuration Parameters
+model:
+  cls_labels:
+    fhm_finegrained_hate:
+      0: "no"
+      1: "yes"
+  optimizers:
+    - class_path: torch.optim.Adam
+      lr: 2e-5
+
+dataset:
+  fhm_finegrained:
+    dataset_class: datasets.fhm_finegrained.TextClassificationDataset
+    tokenizer_class_or_path: facebook/bart-large
+    text_template: "{text}"
+    output_template: "{label}"
+    cls_labels:
+      hate:
+        0: "no"
+        1: "yes"
+    labels:
+    - hate
+
+datamodule:
+  tokenizer_class_or_path: facebook/bart-large
+
+monitor_metric: validate_loss_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/fhm_finegrained/bart-classification
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???

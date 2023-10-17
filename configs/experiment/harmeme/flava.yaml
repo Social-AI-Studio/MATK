@@ -1,20 +1,20 @@
 # @package _global_
 defaults:
-- /model: flava
-- /dataset: 
-  - harmeme
-- /datamodule: processor_datamodule
-- /trainer: single_gpu_trainer
-- /metric:
-  - accuracy
-  - auroc
-- /hydra: experiment
-- _self_
+  - /model: flava
+  - /dataset: 
+    - harmeme
+  - /datamodule: processor_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+    - accuracy
+    - auroc
+  - /hydra: experiment
+  - _self_
     
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    intensity: 3
+    harmeme_intensity: 2
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
@@ -24,7 +24,7 @@ dataset:
     dataset_class: datasets.harmeme.ImageDataset
     text_template: "{text}"
     labels:
-    - intensity
+    - harmeme_intensity
 
 datamodule:
   processor_class_or_path: facebook/flava-full

@@ -45,11 +45,8 @@ class T5ClassificationModel(BaseLightningModule):
                 tokens = self.tokenizer.encode(word, add_special_tokens=False)
                 self.cls_tokens[cls_name][tokens[0]] = label
 
-                assert len(tokens) == 1
-            
-
-    def get_logits(self, outputs, tokens):
-        first_word = outputs.logits[:, 0, :].cpu()
+    def get_logits(self, outputs, indices, tokens):
+        first_word = outputs.logits[indices, 0, :].cpu()
 
         logits = []
         for token in tokens:
@@ -58,7 +55,7 @@ class T5ClassificationModel(BaseLightningModule):
                                      ].unsqueeze(-1))
         logits = torch.cat(logits, -1)
         return logits
-    
+
     def get_labels(self, labels, token2label):
         targets = [x[0].item() for x in labels]
         targets = [token2label[x] for x in targets]
@@ -67,44 +64,46 @@ class T5ClassificationModel(BaseLightningModule):
     def training_step(self, batch, batch_idx):
         total_loss = 0.0
 
+        model_outputs = self.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            labels=batch["labels"]
+        )
+        total_loss += model_outputs.loss
+
         for cls_name, token2label in self.cls_tokens.items():
+            indices = batch[f"{cls_name}_indices"]
             labels = batch[cls_name]
 
-            model_outputs = self.model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
-                labels=labels
-            )
-            total_loss += model_outputs.loss
-
-            preds = self.get_logits(model_outputs, list(token2label.keys()))
+            preds = self.get_logits(model_outputs, indices, list(token2label.keys()))
             labels = self.get_labels(labels, token2label)
             preds, labels = preds.cpu(), labels.cpu()
 
             self.compute_metrics_step(
-                cls_name, "train", model_outputs.loss, labels, preds)
+                cls_name, "train", model_outputs.loss / 2, labels, preds)
 
         return total_loss / len(self.cls_tokens)
 
     def validation_step(self, batch, batch_idx):
         total_loss = 0.0
 
-        for cls_name, token2label in self.cls_tokens.items():
-            labels = batch[cls_name]
-            
-            model_outputs = self.model(
-                input_ids=batch["input_ids"],
-                attention_mask=batch["attention_mask"],
-                labels=labels
-            )
-            total_loss += model_outputs.loss
+        model_outputs = self.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            labels=batch["labels"]
+        )
+        total_loss += model_outputs.loss
 
-            preds = self.get_logits(model_outputs, list(token2label.keys()))
+        for cls_name, token2label in self.cls_tokens.items():
+            indices = batch[f"{cls_name}_indices"]
+            labels = batch[cls_name]
+
+            preds = self.get_logits(model_outputs, indices, list(token2label.keys()))
             labels = self.get_labels(labels, token2label)
             preds, labels = preds.cpu(), labels.cpu()
 
             self.compute_metrics_step(
-                cls_name, "validate", model_outputs.loss, labels, preds)
+                cls_name, "validate", model_outputs.loss / 2, labels, preds)
 
         return total_loss / len(self.cls_tokens)
 
@@ -113,7 +112,7 @@ class T5ClassificationModel(BaseLightningModule):
 
         for cls_name, token2label in self.cls_tokens.items():
             labels = batch[cls_name]
-            
+
             model_outputs = self.model(
                 input_ids=batch["input_ids"],
                 attention_mask=batch["attention_mask"],
@@ -148,10 +147,10 @@ class T5ClassificationModel(BaseLightningModule):
         opts = []
         for opt_cfg in self.optimizers:
             class_name = opt_cfg.pop("class_path")
-            
+
             package_name = ".".join(class_name.split(".")[:-1])
             package = importlib.import_module(package_name)
-            
+
             class_name = class_name.split(".")[-1]
             cls = getattr(package, class_name)
 

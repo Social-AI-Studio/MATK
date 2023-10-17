@@ -9,6 +9,8 @@ from . import utils
 from typing import List
 from .base import CommonBase
 
+DATASET_PREFIX = "fhm"
+
 class FHMBase(CommonBase):
     def __init__(
         self,
@@ -16,10 +18,9 @@ class FHMBase(CommonBase):
         auxiliary_dicts: dict,
         labels: List[str]
     ):
-        super().__init__("fhm", labels)
+        super().__init__(labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = self._encode_labels()
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -30,17 +31,11 @@ class FHMBase(CommonBase):
         # translate labels into numeric values
         for record in tqdm.tqdm(data, desc="Preprocessing labels"):
             record["img"] = os.path.basename(record["img"])
+            record[f"{DATASET_PREFIX}_label"] = record["label"]
+
             annotations.append(record)
         
         return annotations
-
-    def _load_auxiliary(self, auxiliary_dicts: dict):
-        data = {}
-        for key, filepath in tqdm.tqdm(auxiliary_dicts.items(), desc="Loading auxiliary info"):
-            with open(filepath, "rb") as f:
-                data[key] = pkl.load(f)
-
-        return data
 
     def __len__(self):
         return len(self.annotations)
@@ -60,7 +55,6 @@ class FRCNNDataset(FHMBase):
         self.text_template = text_template
         self.image_dir = image_dir
         self.feats_dict = self._load_feats(feats_dir) if feats_dir != None else None
-        self.raw_labels = labels
 
     def _load_feats(self, feats_dir: str):
         data = {}
@@ -77,12 +71,9 @@ class FRCNNDataset(FHMBase):
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
+        # retrieve id
         image_filename = record['img']
         id, _ = os.path.splitext(image_filename)
-
-        image_path = os.path.join(self.image_dir, image_filename)
-        image = Image.open(image_path)
-        image = image.convert("RGB") if image.mode != "RGB" else image
 
         # text formatting
         input_kwargs = {"text": record['text']}
@@ -92,18 +83,23 @@ class FRCNNDataset(FHMBase):
 
         item = {
             'id': id,
-            'image_id': image_filename,
-            'image': np.array(image),
-            'image_path': image_path,
+            'image_filename': image_filename,
             'text': text
         }
 
+        # Load image or image features
         if self.feats_dict:
             item['roi_features'] = self.feats_dict[image_filename]['roi_features']
             item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
+        else:
+            image_path = os.path.join(self.image_dir, image_filename)
+            image = Image.open(image_path)
+            image = image.convert("RGB") if image.mode != "RGB" else image
+            item['image'] = np.array(image)
 
-        for encoded_label, raw_label in zip(self.labels, self.raw_labels):
-            item[encoded_label] = record[raw_label]
+        # Load labels
+        for l in self.labels:
+            item[l] = record[l]
 
         return item
 
@@ -120,13 +116,15 @@ class ImageDataset(FHMBase):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.image_dir = image_dir
         self.text_template = text_template
-        self.raw_labels = labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
+        # retrieve id
         image_filename = record['img']
+        id, _ = os.path.splitext(image_filename)
 
+        # image loading and processing
         image_path = os.path.join(self.image_dir, image_filename)
         image = Image.open(image_path)
         image = image.resize((224, 224))
@@ -136,19 +134,19 @@ class ImageDataset(FHMBase):
         input_kwargs = {"text": record['text']}
         for key, data in self.auxiliary_data.items():
             input_kwargs[key] = data[image_filename]
-
         text = self.text_template.format(**input_kwargs)
 
         item = {
-            'id': record['id'],
+            'id': id,
             'image_filename': image_filename,
             'text': text,
             'image': np.array(image),
             'image_path': image_path
         }
-        
-        for encoded_label, raw_label in zip(self.labels, self.raw_labels):
-            item[encoded_label] = record[raw_label]
+
+        # Load labels
+        for l in self.labels:
+            item[l] = record[l]
         
         return item
 

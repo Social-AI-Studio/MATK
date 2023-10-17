@@ -5,6 +5,7 @@ import numpy as np
 import os
 from os import listdir
 import multiprocessing
+import argparse
 
 def midpoint(x1, y1, x2, y2):
     x_mid = int((x1 + x2)/2)
@@ -74,6 +75,18 @@ def process_images(img_dir, cleaned_dir):
     pool.join()
 
 if __name__ == '__main__':
-    img_dir = "path/to/source/image/directory"
-    cleaned_dir = "path/to/destination/inpainted/image/directory"
-    process_images(img_dir, cleaned_dir)
+    
+    parser = argparse.ArgumentParser()
+
+    # add arguments
+    parser.add_argument('--img-dir', type=str, help='Path to directory containing cleaned images',required=True)
+    parser.add_argument('--output-dir', type=str, help='Path to file with pretrained model weights',required=True)
+    
+    # parse arguments
+    args = parser.parse_args()
+
+    # calculate square
+    img_dir = args.clean_img_dir
+    output_dir = args.output_dir
+
+    process_images(img_dir, output_dir)

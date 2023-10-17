@@ -1,89 +1,102 @@
 import torch
 import numpy as np
+from typing import Optional, Callable, List
 
 def _common_collate(
-        batches, 
-        tokenizer,
-        labels
-    ):
+    batch,
+    tokenizer
+):
 
     texts = []
-    for batch in batches:
-        for item in batch:
-            texts.append(item["text"])
-    
-    inputs = tokenizer(
-            texts,
-            padding="max_length",
-            max_length=20,
-            truncation=True,
-            return_token_type_ids=True,
-            return_attention_mask=True,
-            add_special_tokens=True,
-            return_tensors="pt"
-        )
+    for item in batch:
+        texts.append(item["text"])
 
-    indices_list = [item + "_indices" for item in labels]
+    inputs = tokenizer(
+        texts,
+        padding="max_length",
+        max_length=20,
+        truncation=True,
+        return_token_type_ids=True,
+        return_attention_mask=True,
+        add_special_tokens=True,
+        return_tensors="pt"
+    )
     
-    label_index = 0 
-    for l, label_indices_list_name in zip(labels, indices_list):
-        label_values = [] 
-        label_indices = []
-        for batch in batches:
-            for dataset_item in batch:
-                if l in dataset_item:
-                    label_values.append(dataset_item[l])
-                    label_indices.append(label_index)
-                    label_index+=1
-        inputs[l] = torch.tensor(label_values, dtype=torch.int64)
-        inputs[label_indices_list_name] = torch.tensor(label_indices, dtype=torch.int64)
-            
     return inputs
+
 
 def frcnn_collate_fn(
-        batches, 
-        tokenizer,
-        image_preprocess,
-        labels
-    ):
-    
+    batches: List[dict],
+    tokenizer: Callable,
+    labels: List[str],
+    image_preprocess: Optional[Callable]
+):
+
+    # Restructure the dataset batches
+    batch_dict = {label: [] for label in labels}
+    for item_tuple in batches:
+        for item in item_tuple:
+            for label in labels:
+                if label in item:
+                    batch_dict[label].append(item)
+                    continue
+
+    flattened_batches = []
+    labels_dict = {}
+    start_index = 0
+    for label, items in batch_dict.items():
+        # Flatten the batches in the order of datasets: fhm -> mami -> ...
+        flattened_batches.extend(items)
+
+        # Capture the labels for each dataset
+        labels_dict[label] = torch.tensor([i[label] for i in items], dtype=torch.int64)
+
+        # Capture the label indices for each dataset
+        indices = list(range(start_index, start_index + len(items)))
+        start_index = len(items)
+        labels_dict[f"{label}_indices"] = torch.tensor(indices, dtype=torch.int64)
+
     inputs = _common_collate(
-        batches=batches,
-        tokenizer=tokenizer,
-        labels=labels
+        batch=flattened_batches,
+        tokenizer=tokenizer
     )
 
-    images = []
-    for batch in batches:
-        for item in batch:
-            images.append(item["image_path"])
-    images, sizes, scales_yx = image_preprocess(images)
+    if image_preprocess:
+        inputs.update(_image_collate_fn(flattened_batches, image_preprocess))
+    else:
+        inputs.update(_features_collate_fn(flattened_batches))
 
-    inputs["images"] = images
-    inputs["sizes"] = sizes
-    inputs["scales_yx"] = scales_yx
-    
+    inputs.update(labels_dict)
+
     return inputs
 
-def frcnn_collate_fn_fast(
-        batches, 
-        tokenizer,
-        labels
-    ):
-    inputs = _common_collate(
-        batches=batches,
-        tokenizer=tokenizer,
-        labels=labels
-    )
 
+def _features_collate_fn(
+    batch
+):
 
     visual_feats, visual_pos = [], []
-    for batch in batches:
-            for item in batch:
-                visual_feats.append(item["roi_features"])
-                visual_pos.append(item["normalized_boxes"])
+    for item in batch:
+        visual_feats.append(item["roi_features"])
+        visual_pos.append(item["normalized_boxes"])
 
-    inputs['visual_feats'] = torch.cat(visual_feats, dim=0)
-    inputs['visual_pos'] = torch.cat(visual_pos, dim=0)
+    return {
+        'visual_feats': torch.cat(visual_feats, dim=0),
+        'visual_pos': torch.cat(visual_pos, dim=0)
+    }
 
-    return inputs
+def _image_collate_fn(
+    batch,
+    image_preprocess
+):
+    images = []
+    for item in batch:
+        images.append(item["image_path"])
+
+    images, sizes, scales_yx = image_preprocess(images)
+
+    return {
+        "images": images,
+        "sizes": sizes,
+        "scales_yx": scales_yx
+    }

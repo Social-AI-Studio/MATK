@@ -13,12 +13,3 @@ def setup_metrics(obj, cls_dict, metrics_cfg, stage):
                 f"{stage}_{cls_name}_{metric_name.lower()}",
                 metric_class(num_classes=num_classes, **cfg)
             )
-
-def collapse_cls_dict(cls_dict):
-    collapsed_dict = {}
-    for dataset, label_dict in cls_dict.items():
-        for label, value in label_dict.items():
-            collapsed_key = f"{dataset}_{label}"
-            collapsed_dict[collapsed_key] = value
-    return collapsed_dict
-

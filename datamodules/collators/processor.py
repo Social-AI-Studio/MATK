@@ -1,28 +1,40 @@
 import torch
 
-def processor_collate_fn(batches, processor, labels): 
-       
+
+def processor_collate_fn(batches, processor, labels):
+
+    # Restructure the dataset batches
+    batch_dict = {label: [] for label in labels}
+    for item_tuple in batches:
+        for item in item_tuple:
+            for label in labels:
+                if label in item:
+                    batch_dict[label].append(item)
+                    continue
+
+    flattened_batches = []
+    labels_dict = {}
+    start_index = 0
+    for label, items in batch_dict.items():
+        # Flatten the batches in the order of datasets: fhm -> mami -> ...
+        flattened_batches.extend(items)
+
+        # Capture the labels for each dataset
+        labels_dict[label] = torch.tensor([i[label] for i in items], dtype=torch.int64)
+
+        # Capture the label indices for each dataset
+        indices = list(range(start_index, start_index + len(items)))
+        start_index = len(items)
+        labels_dict[f"{label}_indices"] = torch.tensor(indices, dtype=torch.int64)
+
     texts, images = [], []
-    for batch in batches:
-        for item in batch:
-            texts.append(item["text"])
-            images.append(item["image"])
-        
-    inputs = processor(  
+    for item in flattened_batches:
+        texts.append(item["text"])
+        images.append(item["image"])
+
+    inputs = processor(
         text=texts, images=images, return_tensors="pt", padding=True, truncation=True
     )
-    indices_list = [item + "_indices" for item in labels]
+    inputs.update(labels_dict)
 
-    label_index = 0 
-    for l, label_indices_list_name in zip(labels, indices_list):
-        label_values = [] 
-        label_indices = []
-        for batch in batches:
-            for dataset_item in batch:
-                if l in dataset_item: #get index of record from here
-                    label_values.append(dataset_item[l])
-                    label_indices.append(label_index)
-                    label_index+=1
-        inputs[l] = torch.tensor(label_values, dtype=torch.int64)
-        inputs[label_indices_list_name] = torch.tensor(label_indices, dtype=torch.int64)
     return inputs
