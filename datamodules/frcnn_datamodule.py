@@ -2,7 +2,6 @@ from torch.utils.data import DataLoader
 from functools import partial
 from typing import Optional
 from .utils import import_class, ConcatDataset
-from transformers import AutoTokenizer
 
 import lightning.pytorch as pl
 from .collators.frcnn import frcnn_collate_fn
@@ -27,8 +26,7 @@ class FRCNNDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
         self.num_workers = num_workers
-        
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
+        self.tokenizer_class_or_path = tokenizer_class_or_path
 
         labels = []
         for dataset in self.dataset_cfg:
@@ -50,7 +48,6 @@ class FRCNNDataModule(pl.LightningDataModule):
 
         self.collate_fn = partial(
             frcnn_collate_fn,
-            tokenizer=tokenizer,
             labels=labels,
             image_preprocess=image_preprocess
         )
@@ -64,6 +61,7 @@ class FRCNNDataModule(pl.LightningDataModule):
                     image_dir=cfg.image_dirs.train,
                     annotation_filepath=cfg.annotation_filepaths.train,
                     auxiliary_dicts=cfg.auxiliary_dicts.train,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.train
@@ -78,6 +76,7 @@ class FRCNNDataModule(pl.LightningDataModule):
                     image_dir=cfg.image_dirs.validate,
                     annotation_filepath=cfg.annotation_filepaths.validate,
                     auxiliary_dicts=cfg.auxiliary_dicts.validate,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.validate
@@ -93,6 +92,7 @@ class FRCNNDataModule(pl.LightningDataModule):
                     image_dir=cfg.image_dirs.test,
                     annotation_filepath=cfg.annotation_filepaths.test,
                     auxiliary_dicts=cfg.auxiliary_dicts.test,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.test
@@ -107,6 +107,7 @@ class FRCNNDataModule(pl.LightningDataModule):
                     image_dir=cfg.image_dirs.predict,
                     annotation_filepath=cfg.annotation_filepaths.predict,
                     auxiliary_dicts=cfg.auxiliary_dicts.predict,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.predict

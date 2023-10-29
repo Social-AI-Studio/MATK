@@ -1,5 +1,18 @@
+import torch.nn as nn
 import torchmetrics
 
+class SimpleClassifier(nn.Module):
+    def __init__(self, in_dim, out_dim, dropout):
+        super(SimpleClassifier,self).__init__()
+        layer=[
+            nn.Linear(in_dim,out_dim),
+            nn.Dropout(dropout,inplace=True)
+        ]
+        self.main = nn.Sequential(*layer)
+        
+    def forward(self,x):
+        logits = self.main(x)
+        return logits        
 
 def setup_metrics(obj, cls_dict, metrics_cfg, stage):
     for cls_name, num_classes in cls_dict.items():

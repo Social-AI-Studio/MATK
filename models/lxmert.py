@@ -7,7 +7,7 @@ from transformers import LxmertModel
 from datamodules.collators.gqa_lxmert.modeling_frcnn import GeneralizedRCNN
 from datamodules.collators.gqa_lxmert.lxmert_utils import Config
 
-from .model_utils import setup_metrics
+from .model_utils import setup_metrics, SimpleClassifier
 from .base import BaseLightningModule
 
 class LxmertClassificationModel(BaseLightningModule):
@@ -15,7 +15,7 @@ class LxmertClassificationModel(BaseLightningModule):
             self, 
             model_class_or_path: str,
             frcnn_class_or_path: str,
-            frcnn_trainable: bool,
+            freeze_frcnn: bool,
             metrics_cfg: dict,
             cls_dict: dict,
             optimizers: list
@@ -28,36 +28,50 @@ class LxmertClassificationModel(BaseLightningModule):
         self.classes = list(cls_dict.keys())
         self.optimizers = optimizers
 
-        if frcnn_class_or_path:
-            self.frcnn_cfg = Config.from_pretrained("unc-nlp/frcnn-vg-finetuned")
-            self.frcnn = GeneralizedRCNN.from_pretrained("unc-nlp/frcnn-vg-finetuned", config=self.frcnn_cfg)
+        self.frcnn_class_or_path = frcnn_class_or_path
+        self.freeze_frcnn = freeze_frcnn
 
-            if not frcnn_trainable:
+
+    def setup_tasks(self, metrics_cfg, cls_cfg):
+        # set up the metrics for evaluation
+        setup_metrics(self, cls_cfg, metrics_cfg, "train")
+        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
+        setup_metrics(self, cls_cfg, metrics_cfg, "test")
+
+        # set up the frcnn
+        if self.frcnn_class_or_path:
+            self.frcnn_cfg = Config.from_pretrained(self.frcnn_class_or_path)
+            self.frcnn = GeneralizedRCNN.from_pretrained(self.frcnn_class_or_path, config=self.frcnn_cfg)
+
+            if self.freeze_frcnn:
                 for param in self.frcnn.parameters():
                     param.requires_grad = False
         
         # set up metric
         self.mlps = nn.ModuleList([
-            nn.Linear(self.model.config.hidden_size, value)
-            for value in cls_dict.values()
+            SimpleClassifier(
+                self.model.config.hidden_size, 
+                value, 
+                self.dropout
+            )
+            for value in cls_cfg.values()
         ])
         
         # set up metric
-        setup_metrics(self, cls_dict, metrics_cfg, "train")
-        setup_metrics(self, cls_dict, metrics_cfg, "validate")
-        setup_metrics(self, cls_dict, metrics_cfg, "test")
+        setup_metrics(self, cls_cfg, metrics_cfg, "train")
+        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
+        setup_metrics(self, cls_cfg, metrics_cfg, "test")
 
-    def training_step(self, batch, batch_idx):
+        # used for computing overall loss
+        self.train_loss = []
+        self.val_loss = []
 
+    def forward(self, stage, batch):
         input_ids = batch['input_ids']
         token_type_ids = batch['token_type_ids']
         attention_mask = batch['attention_mask']
 
-        if "visual_feats" in batch and "visual_pos" in batch:
-            visual_feats = batch['visual_feats']
-            visual_pos = batch['visual_pos']
-        else:
-            # Run Faster-RCNN
+        if self.frcnn_class_or_path:
             images = batch['images']
             sizes = batch['sizes']
             scales_yx = batch['scales_yx']
@@ -74,6 +88,9 @@ class LxmertClassificationModel(BaseLightningModule):
 
             visual_feats = visual_dict['roi_features']
             visual_pos = visual_dict.get("normalized_boxes")
+        else:
+            visual_feats = batch['visual_feats']
+            visual_pos = batch['visual_pos']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -83,137 +100,47 @@ class LxmertClassificationModel(BaseLightningModule):
             token_type_ids = token_type_ids
         )
 
-        total_loss = 0
+        loss = 0
 
         for idx, cls_name in enumerate(self.classes):
             indices = batch[f"{cls_name}_indices"]
-
             targets = batch[cls_name]
-            preds = self.mlps[idx](outputs[0][indices, 0])
+            classifier = self.mlps[idx]
+            
+            logits = classifier(outputs[0][indices, 0])
 
-            loss = F.cross_entropy(preds, targets)
-            total_loss += loss
+            loss += F.cross_entropy(logits, targets)
 
             self.compute_metrics_step(
-                cls_name, "train", loss, targets, preds)
+                cls_name, stage, loss, targets, logits)
 
-        return total_loss / len(self.classes)
+        return loss / len(self.classes)
+    
+    def training_step(self, batch, batch_idx):
+        loss = self.forward("train", batch)
+        self.train_loss.append(loss)
+
+        self.log(f'train_loss', loss, sync_dist=True)
         
     def validation_step(self, batch, batch_idx):
+        # this will be triggered during the Trainer's sanity check
+        if not hasattr(self, "classes"):
+            raise AttributeError("'classes' has not been initialised... Did you forget to call model.setup_tasks()?")
 
-        input_ids = batch['input_ids']
-        attention_mask = batch['attention_mask']
-        token_type_ids = batch['token_type_ids']
+        loss = self.forward("validate", batch)
+        self.train_loss.append(loss)
 
-        if "visual_feats" in batch and "visual_pos" in batch:
-            visual_feats = batch['visual_feats']
-            visual_pos = batch['visual_pos']
-        else:
-            # Run Faster-RCNN
-            images = batch['images']
-            sizes = batch['sizes']
-            scales_yx = batch['scales_yx']
-            
-            visual_dict = self.frcnn(
-                images,
-                sizes,
-                scales_yx=scales_yx,
-                padding="max_detections",
-                max_detections=self.frcnn_cfg.max_detections,
-                return_tensors="pt",
-                location=images.device
-            )
-
-            visual_feats = visual_dict['roi_features']
-            visual_pos = visual_dict.get("normalized_boxes")
-
-        outputs = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            visual_feats=visual_feats,
-            visual_pos = visual_pos,
-            token_type_ids = token_type_ids
-        )
-
-        total_loss = 0
-
-        for idx, cls_name in enumerate(self.classes):
-            indices = batch[f"{cls_name}_indices"]
-
-            targets = batch[cls_name]
-            preds = self.mlps[idx](outputs[0][indices, 0])
-
-            loss = F.cross_entropy(preds, targets)
-            total_loss += loss
-            
-            self.compute_metrics_step(
-                cls_name, "validate", loss, targets, preds)
-
-        return total_loss / len(self.classes)
+        self.log(f'validate_loss', loss, sync_dist=True)
     
     def test_step(self, batch, batch_idx):
-
-        input_ids = batch['input_ids']
-        attention_mask = batch['attention_mask']
-        token_type_ids = batch['token_type_ids']
-
-        if "visual_feats" in batch and "visual_pos" in batch:
-            visual_feats = batch['visual_feats']
-            visual_pos = batch['visual_pos']
-        else:
-            # Run Faster-RCNN
-            images = batch['images']
-            sizes = batch['sizes']
-            scales_yx = batch['scales_yx']
-            
-            visual_dict = self.frcnn(
-                images,
-                sizes,
-                scales_yx=scales_yx,
-                padding="max_detections",
-                max_detections=self.frcnn_cfg.max_detections,
-                return_tensors="pt",
-                location=images.device
-            )
-
-            visual_feats = visual_dict['roi_features']
-            visual_pos = visual_dict.get("normalized_boxes")
-
-        outputs = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            visual_feats=visual_feats,
-            visual_pos = visual_pos,
-            token_type_ids = token_type_ids
-        )
-
-        total_loss = 0
-
-        for idx, cls_name in enumerate(self.classes):
-            indices = batch[f"{cls_name}_indices"]
-
-            targets = batch[cls_name]
-            preds = self.mlps[idx](outputs[0][indices, 0])
-
-            loss = F.cross_entropy(preds, targets)
-            total_loss += loss
-
-            self.compute_metrics_step(
-                cls_name, "test", loss, targets, preds)
-        
-        return total_loss / len(self.classes)
+        self.forward("test", batch)
 
     def predict_step(self, batch, batch_idx):
-
         input_ids = batch['input_ids']
-        attention_mask = batch['attention_mask']
         token_type_ids = batch['token_type_ids']
+        attention_mask = batch['attention_mask']
 
-        if "visual_feats" in batch and "visual_pos" in batch:
-            visual_feats = batch['visual_feats']
-            visual_pos = batch['visual_pos']
-        else:
-            # Run Faster-RCNN
+        if self.frcnn_class_or_path:
             images = batch['images']
             sizes = batch['sizes']
             scales_yx = batch['scales_yx']
@@ -230,6 +157,9 @@ class LxmertClassificationModel(BaseLightningModule):
 
             visual_feats = visual_dict['roi_features']
             visual_pos = visual_dict.get("normalized_boxes")
+        else:
+            visual_feats = batch['visual_feats']
+            visual_pos = batch['visual_pos']
 
         outputs = self.model(
             input_ids=input_ids,
@@ -241,11 +171,9 @@ class LxmertClassificationModel(BaseLightningModule):
 
         results = {}
         for idx, cls_name in enumerate(self.classes):
-            preds = self.mlps[idx](outputs[0][:, 0])
+            logits = self.mlps[idx](outputs[0][:, 0])
             
-            results["img"] = batch["image_filename"].tolist()
-            results[f"{cls_name}_preds"] = torch.argmax(preds, dim=1).tolist()
-            results[f"{cls_name}_labels"] = batch[cls_name].tolist()
+            results[f"{cls_name}_preds"] = torch.argmax(logits, dim=1).tolist()
 
         return results
 
