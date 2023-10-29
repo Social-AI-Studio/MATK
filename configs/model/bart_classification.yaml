@@ -1,4 +1,0 @@
-class_path: models.bart.BartClassificationModel
-model_class_or_path: facebook/bart-large
-cls_labels: ???
-optimizers: ???

@@ -7,7 +7,7 @@ from transformers import VisualBertModel
 from datamodules.collators.gqa_lxmert.modeling_frcnn import GeneralizedRCNN
 from datamodules.collators.gqa_lxmert.lxmert_utils import Config
 
-from .model_utils import setup_metrics
+from .model_utils import setup_metrics, SimpleClassifier
 from .base import BaseLightningModule
 
 class VisualBertClassificationModel(BaseLightningModule):
@@ -16,6 +16,7 @@ class VisualBertClassificationModel(BaseLightningModule):
             model_class_or_path: str,
             frcnn_class_or_path: str,
             freeze_frcnn: bool,
+            dropout: float,
             optimizers: list
         ):
         super().__init__()
@@ -24,23 +25,33 @@ class VisualBertClassificationModel(BaseLightningModule):
         self.model = VisualBertModel.from_pretrained(model_class_or_path)
         self.frcnn_class_or_path = frcnn_class_or_path
         self.freeze_frcnn = freeze_frcnn
+        self.dropout = dropout
         self.optimizers = optimizers
 
     def setup_tasks(self, metrics_cfg, cls_cfg):
         # set up the metrics for evaluation
-        cls_stats = {cls: len(label2word)
-                     for cls, label2word in cls_cfg.items()}
-        setup_metrics(self, cls_stats, metrics_cfg, "train")
-        setup_metrics(self, cls_stats, metrics_cfg, "validate")
-        setup_metrics(self, cls_stats, metrics_cfg, "test")
+        setup_metrics(self, cls_cfg, metrics_cfg, "train")
+        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
+        setup_metrics(self, cls_cfg, metrics_cfg, "test")
 
-        # set up the token2word conversion for evaluation purposes
-        self.cls_tokens = {}
-        for cls_name, label2word in cls_cfg.items():
-            self.cls_tokens[cls_name] = {}
-            for label, word in label2word.items():
-                tokens = self.tokenizer.encode(word, add_special_tokens=False)
-                self.cls_tokens[cls_name][tokens[0]] = label
+        # set up the frcnn
+        if self.frcnn_class_or_path:
+            self.frcnn_cfg = Config.from_pretrained(self.frcnn_class_or_path)
+            self.frcnn = GeneralizedRCNN.from_pretrained(self.frcnn_class_or_path, config=self.frcnn_cfg)
+
+            if self.freeze_frcnn:
+                for param in self.frcnn.parameters():
+                    param.requires_grad = False
+        
+        # set up metric
+        self.mlps = nn.ModuleList([
+            SimpleClassifier(
+                self.model.config.hidden_size, 
+                value, 
+                self.dropout
+            )
+            for value in cls_cfg.values()
+        ])
         
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
@@ -50,7 +61,7 @@ class VisualBertClassificationModel(BaseLightningModule):
         self.train_loss = []
         self.val_loss = []
         
-    def foward(self, batch, batch_idx):
+    def forward(self, stage, batch):
         input_ids = batch['input_ids']
         attention_mask = batch['attention_mask']
         token_type_ids = batch['token_type_ids']
@@ -93,8 +104,7 @@ class VisualBertClassificationModel(BaseLightningModule):
 
             loss += F.cross_entropy(logits, targets)
 
-            self.compute_metrics_step(
-                cls_name, "train", loss, targets, logits)
+            self.compute_metrics_step(stage, cls_name, targets, logits)
 
         return loss / len(self.classes)
     

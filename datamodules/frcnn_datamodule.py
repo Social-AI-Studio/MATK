@@ -58,11 +58,10 @@ class FRCNNDataModule(pl.LightningDataModule):
             for dataset in self.dataset_cfg:
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.train,
+                    img_dir=cfg.image_dirs.train,
                     annotation_filepath=cfg.annotation_filepaths.train,
                     auxiliary_dicts=cfg.auxiliary_dicts.train,
                     tokenizer_class_or_path=self.tokenizer_class_or_path,
-                    labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.train
                 )
@@ -73,11 +72,10 @@ class FRCNNDataModule(pl.LightningDataModule):
                 cfg = self.dataset_cfg[dataset]
 
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.validate,
+                    img_dir=cfg.image_dirs.validate,
                     annotation_filepath=cfg.annotation_filepaths.validate,
                     auxiliary_dicts=cfg.auxiliary_dicts.validate,
                     tokenizer_class_or_path=self.tokenizer_class_or_path,
-                    labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.validate
                 )
@@ -89,11 +87,10 @@ class FRCNNDataModule(pl.LightningDataModule):
             for dataset in self.dataset_cfg:
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.test,
+                    img_dir=cfg.image_dirs.test,
                     annotation_filepath=cfg.annotation_filepaths.test,
                     auxiliary_dicts=cfg.auxiliary_dicts.test,
                     tokenizer_class_or_path=self.tokenizer_class_or_path,
-                    labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.test
                 )
@@ -104,11 +101,10 @@ class FRCNNDataModule(pl.LightningDataModule):
             for dataset in self.dataset_cfg:
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.predict,
+                    img_dir=cfg.image_dirs.predict,
                     annotation_filepath=cfg.annotation_filepaths.predict,
                     auxiliary_dicts=cfg.auxiliary_dicts.predict,
                     tokenizer_class_or_path=self.tokenizer_class_or_path,
-                    labels=cfg.labels,
                     text_template=cfg.text_template,
                     feats_dir=cfg.feats_dir.predict
                 )

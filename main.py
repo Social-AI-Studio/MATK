@@ -23,23 +23,30 @@ def main(cfg) -> None:
         seed_everything(seed, workers= True)
 
     
+    ## get model and dataset classes
     model_class = get_class(class_path=cfg.model.pop("class_path"))
     datamodule_class = get_class(class_path=cfg.datamodule.pop("class_path"))
 
-    ## Instantiation of model and datamodule
-    model = model_class(metrics_cfg=cfg.metric, **cfg.model)
+    ## extract all classification configurations)
+    cls_cfg = {}
+    for d in cfg.dataset.values():
+        print(d['labels'])
+        cls_cfg.update(d['labels'])
+
+    ## instantiate model
+    model = model_class(**cfg.model)
+    model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
     total_parameters = sum(p.numel() for p in model.parameters())
     trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
     logging.info(f"Model's Parameters: {total_parameters}")
     logging.info(f"Model's Trainable Parameters: {trainable_parameters}")
 
-    ## Sanity Checks
+    ## instantiate datamodule and perform sanity check
     datamodule = datamodule_class(dataset_cfg=cfg.dataset, **cfg.datamodule)
-    datamodule.setup(stage="fit")
+    # datamodule.setup(stage="fit")
     logging.info("Logging an example record of the dataset")
-    logging.info(datamodule.train_dataloader().dataset[0])
-
-    logging.info(next(iter(datamodule.train_dataloader())))
+    # logging.info(datamodule.train_dataloader().dataset[0])
+    # logging.info(next(iter(datamodule.train_dataloader())))
 
     trainer = Trainer(**cfg.trainer)
 
@@ -47,8 +54,8 @@ def main(cfg) -> None:
         logging.info("Training model...")
         trainer.fit(model, datamodule)
 
-        logging.info("Evaluating model - validate...")
-        trainer.validate(model, datamodule)
+        # logging.info("Evaluating model - validate...")
+        # trainer.validate(model, datamodule)
 
         logging.info("Evaluating model - test...")
         trainer.test(model, datamodule, ckpt_path='best')
@@ -57,12 +64,14 @@ def main(cfg) -> None:
         model = model_class.load_from_checkpoint(
             checkpoint_path=cfg.model_checkpoint,
         )
+        model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
         trainer.test(model, datamodule)
     elif cfg.action == "predict":
         logging.info("Performing model inference...")
         model = model_class.load_from_checkpoint(
             checkpoint_path=cfg.model_checkpoint,
         )
+        model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
         # trainer.test(model, datamodule)
         predictions = trainer.predict(model, datamodule)
 

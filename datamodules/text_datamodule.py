@@ -10,7 +10,7 @@ from .utils import import_class, ConcatDataset
 import lightning.pytorch as pl
 
 
-class TextClassificationDataModule(pl.LightningDataModule):
+class TextDataModule(pl.LightningDataModule):
     """
     DataModule used for semantic segmentation in geometric generalization project
     """
@@ -32,6 +32,7 @@ class TextClassificationDataModule(pl.LightningDataModule):
 
         # Initialise tokenizer
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
+        self.tokenizer_class_or_path = tokenizer_class_or_path
 
         labels = []
         for dataset in dataset_cfg:
@@ -52,7 +53,9 @@ class TextClassificationDataModule(pl.LightningDataModule):
 
         # Partially load the collate functions
         self.collate_fn = partial(
-            text_collate_fn, tokenizer=tokenizer, labels=labels)
+            text_collate_fn, labels=labels)
+
+        del tokenizer
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
@@ -64,18 +67,20 @@ class TextClassificationDataModule(pl.LightningDataModule):
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.train,
                     auxiliary_dicts=cfg.auxiliary_dicts.train,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
-                    output_template=cfg.output_template,
-                    cls_labels=cfg.labels
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.train.append(dataset_obj)
 
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.validate,
                     auxiliary_dicts=cfg.auxiliary_dicts.validate,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
-                    output_template=cfg.output_template,
-                    cls_labels=cfg.labels
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.validate.append(dataset_obj)
 
@@ -87,9 +92,10 @@ class TextClassificationDataModule(pl.LightningDataModule):
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.test,
                     auxiliary_dicts=cfg.auxiliary_dicts.test,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
-                    output_template=cfg.output_template,
-                    cls_labels=cfg.labels
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.test.append(dataset_obj)
 
@@ -100,9 +106,10 @@ class TextClassificationDataModule(pl.LightningDataModule):
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.predict,
                     auxiliary_dicts=cfg.auxiliary_dicts.predict,
+                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
-                    output_template=cfg.output_template,
-                    cls_labels=cfg.labels
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.predict.append(dataset_obj)
 

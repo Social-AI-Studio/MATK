@@ -47,19 +47,19 @@ class ProcessorDataModule(pl.LightningDataModule):
             for dataset in self.dataset_cfg:
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.train,
+                    img_dir=cfg.image_dirs.train,
                     annotation_filepath=cfg.annotation_filepaths.train,
                     auxiliary_dicts=cfg.auxiliary_dicts.train,
-                    labels=cfg.labels,
+                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.train.append(dataset_obj)
      
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.validate,
+                    img_dir=cfg.image_dirs.validate,
                     annotation_filepath=cfg.annotation_filepaths.validate,
                     auxiliary_dicts=cfg.auxiliary_dicts.validate,
-                    labels=cfg.labels,
+                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.validate.append(dataset_obj)
@@ -72,10 +72,10 @@ class ProcessorDataModule(pl.LightningDataModule):
             for dataset in self.dataset_cfg:
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.test,
+                    img_dir=cfg.image_dirs.test,
                     annotation_filepath=cfg.annotation_filepaths.test,
                     auxiliary_dicts=cfg.auxiliary_dicts.test,
-                    labels=cfg.labels,
+                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.test.append(dataset_obj)
@@ -86,10 +86,10 @@ class ProcessorDataModule(pl.LightningDataModule):
             for dataset in self.dataset_cfg:
                 self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
-                    image_dir=cfg.image_dirs.predict,
+                    img_dir=cfg.image_dirs.predict,
                     annotation_filepath=cfg.annotation_filepaths.predict,
                     auxiliary_dicts=cfg.auxiliary_dicts.predict,
-                    labels=cfg.labels,
+                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.predict.append(dataset_obj)

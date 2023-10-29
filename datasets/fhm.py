@@ -46,8 +46,8 @@ class FHMBase(CommonBase):
             text_template: str
         ):
         for record in tqdm.tqdm(self.annotations, desc="Input Preprocessing"):
-            record["id"] = os.path.splitext(record["img"])[0]
             record["img"] = os.path.basename(record["img"])
+            record["id"] = os.path.splitext(record["img"])[0]
 
             # preprocess text
             input_kwargs = {"text": record['text']}
@@ -94,7 +94,7 @@ class FRCNNDataset(FHMBase):
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
-        record_id = record['id']
+        record_id = record['img']
 
         # Load image or image features
         if self.feats_dict:

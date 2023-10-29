@@ -61,8 +61,12 @@ class FHMFGBase(CommonBase):
         super().__init__()
         self.annotations = utils._load_jsonl(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
+        self.annotations = self.annotations[:32]
     
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
+        tokenizer = None
+        if tokenizer_class_or_path:
+            tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
+
         self._preprocess_inputs(
             tokenizer,
             text_template
@@ -81,20 +85,24 @@ class FHMFGBase(CommonBase):
             text_template: str
         ):
         for record in tqdm.tqdm(self.annotations, desc="Input Preprocessing"):
-            record["id"] = os.path.splitext(record["img"])[0]
             record["img"] = os.path.basename(record["img"])
+            record["id"] = os.path.splitext(record["img"])[0]
 
-            # preprocess text
-            input_kwargs = {"text": record['text']}
-            for key, data in self.auxiliary_data.items():
-                input_kwargs[key] = data[record["id"]]
-            text = text_template.format(**input_kwargs)
-            record["formatted_text"] = text
+            if tokenizer:
+                # preprocess text
+                input_kwargs = {"text": record['text']}
+                for key, data in self.auxiliary_data.items():
+                    input_kwargs[key] = data[record["id"]]
+                text = text_template.format(**input_kwargs)
+                record["formatted_text"] = text
 
-            # perform tokenization
-            tokenized = tokenizer(text)
-            record["input_ids"] = tokenized.input_ids.squeeze(0)
-            record["attention_mask"] = tokenized.attention_mask.squeeze(0)
+                # perform tokenization
+                tokenized = tokenizer(text, return_tensors="pt")
+                record["input_ids"] = tokenized.input_ids.squeeze(0)
+                record["attention_mask"] = tokenized.attention_mask.squeeze(0)
+
+                if "token_type_ids" in tokenized:
+                    record["token_type_ids"] = tokenized.token_type_ids.squeeze(0)
 
 
     def _preprocess_labels(
@@ -108,11 +116,12 @@ class FHMFGBase(CommonBase):
             record[f"{DATASET_PREFIX}_hate"] = HATEFULNESS[record["gold_hate"][0]]
 
             # tokenize labels
-            if labels_template:
-                label_text = labels_mapping[record[f"{DATASET_PREFIX}_hate"]]
-                tokenized = tokenizer(label_text)
-                record[f"{DATASET_PREFIX}_hate_input_ids"] = tokenized.input_ids
-                record[f"{DATASET_PREFIX}_hate_attention_mask"] = tokenized.attention_mask
+            if tokenizer and labels_template:
+                key = f"{DATASET_PREFIX}_hate"
+                label_text = labels_mapping[key][record[key]]
+                tokenized = tokenizer(label_text, return_tensors="pt")
+                record[f"{DATASET_PREFIX}_hate_input_ids"] = tokenized.input_ids.squeeze(0)
+                record[f"{DATASET_PREFIX}_hate_attention_mask"] = tokenized.attention_mask.squeeze(0)
 
     def __len__(self):
         return len(self.annotations)
@@ -142,7 +151,7 @@ class FRCNNDataset(FHMFGBase):
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
-        record_id = record['id']
+        record_id = record['img']
 
         # Load image or image features
         if self.feats_dict:

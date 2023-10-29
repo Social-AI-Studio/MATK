@@ -16,17 +16,15 @@ class LxmertClassificationModel(BaseLightningModule):
             model_class_or_path: str,
             frcnn_class_or_path: str,
             freeze_frcnn: bool,
-            metrics_cfg: dict,
-            cls_dict: dict,
+            dropout: float,
             optimizers: list
         ):
         super().__init__()
         self.save_hyperparameters()
 
         self.model = LxmertModel.from_pretrained(model_class_or_path)
-        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
-        self.classes = list(cls_dict.keys())
         self.optimizers = optimizers
+        self.dropout = dropout
 
         self.frcnn_class_or_path = frcnn_class_or_path
         self.freeze_frcnn = freeze_frcnn
@@ -61,6 +59,9 @@ class LxmertClassificationModel(BaseLightningModule):
         setup_metrics(self, cls_cfg, metrics_cfg, "train")
         setup_metrics(self, cls_cfg, metrics_cfg, "validate")
         setup_metrics(self, cls_cfg, metrics_cfg, "test")
+
+        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.classes = list(cls_cfg.keys())
 
         # used for computing overall loss
         self.train_loss = []
@@ -111,8 +112,7 @@ class LxmertClassificationModel(BaseLightningModule):
 
             loss += F.cross_entropy(logits, targets)
 
-            self.compute_metrics_step(
-                cls_name, stage, loss, targets, logits)
+            self.compute_metrics_step(stage, cls_name, targets, logits)
 
         return loss / len(self.classes)
     

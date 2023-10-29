@@ -1,9 +1,9 @@
 # @package _global_
 defaults:
-  - /model: bart_classification
+  - /model: t5_clm
   - /dataset: 
     - fhm_finegrained
-  - /datamodule: text_classification_datamodule
+  - /datamodule: text_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
       - accuracy
@@ -13,36 +13,30 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
-  cls_labels:
-    fhm_finegrained_hate:
-      0: "no"
-      1: "yes"
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
 
 dataset:
   fhm_finegrained:
-    dataset_class: datasets.fhm_finegrained.TextClassificationDataset
-    tokenizer_class_or_path: facebook/bart-large
+    dataset_class: datasets.fhm_finegrained.TextDataset
+    tokenizer_class_or_path: t5-large
     text_template: "{text}"
-    output_template: "{label}"
-    cls_labels:
-      hate:
+    labels_template: "{label}"
+    labels:
+      fhm_finegrained_hate:
         0: "no"
         1: "yes"
-    labels:
-    - hate
 
 datamodule:
-  tokenizer_class_or_path: facebook/bart-large
+  tokenizer_class_or_path: t5-large
 
-monitor_metric: validate_loss_average
+monitor_metric: validate_fhm_finegrained_hate_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/fhm_finegrained/bart-classification
+experiment_name: baseline/fhm_finegrained/t5-classification
 
 # Job settings
 hydra.verbose: True

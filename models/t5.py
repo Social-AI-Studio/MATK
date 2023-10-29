@@ -5,7 +5,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from .model_utils import setup_metrics
 from .base import BaseLightningModule
 
-class T5MLMModel(BaseLightningModule):
+class T5CLMModel(BaseLightningModule):
     def __init__(
         self,
         model_class_or_path: str,
@@ -67,14 +67,13 @@ class T5MLMModel(BaseLightningModule):
             attention_mask=batch["attention_mask"],
             labels=batch["labels"]
         )
-        self.log(f'train_loss', model_outputs.loss, prog_bar=True, sync_dist=True)
 
         for cls_name, token2label in self.cls_tokens.items():
             indices = batch[f"{cls_name}_indices"]
             labels = batch[cls_name]
 
             logits = self.get_logits(model_outputs, indices, list(token2label.keys()))
-            labels = self.get_labels(labels, token2label)
+            labels = batch[f"{cls_name}"]
             logits, labels = logits.cpu(), labels.cpu()
 
             self.compute_metrics_step(stage, cls_name, labels, logits)

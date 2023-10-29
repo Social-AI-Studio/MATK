@@ -30,7 +30,7 @@ def processor_collate_fn(batches, processor, labels):
     texts, images = [], []
     for item in flattened_batches:
         texts.append(item["text"])
-        images.append(item["image"])
+        images.append(item["img"])
 
     inputs = processor(
         text=texts, images=images, return_tensors="pt", padding=True, truncation=True

@@ -1,6 +1,6 @@
 class_path: models.visualbert.VisualBertClassificationModel
 model_class_or_path: uclanlp/visualbert-vqa-coco-pre
-frcnn_trainable: false
 frcnn_class_or_path: ???
-cls_dict: ???
+freeze_frcnn: True
+dropout: 0.1
 optimizers: ???

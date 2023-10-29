@@ -12,12 +12,14 @@ class FlavaClassificationModel(BaseLightningModule):
     def __init__(
         self,
         model_class_or_path: str,
+        dropout: float,
         optimizers: list
     ):
         super().__init__()
         self.save_hyperparameters()
 
         self.model = FlavaModel.from_pretrained(model_class_or_path)
+        self.dropout = dropout
         self.optimizers = optimizers
 
     def setup_tasks(self, metrics_cfg, cls_cfg):
@@ -29,13 +31,13 @@ class FlavaClassificationModel(BaseLightningModule):
         # set up the various classification heads
         self.mlps = nn.ModuleList([
             SimpleClassifier(
-                self.model.config.hidden_size, 
-                num_classes, 
+                self.model.config.hidden_size,
+                num_classes,
                 self.dropout
             )
             for num_classes in cls_cfg.values()
         ])
-        
+
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
         self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
@@ -43,7 +45,7 @@ class FlavaClassificationModel(BaseLightningModule):
         # used for computing overall loss
         self.train_loss = []
         self.val_loss = []
-    
+
     def forward(self, stage, batch):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
@@ -52,7 +54,7 @@ class FlavaClassificationModel(BaseLightningModule):
         )
 
         loss = 0.0
-        
+
         for idx, cls_name in enumerate(self.classes):
             indices = batch[f"{cls_name}_indices"]
             targets = batch[cls_name]
@@ -63,9 +65,8 @@ class FlavaClassificationModel(BaseLightningModule):
             )
 
             loss += F.cross_entropy(logits, targets)
-            
-            self.compute_metrics_step(
-                cls_name, stage, loss, targets, logits)
+
+            self.compute_metrics_step(stage, cls_name, targets, logits)
 
         return loss / len(self.classes)
 
@@ -78,8 +79,9 @@ class FlavaClassificationModel(BaseLightningModule):
     def validation_step(self, batch, batch_idx):
         # this will be triggered during the Trainer's sanity check
         if not hasattr(self, "classes"):
-            raise AttributeError("'classes' has not been initialised... Did you forget to call model.setup_tasks()?")
-        
+            raise AttributeError(
+                "'classes' has not been initialised... Did you forget to call model.setup_tasks()?")
+
         loss = self.forward("validate", batch)
         self.train_loss.append(loss)
 
@@ -106,10 +108,10 @@ class FlavaClassificationModel(BaseLightningModule):
         opts = []
         for opt_cfg in self.optimizers:
             class_name = opt_cfg.pop("class_path")
-            
+
             package_name = ".".join(class_name.split(".")[:-1])
             package = importlib.import_module(package_name)
-            
+
             class_name = class_name.split(".")[-1]
             cls = getattr(package, class_name)
 
