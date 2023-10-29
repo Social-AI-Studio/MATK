@@ -91,7 +91,7 @@ class ClipCaptionPrefix(ClipCaptionModel):
 
 
 def generate_beam(model, tokenizer, beam_size: int = 5, prompt=None, embed=None,
-                  entry_length=67, temperature=1., stop_token: str = '.'):
+                  entry_length=128, temperature=1., stop_token: str = '.'):
 
     model.eval()
     stop_token_index = tokenizer.encode(stop_token)[0]

@@ -15,7 +15,7 @@ def main(model_name, image_dir, output_dir, device):
     # loads BLIP caption model
     print("Loading model...")
     processor = AutoProcessor.from_pretrained(model_name)
-    model = Blip2ForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.float16)
+    model = Blip2ForConditionalGeneration.from_pretrained(model_name, device_map=device)
 
     model_name = os.path.basename(model_name) 
     output_dir = os.path.join(output_dir, model_name)
@@ -34,7 +34,7 @@ def main(model_name, image_dir, output_dir, device):
         image = image.convert("RGB")
         
         # preprocess the image
-        inputs = processor(image, return_tensors="pt").to(device, torch.float16)
+        inputs = processor(image, return_tensors="pt").to(device)
 
         # generate caption
         # caption = model.generate({"image": image})
