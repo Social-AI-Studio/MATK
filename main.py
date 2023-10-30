@@ -3,6 +3,7 @@ import json
 import logging
 import hydra
 import importlib
+import os
 from lightning.pytorch import Trainer, seed_everything
 
 def get_class(class_path):
@@ -15,6 +16,8 @@ def get_class(class_path):
 @hydra.main(version_base=None, config_path="configs")
 def main(cfg) -> None:
     cfg = hydra.utils.instantiate(cfg)
+
+    os.environ["TOKENIZERS_PARALLELISM"] = "False"
 
     if "seed_everything" in cfg:
         seed = cfg.seed_everything
@@ -30,7 +33,6 @@ def main(cfg) -> None:
     ## extract all classification configurations)
     cls_cfg = {}
     for d in cfg.dataset.values():
-        print(d['labels'])
         cls_cfg.update(d['labels'])
 
     ## instantiate model
@@ -44,7 +46,7 @@ def main(cfg) -> None:
     ## instantiate datamodule and perform sanity check
     datamodule = datamodule_class(dataset_cfg=cfg.dataset, **cfg.datamodule)
     # datamodule.setup(stage="fit")
-    logging.info("Logging an example record of the dataset")
+    # logging.info("Logging an example record of the dataset")
     # logging.info(datamodule.train_dataloader().dataset[0])
     # logging.info(next(iter(datamodule.train_dataloader())))
 

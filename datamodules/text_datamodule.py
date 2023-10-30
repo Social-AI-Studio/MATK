@@ -53,9 +53,7 @@ class TextDataModule(pl.LightningDataModule):
 
         # Partially load the collate functions
         self.collate_fn = partial(
-            text_collate_fn, labels=labels)
-
-        del tokenizer
+            text_collate_fn, tokenizer, labels=labels)
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
@@ -67,7 +65,6 @@ class TextDataModule(pl.LightningDataModule):
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.train,
                     auxiliary_dicts=cfg.auxiliary_dicts.train,
-                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
                     labels_template=cfg.labels_template,
                     labels_mapping=cfg.labels
@@ -77,7 +74,6 @@ class TextDataModule(pl.LightningDataModule):
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.validate,
                     auxiliary_dicts=cfg.auxiliary_dicts.validate,
-                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
                     labels_template=cfg.labels_template,
                     labels_mapping=cfg.labels
@@ -92,7 +88,6 @@ class TextDataModule(pl.LightningDataModule):
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.test,
                     auxiliary_dicts=cfg.auxiliary_dicts.test,
-                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
                     labels_template=cfg.labels_template,
                     labels_mapping=cfg.labels
@@ -106,7 +101,6 @@ class TextDataModule(pl.LightningDataModule):
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.predict,
                     auxiliary_dicts=cfg.auxiliary_dicts.predict,
-                    tokenizer_class_or_path=self.tokenizer_class_or_path,
                     text_template=cfg.text_template,
                     labels_template=cfg.labels_template,
                     labels_mapping=cfg.labels

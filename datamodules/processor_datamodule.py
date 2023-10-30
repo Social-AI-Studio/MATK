@@ -41,7 +41,7 @@ class ProcessorDataModule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None):
 
         if stage == "fit" or stage is None:
-
+            
             self.train = []
             self.validate = []
             for dataset in self.dataset_cfg:
@@ -50,7 +50,6 @@ class ProcessorDataModule(pl.LightningDataModule):
                     img_dir=cfg.image_dirs.train,
                     annotation_filepath=cfg.annotation_filepaths.train,
                     auxiliary_dicts=cfg.auxiliary_dicts.train,
-                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.train.append(dataset_obj)
@@ -59,7 +58,6 @@ class ProcessorDataModule(pl.LightningDataModule):
                     img_dir=cfg.image_dirs.validate,
                     annotation_filepath=cfg.annotation_filepaths.validate,
                     auxiliary_dicts=cfg.auxiliary_dicts.validate,
-                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.validate.append(dataset_obj)
@@ -67,7 +65,6 @@ class ProcessorDataModule(pl.LightningDataModule):
 
         # Assign test dataset for use in dataloader(s)
         if stage == "test" or stage is None:
-            
             self.test = []
             for dataset in self.dataset_cfg:
                 cfg = self.dataset_cfg[dataset]
@@ -75,7 +72,6 @@ class ProcessorDataModule(pl.LightningDataModule):
                     img_dir=cfg.image_dirs.test,
                     annotation_filepath=cfg.annotation_filepaths.test,
                     auxiliary_dicts=cfg.auxiliary_dicts.test,
-                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.test.append(dataset_obj)
@@ -89,7 +85,6 @@ class ProcessorDataModule(pl.LightningDataModule):
                     img_dir=cfg.image_dirs.predict,
                     annotation_filepath=cfg.annotation_filepaths.predict,
                     auxiliary_dicts=cfg.auxiliary_dicts.predict,
-                    tokenizer_class_or_path=None,
                     text_template=cfg.text_template
                 )
                 self.predict.append(dataset_obj)

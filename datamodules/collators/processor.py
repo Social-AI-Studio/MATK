@@ -29,11 +29,11 @@ def processor_collate_fn(batches, processor, labels):
 
     texts, images = [], []
     for item in flattened_batches:
-        texts.append(item["text"])
+        texts.append(item["templated_text"])
         images.append(item["img"])
 
     inputs = processor(
-        text=texts, images=images, return_tensors="pt", padding=True, truncation=True
+        images=images, text=texts, return_tensors="pt", padding=True
     )
     inputs.update(labels_dict)
 

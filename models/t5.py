@@ -61,11 +61,10 @@ class T5CLMModel(BaseLightningModule):
         return torch.tensor(targets, dtype=torch.int64)
     
     def forward(self, stage, batch):
-        # generate classification output
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels=batch["labels"]
+            labels=batch["labels_input_ids"]
         )
 
         for cls_name, token2label in self.cls_tokens.items():
@@ -85,6 +84,7 @@ class T5CLMModel(BaseLightningModule):
         self.train_loss.append(loss)
 
         self.log(f'train_loss', loss, sync_dist=True)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         # this will be triggered during the Trainer's sanity check
@@ -95,9 +95,11 @@ class T5CLMModel(BaseLightningModule):
         self.val_loss.append(loss)
 
         self.log(f'validate_loss', loss, sync_dist=True)
+        return loss
 
     def test_step(self, batch, batch_idx):
         self.forward("test", batch)
+        return 
 
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(

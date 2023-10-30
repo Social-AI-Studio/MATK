@@ -1,7 +1,7 @@
 import torch
 from torch.nn.utils.rnn import pad_sequence
 
-def text_collate_fn(batches, labels):
+def text_collate_fn(tokenizer, batches, labels):
 
     # Restructure the dataset batches
     batch_dict = {label: [] for label in labels}
@@ -22,34 +22,30 @@ def text_collate_fn(batches, labels):
         flattened_batches.extend(items)
 
         # Capture the labels for each dataset
-        key = f"{label}_input_ids"
-        labels_dict[label] = torch.tensor([i[label] for i in items], dtype=torch.int64)
-        labels_dict["labels"].extend([i[key] for i in items])
+        labels_dict["labels"].extend(
+            [i[f"templated_{label}"] for i in items]
+        )
 
         # Capture the label indices for each dataset
         indices = list(range(start_index, start_index + len(items)))
         start_index = len(items)
+        labels_dict[label] = torch.tensor([i[label] for i in items], dtype=torch.int64)
         labels_dict[f"{label}_indices"] = torch.tensor(indices, dtype=torch.int64)
 
-    labels_dict["labels"] = pad_sequence(
-        labels_dict["labels"],
-        batch_first=True, 
-        padding_value=0
-    )
+    tokenized = tokenizer(labels_dict["labels"], padding=True, truncation=True, return_tensors="pt")
+    labels_dict["labels_input_ids"] = tokenized.input_ids
+    labels_dict["labels_attention_mask"] = tokenized.attention_mask
+    del labels_dict["labels"]
 
-    input_ids, attention_mask = [], []
+    texts = []
     for item in flattened_batches:
-        input_ids.append(item["input_ids"])
-        attention_mask.append(item["attention_mask"])
+        texts.append(item["templated_text"])
     
-    input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
-    attention_mask = pad_sequence(attention_mask, batch_first=True, padding_value=0)
-
-    # Get Labels
-    inputs = {
-        "input_ids": input_ids,
-        "attention_mask": attention_mask
-    }
+    inputs = tokenizer(  
+        text=texts, 
+        padding=True,
+        return_tensors="pt"
+    )
     inputs.update(labels_dict)
 
     return inputs

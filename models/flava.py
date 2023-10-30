@@ -75,6 +75,7 @@ class FlavaClassificationModel(BaseLightningModule):
         self.train_loss.append(loss)
 
         self.log(f'train_loss', loss, sync_dist=True)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         # this will be triggered during the Trainer's sanity check
@@ -86,9 +87,11 @@ class FlavaClassificationModel(BaseLightningModule):
         self.train_loss.append(loss)
 
         self.log(f'validate_loss', loss, sync_dist=True)
+        return loss
 
     def test_step(self, batch, batch_idx):
         self.forward("test", batch)
+        return
 
     def predict_step(self, batch, batch_idx):
         model_outputs = self.model(
