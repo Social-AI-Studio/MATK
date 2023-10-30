@@ -23,11 +23,7 @@ dataset:
     text_template: "{text}"
     labels:
       mami_misogynous: 2
-
 datamodule:
-  processor_class_or_path: facebook/flava-full
-
-monitor_metric: validate_mami_misogynous_average
 monitor_mode: max
 save_top_ks: 1
 

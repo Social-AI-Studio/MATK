@@ -11,8 +11,6 @@ from .base import CommonBase
 
 DATASET_PREFIX = "mami"
 
-
-
 class MamiBase(CommonBase):
     def __init__(
         self,
