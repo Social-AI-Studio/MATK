@@ -1,15 +1,9 @@
 import os
 import tqdm
-import numpy as np
-import pickle as pkl
-
-from PIL import Image
 from . import utils
 
 from typing import List
 from .base import CommonBase
-
-from transformers import AutoTokenizer
 
 DATASET_PREFIX = "fhm"
 
@@ -18,53 +12,49 @@ class FHMBase(CommonBase):
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        tokenizer_class_or_path: str,
         text_template: str,
         labels_template: str,
         labels_mapping: List[str]
     ):
         super().__init__()
         self.annotations = utils._load_jsonl(annotation_filepath)
+        self._preprocess_dataset()
+
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-    
-        tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
-        self._preprocess_inputs(
-            tokenizer,
-            text_template
-        )
-        self._preprocess_labels(
-            tokenizer,
+        self._format_input_output(
+            text_template,
             labels_template,
             labels_mapping
         )
-
-        del tokenizer
-
-    def _preprocess_inputs(
-            self, 
-            tokenizer: AutoTokenizer,
-            text_template: str
-        ):
-        for record in tqdm.tqdm(self.annotations, desc="Input Preprocessing"):
+    def _preprocess_dataset(self):
+        for record in tqdm.tqdm(self.annotations, desc="Dataset preprocessing"):
             record["img"] = os.path.basename(record["img"])
             record["id"] = os.path.splitext(record["img"])[0]
 
-            # preprocess text
+            # convert label to numeric values
+            record[f"{DATASET_PREFIX}_label"] = record["label"]
+
+    def _format_input_output(
+        self,
+        text_template: str,
+        labels_template: str,
+        labels_mapping: dict
+    ):
+        for record in tqdm.tqdm(self.annotations, desc="Input/Output formatting"):
+            # format input text template
             input_kwargs = {"text": record['text']}
             for key, data in self.auxiliary_data.items():
                 input_kwargs[key] = data[record["id"]]
             text = text_template.format(**input_kwargs)
-            record["formatted_text"] = text
+            record["templated_text"] = text
 
-            # perform tokenization
-            tokenized = tokenizer(text)
-            record["input_ids"] = tokenized.input_ids.squeeze(0)
-            record["attention_mask"] = tokenized.attention_mask.squeeze(0)
-
-
-    def _preprocess_labels(self):
-        for record in tqdm.tqdm(self.annotations, desc="Preprocessing labels"):
-            record[f"{DATASET_PREFIX}_label"] = record["label"]
+            # format output text template (for text-to-text generation)
+            if labels_mapping:
+                for cls_name, label2word in labels_mapping.items():
+                    label = record[cls_name]
+                    record[f"templated_{cls_name}"] = labels_template.format(
+                        label=label2word[label]
+                    )
 
     def __len__(self):
         return len(self.annotations)
@@ -74,7 +64,6 @@ class FRCNNDataset(FHMBase):
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        tokenizer_class_or_path: str,
         text_template: str,
         img_dir: str,
         feats_dir: dict
@@ -82,7 +71,6 @@ class FRCNNDataset(FHMBase):
         super().__init__(
             annotation_filepath, 
             auxiliary_dicts, 
-            tokenizer_class_or_path,
             text_template,
             None,
             None
@@ -111,14 +99,12 @@ class ImageDataset(FHMBase):
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        tokenizer_class_or_path: str,
         text_template: str,
         img_dir: str
     ):
         super().__init__(
             annotation_filepath, 
             auxiliary_dicts, 
-            tokenizer_class_or_path,
             text_template,
             None,
             None
@@ -135,7 +121,6 @@ class TextDataset(FHMBase):
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        tokenizer_class_or_path: str,
         text_template: str,
         labels_template: str,
         labels_mapping: dict
@@ -143,7 +128,6 @@ class TextDataset(FHMBase):
         super().__init__(
             annotation_filepath, 
             auxiliary_dicts,
-            tokenizer_class_or_path,
             text_template,
             labels_template,
             labels_mapping

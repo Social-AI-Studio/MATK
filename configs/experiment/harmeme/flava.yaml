@@ -13,8 +13,6 @@ defaults:
     
 # Mandatory Configuration Parameters
 model:
-  cls_dict:
-    harmeme_intensity: 2
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
@@ -24,7 +22,7 @@ dataset:
     dataset_class: datasets.harmeme.ImageDataset
     text_template: "{text}"
     labels:
-    - harmeme_intensity
+      harmeme_intensity: 2
 
 datamodule:
   processor_class_or_path: facebook/flava-full

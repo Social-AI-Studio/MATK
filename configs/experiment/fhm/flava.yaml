@@ -13,9 +13,6 @@ defaults:
     
 # Mandatory Configuration Parameters
 model:
-  cls_dict:
-    fhm_label: 2
-    
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
@@ -25,7 +22,7 @@ dataset:
     dataset_class: datasets.fhm.ImageDataset
     text_template: "{text}"
     labels:
-    - fhm_label
+      fhm_label: 2
 
 datamodule:
   processor_class_or_path: facebook/flava-full

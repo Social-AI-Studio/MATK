@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
-  - /model: bart_clm
+  - /model: t5_clm
   - /dataset: 
-    - fhm_finegrained
+    - harmeme
   - /datamodule: text_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
@@ -18,25 +18,25 @@ model:
       lr: 2e-5
 
 dataset:
-  fhm_finegrained:
-    dataset_class: datasets.fhm_finegrained.TextDataset
-    tokenizer_class_or_path: facebook/bart-large
+  harmeme:
+    dataset_class: datasets.harmeme.TextDataset
+    tokenizer_class_or_path: t5-large
     text_template: "{caption} . {text}"
     labels_template: "{label}"
     labels:
-      fhm_finegrained_hate:
+      harmeme_intensity:
         0: "no"
         1: "yes"
 
 datamodule:
-  tokenizer_class_or_path: facebook/bart-large
+  tokenizer_class_or_path: t5-large
 
-monitor_metric: validate_fhm_finegrained_hate_average
+monitor_metric: validate_harmeme_intensity_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/fhm_finegrained/bart-clm
+experiment_name: baseline/harmeme/t5-clm
 
 # Job settings
 hydra.verbose: True

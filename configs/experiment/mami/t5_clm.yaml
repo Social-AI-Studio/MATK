@@ -1,9 +1,9 @@
 # @package _global_
 defaults:
-  - /model: t5_classification
+  - /model: t5_clm
   - /dataset: 
-    - harmeme
-  - /datamodule: text_classification_datamodule
+    - mami
+  - /datamodule: text_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
       - accuracy
@@ -13,34 +13,30 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
-  cls_labels:
-    harmeme_intensity:
-      0: "no"
-      1: "yes"
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
 
 dataset:
-  harmeme:
-    dataset_class: datasets.harmeme.TextClassificationDataset
-    tokenizer_class_or_path: t5-large
-    text_template: "{text}"
-    output_template: "{label}"
+  mami:
+    dataset_class: datasets.mami.TextDataset
+    tokenizer_class_or_path: facebook/t5-large
+    text_template: "{caption} . {text}"
+    labels_template: "{label}"
     labels:
-      harmeme_intensity:
+      mami_misogynous:
         0: "no"
         1: "yes"
 
 datamodule:
   tokenizer_class_or_path: t5-large
 
-monitor_metric: validate_harmeme_intensity_average
+monitor_metric: validate_mami_misogynous_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/harmeme/t5-classification
+experiment_name: baseline/mami/t5-clm
 
 # Job settings
 hydra.verbose: True

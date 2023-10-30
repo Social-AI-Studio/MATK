@@ -21,7 +21,7 @@ dataset:
   fhm_finegrained:
     dataset_class: datasets.fhm_finegrained.TextDataset
     tokenizer_class_or_path: t5-large
-    text_template: "{text}"
+    text_template: "{caption} . {text}"
     labels_template: "{label}"
     labels:
       fhm_finegrained_hate:
@@ -36,7 +36,7 @@ monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/fhm_finegrained/t5-classification
+experiment_name: baseline/fhm_finegrained/t5-clm
 
 # Job settings
 hydra.verbose: True

@@ -1,9 +1,9 @@
 # @package _global_
 defaults:
-  - /model: bart_classification
+  - /model: bart_clm
   - /dataset: 
     - harmeme
-  - /datamodule: text_classification_datamodule
+  - /datamodule: text_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
       - accuracy
@@ -13,20 +13,16 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
-  cls_labels:
-    harmeme_intensity:
-      0: "no"
-      1: "yes"
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
 
 dataset:
   harmeme:
-    dataset_class: datasets.harmeme.TextClassificationDataset
+    dataset_class: datasets.harmeme.TextDataset
     tokenizer_class_or_path: facebook/bart-large
-    text_template: "{text}"
-    output_template: "{label}"
+    text_template: "{caption} . {text}"
+    labels_template: "{label}"
     labels:
       harmeme_intensity:
         0: "no"
@@ -40,7 +36,7 @@ monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/harmeme/bart-classification
+experiment_name: baseline/harmeme/bart-clm
 
 # Job settings
 hydra.verbose: True
