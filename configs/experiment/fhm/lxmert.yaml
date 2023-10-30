@@ -1,7 +1,8 @@
 # @package _global_
 defaults:
   - /model: lxmert
-  - /dataset: fhm
+  - /dataset: 
+    - fhm
   - /datamodule: frcnn_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
@@ -13,29 +14,30 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
-    label: 2
+    fhm_label: 2
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
   frcnn_class_or_path: null
 
 dataset:
-  dataset_class: datasets.fhm.FRCNNDataset
-  text_template: "{text}"
-  labels:
-    - label
-  feats_dir:
-    train: /mnt/data1/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-    validate: /mnt/data1/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-    test: /mnt/data1/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
-    predict: /mnt/data1/mshee/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+  fhm:
+    dataset_class: datasets.fhm.FRCNNDataset
+    text_template: "{text}"
+    labels:
+      - fhm_label
+    feats_dir:
+      train: /mnt/data1/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+      validate: /mnt/data1/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+      test: /mnt/data1/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
+      predict: /mnt/data1/datasets/memes/fhm/features/unc-nlp/frcnn-vg-finetuned
 
 
 datamodule:
   tokenizer_class_or_path: facebook/flava-full
   frcnn_class_or_path: null
 
-monitor_metric: validate_label_average
+monitor_metric: validate_fhm_label_average
 monitor_mode: max
 save_top_ks: 1
 

@@ -15,7 +15,8 @@ def extract_features(
         frcnn_class_or_path: str,
         image_dir: str,
         feature_dir: str,
-        device: str
+        device: str,
+        overwrite: bool
     ):
     device = torch.device(device)
 
@@ -26,6 +27,10 @@ def extract_features(
 
     filenames = os.listdir(image_dir)
     feature_dir = os.path.join(feature_dir, frcnn_class_or_path)
+
+    if os.path.exists(feature_dir) and not overwrite:
+        raise FileExistsError(f"{feature_dir} already exists.")
+
     os.makedirs(feature_dir, exist_ok=True)
     
     # run frcnn
@@ -53,11 +58,13 @@ if __name__ == "__main__":
     parser.add_argument("--device", type=str, choices=["cuda", "cpu"], required=True)
     parser.add_argument("--image-dir", help="input directory containing the meme images", required=True)
     parser.add_argument("--feature-dir", help="output directory for the extracted features", required=True)
+    parser.add_argument("--overwrite", help="overwrite the output directory if exists", default=False)
     args = parser.parse_args()
 
     extract_features(
         args.frcnn_class_or_path,
         args.image_dir,
         args.feature_dir,
-        args.device
+        args.device,
+        args.overwrite
     )

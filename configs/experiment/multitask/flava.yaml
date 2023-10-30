@@ -2,6 +2,7 @@
 defaults:
 - /model: flava
 - /dataset: 
+  - fhm
   - mami
 - /datamodule: processor_datamodule
 - /trainer: single_gpu_trainer
@@ -14,13 +15,20 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_dict:
+    fhm_label: 2
     mami_misogynous: 2
+    
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
 
 dataset:
-  mami:
+  fhm: 
+    dataset_class: datasets.fhm.ImageDataset
+    text_template: "{text}"
+    labels:
+    - fhm_label
+  mami: 
     dataset_class: datasets.mami.ImageDataset
     text_template: "{text}"
     labels:
@@ -29,12 +37,12 @@ dataset:
 datamodule:
   processor_class_or_path: facebook/flava-full
 
-monitor_metric: validate_mami_misogynous_average
+monitor_metric: validate_fhm_label_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/mami/flava
+experiment_name: baseline/multitask/flava
 
 # Job settings
 hydra.verbose: True

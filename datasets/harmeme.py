@@ -7,8 +7,7 @@ from PIL import Image
 from . import utils
 
 from typing import List
-from torch.utils.data import Dataset
-
+from .base import CommonBase
 
 INTENSITY_MAP = {
     'not harmful': 0, 
@@ -16,50 +15,47 @@ INTENSITY_MAP = {
     'very harmful': 1
 }
 
+# if there's no target, set the target column to 0
 TARGET_MAP = {
-    'individual': 0, 
-    'organization': 1, 
-    'community': 2 , 
-    'society': 3
+    'individual': 1, 
+    'organization': 2, 
+    'community': 3, 
+    'society': 4
 }
 
-class HarmemeBase(Dataset):
+DATASET_PREFIX = "harmeme"
+
+class HarmemeBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         labels: List[str]
     ):  
-        self.labels = labels
+        super().__init__(labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
 
         # load the default annotations
         data = utils._load_jsonl(annotation_filepath)
-
-        record_id = 0
         
         # translate labels into numeric values
-        if "intensity" in self.labels:
-            for record in tqdm.tqdm(data, desc="Preprocessing labels"):
-                record["img"] = record.pop("image")
-                record["intensity"] = INTENSITY_MAP[record["labels"][0]]
-                record["id"] = record_id
-                record_id += 1
-                annotations.append(record)
-        
-        else:
-            for record in tqdm.tqdm(data, desc="Preprocessing labels"):
-                record["img"] = record.pop("image")
-                record["target"] = TARGET_MAP[record["labels"][1]] if len(record["labels"]) > 1 else -1
-                record["id"] = record_id
-                record_id += 1
-                if record["target"] != -1:
-                    annotations.append(record)
+        for record in tqdm.tqdm(data, desc="Preprocessing labels"):
+            filename, _ = os.path.splitext(record['image'])
+            record["id"] = filename
+
+            label = f"{DATASET_PREFIX}_intensity"
+            if label in self.labels:
+                record[label] = INTENSITY_MAP[record["labels"][0]]
+
+            label = f"{DATASET_PREFIX}_target"
+            if label in self.labels: 
+                record[label] = TARGET_MAP[record["labels"][1]] if len(record["labels"]) > 1 else 0
+
+            annotations.append(record)
         
         return annotations
 
@@ -93,7 +89,7 @@ class FRCNNDataset(HarmemeBase):
     def _load_feats(self, feats_dir: str):
         data = {}
         for record in tqdm.tqdm(self.annotations, desc="Loading FRCNN features"):
-            image_filename = record['img']
+            image_filename = record['image']
 
             filename, _ = os.path.splitext(image_filename)
             filepath = os.path.join(feats_dir, f"{filename}.pkl")
@@ -105,12 +101,9 @@ class FRCNNDataset(HarmemeBase):
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
-        image_filename = record['img']
+        # retrieve id
+        image_filename = record['image']
         id, _ = os.path.splitext(image_filename)
-
-        image_path = os.path.join(self.image_dir, image_filename)
-        image = Image.open(image_path)
-        image = image.convert("RGB") if image.mode != "RGB" else image
 
         # text formatting
         input_kwargs = {"text": record['text']}
@@ -120,16 +113,21 @@ class FRCNNDataset(HarmemeBase):
 
         item = {
             'id': id,
-            'image_id': image_filename,
-            'image': np.array(image),
-            'image_path': image_path,
+            'image_filename': image_filename,
             'text': text
         }
 
+        # Load image or image features
         if self.feats_dict:
             item['roi_features'] = self.feats_dict[image_filename]['roi_features']
             item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
+        else:
+            image_path = os.path.join(self.image_dir, image_filename)
+            image = Image.open(image_path)
+            image = image.convert("RGB") if image.mode != "RGB" else image
+            item['image'] = np.array(image)
 
+        # Load labels
         for l in self.labels:
             item[l] = record[l]
 
@@ -148,12 +146,16 @@ class ImageDataset(HarmemeBase):
         super().__init__(annotation_filepath, auxiliary_dicts, labels)
         self.image_dir = image_dir
         self.text_template = text_template
+        self.raw_labels = labels
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
-        image_filename = record['img']
+        # retrieve id
+        image_filename = record['image']
+        id, _ = os.path.splitext(image_filename)
 
+        # image loading and processing
         image_path = os.path.join(self.image_dir, image_filename)
         image = Image.open(image_path)
         image = image.resize((224, 224))
@@ -166,18 +168,18 @@ class ImageDataset(HarmemeBase):
         text = self.text_template.format(**input_kwargs)
 
         item = {
-            'id': record['id'],
+            'id': id,
             'image_filename': image_filename,
             'text': text,
             'image': np.array(image),
             'image_path': image_path
         }
 
+        # Load labels
         for l in self.labels:
             item[l] = record[l]
 
         return item
-
 
 class TextClassificationDataset(HarmemeBase):
     def __init__(
@@ -204,7 +206,7 @@ class TextClassificationDataset(HarmemeBase):
 
         item = {
             'id': record["id"],
-            'image_id': record['img'],
+            'image_id': record['image'],
             'text': text
         }
 

@@ -1,33 +1,33 @@
 # @package _global_
 defaults:
-- /model: flava
-- /dataset: fhm_finegrained
-- /datamodule: processor_datamodule
-- /trainer: single_gpu_trainer
-- /metric:
-  - accuracy
-  - auroc
-- /hydra: experiment
-- _self_
+  - /model: flava
+  - /dataset: 
+    - fhm_finegrained
+  - /datamodule: processor_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+    - accuracy
+    - auroc
+  - /hydra: experiment
+  - _self_
     
 # Mandatory Configuration Parameters
 model:
-  cls_dict:
-    hate: 2
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
 
 dataset:
-  dataset_class: datasets.fhm_finegrained.ImageDataset
-  text_template: "{text}"
-  labels:
-  - hate
+  fhm_finegrained:
+    dataset_class: datasets.fhm_finegrained.ImageDataset
+    text_template: "{text}"
+    labels:
+      fhm_finegrained_hate: 2
 
 datamodule:
   processor_class_or_path: facebook/flava-full
 
-monitor_metric: validate_hate_average
+monitor_metric: validate_fhm_finegrained_hate_average
 monitor_mode: max
 save_top_ks: 1
 

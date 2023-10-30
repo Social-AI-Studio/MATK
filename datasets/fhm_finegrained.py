@@ -1,18 +1,13 @@
 import os
 import tqdm
-import json
-import numpy as np
-import pickle as pkl
-
-from PIL import Image
-from . import utils
 
 from typing import List
-from torch.utils.data import Dataset
+from . import utils
+from .base import CommonBase
 
 # binary classification
 HATEFULNESS = {
-    v:k for k,v in enumerate([
+    v: k for k, v in enumerate([
         "not_hateful",
         "hateful"
     ])
@@ -20,7 +15,7 @@ HATEFULNESS = {
 
 # 6-class multi-label classification
 PROTECTED_CATEGORY = {
-    v:k for k,v in enumerate([
+    v: k for k, v in enumerate([
         "pc_empty",
         "disability",
         "nationality",
@@ -32,7 +27,7 @@ PROTECTED_CATEGORY = {
 
 # 8-class multi-label classification
 PROTECTED_ATTACK = {
-    v:k for k,v in enumerate([
+    v: k for k, v in enumerate([
         "attack_empty",
         "contempt",
         "dehumanizing",
@@ -44,110 +39,93 @@ PROTECTED_ATTACK = {
     ])
 }
 
-class FHMFGBase(Dataset):
+DATASET_PREFIX = "fhm_finegrained"
+
+
+class FHMFGBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        labels: List[str]
+        text_template: str,
+        labels_template: str,
+        labels_mapping: List[str]
     ):
-        self.annotations = self._preprocess_annotations(annotation_filepath)
+        super().__init__()
+        self.annotations = utils._load_jsonl(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        self.labels = labels
 
-    def _preprocess_annotations(self, annotation_filepath: str):
-        annotations = []
+        self._preprocess_inputs(
+            text_template,
+            labels_template,
+            labels_mapping
+        )
 
-        # load the default annotations
-        data = utils._load_jsonl(annotation_filepath)
-
-        # translate labels into numeric values
-        for record in tqdm.tqdm(data, desc="Preprocessing labels"):
+    def _preprocess_inputs(
+        self,
+        text_template: str,
+        labels_template: str,
+        labels_mapping: dict
+    ):
+        for record in tqdm.tqdm(self.annotations, desc="Dataset Preprocessing"):
             record["img"] = os.path.basename(record["img"])
+            record["id"] = os.path.splitext(record["img"])[0]
 
-            if "gold_hate" in record:
-                record["hate"] = HATEFULNESS[record["gold_hate"][0]]
+            # convert label to numeric values
+            record[f"{DATASET_PREFIX}_hate"] = HATEFULNESS[record["gold_hate"][0]]
 
-            if "gold_pc" in record:
-                record["category"] = [PROTECTED_CATEGORY[x] for x in record["gold_pc"]]
+            # format input text template
+            input_kwargs = {"text": record['text']}
+            for key, data in self.auxiliary_data.items():
+                input_kwargs[key] = data[record["id"]]
+            text = text_template.format(**input_kwargs)
+            record["templated_text"] = text
 
-            if "gold_attack" in record:
-                record["attack"] = [PROTECTED_ATTACK[x] for x in record["gold_attack"]]
-
-            annotations.append(record)
-        
-        return annotations
-
-    def _load_auxiliary(self, auxiliary_dicts: dict):
-        data = {}
-        for key, filepath in tqdm.tqdm(auxiliary_dicts.items(), desc="Loading auxiliary info"):
-            with open(filepath, "r") as f:
-                data[key] = json.load(f)
-
-        return data
+            # format output text template (for text-to-text generation)
+            if labels_mapping:
+                for cls_name, label2word in labels_mapping.items():
+                    label = record[cls_name]
+                    record[f"templated_{cls_name}"] = labels_template.format(
+                        label=label2word[label]
+                    )
 
     def __len__(self):
         return len(self.annotations)
+
 
 class FRCNNDataset(FHMFGBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
-        labels: List[str],
         text_template: str,
-        image_dir: str,
+        img_dir: str,
         feats_dir: dict
     ):
-        super().__init__(annotation_filepath, auxiliary_dicts, labels)
-        self.text_template = text_template
-        self.image_dir = image_dir
-        self.feats_dict = self._load_feats(feats_dir) if feats_dir != None else None
-
-    def _load_feats(self, feats_dir: str):
-        data = {}
-        for record in tqdm.tqdm(self.annotations, desc="Loading FRCNN features"):
-            image_filename = record['img']
-
-            filename, _ = os.path.splitext(image_filename)
-            filepath = os.path.join(feats_dir, f"{filename}.pkl")
-            with open(filepath, "rb") as f:
-                data[image_filename] = pkl.load(f)
-
-        return data
+        super().__init__(
+            annotation_filepath,
+            auxiliary_dicts,
+            text_template,
+            None,
+            None
+        )
+        if feats_dir:
+            self.feats_dict = self._load_feats(self.annotations, feats_dir)
+        else:
+            self.img_dict = self._load_images(self.annotations, img_dir)
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
+        record_id = record['img']
 
-        image_filename = record['img']
-        id, _ = os.path.splitext(image_filename)
-
-        image_path = os.path.join(self.image_dir, image_filename)
-        image = Image.open(image_path)
-        image = image.convert("RGB") if image.mode != "RGB" else image
-
-        # text formatting
-        input_kwargs = {"text": record['text']}
-        for key, data in self.auxiliary_data.items():
-            input_kwargs[key] = data[image_filename]
-        text = self.text_template.format(**input_kwargs)
-
-        item = {
-            'id': id,
-            'image_id': image_filename,
-            'image': np.array(image),
-            'image_path': image_path,
-            'text': text
-        }
-
+        # Load image or image features
         if self.feats_dict:
-            item['roi_features'] = self.feats_dict[image_filename]['roi_features']
-            item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
+            record['roi_features'] = self.feats_dict[record_id]['roi_features']
+            record['normalized_boxes'] = self.feats_dict[record_id]['normalized_boxes']
+        else:
+            record['img'] = self.img_dict[record_id]
 
-        for l in self.labels:
-            item[l] = record[l]
-
-        return item
+        return record
 
 
 class ImageDataset(FHMFGBase):
@@ -156,75 +134,39 @@ class ImageDataset(FHMFGBase):
         annotation_filepath: str,
         auxiliary_dicts: dict,
         text_template: str,
-        labels: List[str],
-        image_dir: str,
+        img_dir: str
     ):
-        super().__init__(annotation_filepath, auxiliary_dicts, labels)
-        self.image_dir = image_dir
-        self.text_template = text_template
+        super().__init__(
+            annotation_filepath,
+            auxiliary_dicts,
+            text_template,
+            None,
+            None
+        )
+        self.image_dict = self._load_images(self.annotations, img_dir)
 
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
-
-        image_filename = record['img']
-
-        image_path = os.path.join(self.image_dir, image_filename)
-        image = Image.open(image_path)
-        image = image.resize((224, 224))
-        image = image.convert("RGB") if image.mode != "RGB" else image
-
-        # text formatting
-        input_kwargs = {"text": record['text']}
-        for key, data in self.auxiliary_data.items():
-            input_kwargs[key] = data[image_filename]
-
-        text = self.text_template.format(**input_kwargs)
-
-        item = {
-            'id': record['id'],
-            'image_filename': image_filename,
-            'text': text,
-            'image': np.array(image),
-            'image_path': image_path
-        }
-
-        for l in self.labels:
-            item[l] = record[l]
-
-        return item
+        record['img'] = self.image_dict[record['id']]
+        return self.annotations[idx]
 
 
-class TextClassificationDataset(FHMFGBase):
+class TextDataset(FHMFGBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         text_template: str,
-        output_template: str,
-        cls_labels: dict
+        labels_template: str,
+        labels_mapping: dict
     ):
-        super().__init__(annotation_filepath, auxiliary_dicts, list(cls_labels.keys()))
-        self.text_template = text_template
-        self.output_template = output_template
-        self.cls_labels = cls_labels
+        super().__init__(
+            annotation_filepath,
+            auxiliary_dicts,
+            text_template,
+            labels_template,
+            labels_mapping
+        )
 
     def __getitem__(self, idx: int):
-        record = self.annotations[idx]
-
-        # Format the input template
-        input_kwargs = {"text": record['text']}
-        for key, data in self.auxiliary_data.items():
-            input_kwargs[key] = data[f"{id:05}"]
-        text = self.text_template.format(**input_kwargs)
-
-        item = {
-            'id': record["id"],
-            'image_id': record['img'],
-            'text': text
-        }
-
-        for cls_name, label2word in self.cls_labels.items():
-            label = record[cls_name]
-            item[cls_name] = self.output_template.format(label=label2word[label])
-
-        return item
+        return self.annotations[idx]

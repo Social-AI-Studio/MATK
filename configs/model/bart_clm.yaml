@@ -1,0 +1,3 @@
+class_path: models.bart.BartCLMModel
+model_class_or_path: facebook/bart-large
+optimizers: ???

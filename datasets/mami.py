@@ -7,21 +7,20 @@ from PIL import Image
 from . import utils
 
 from typing import List
-from torch.utils.data import Dataset
+from .base import CommonBase
 
+DATASET_PREFIX = "mami"
 
-
-class MamiBase(Dataset):
+class MamiBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
         auxiliary_dicts: dict,
         labels: List[str]
     ):
-        self.labels = labels
+        super().__init__(labels)
         self.annotations = self._preprocess_annotations(annotation_filepath)
         self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
-        
 
     def _preprocess_annotations(self, annotation_filepath: str):
         annotations = []
@@ -29,24 +28,18 @@ class MamiBase(Dataset):
         # load the default annotations
         data = utils._load_jsonl(annotation_filepath)
 
-        ## handle id stuff
-        
         # translate labels into numeric values
-        record_id = 0
         for record in tqdm.tqdm(data, desc="Preprocessing labels"):
             record["img"] = record.pop("file_name")
             record["text"] = record.pop("Text Transcription")
-            record["id"] = record_id
 
-            if "misogynous" in self.labels:
-                record["misogynous"] = int(record.pop("misogynous"))
-            else:
-                record["shaming"] = int(record.pop("shaming"))
-                record["objectification"] = int(record.pop("objectification"))
-                record["violence"] = int(record.pop("violence"))
-                record["stereotype"] = int(record.pop("stereotype"))
+            filename, _ = os.path.splitext(record['img'])
+            record["id"] = filename
 
-            record_id+=1
+            label = f"{DATASET_PREFIX}_misogynous"
+            if label in self.labels:
+                record[label] = int(record.pop("misogynous"))
+
             annotations.append(record)
         
         return annotations
@@ -92,12 +85,9 @@ class FRCNNDataset(MamiBase):
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
+        # retrieve id
         image_filename = record['img']
         id, _ = os.path.splitext(image_filename)
-
-        image_path = os.path.join(self.image_dir, image_filename)
-        image = Image.open(image_path)
-        image = image.convert("RGB") if image.mode != "RGB" else image
 
         # text formatting
         input_kwargs = {"text": record['text']}
@@ -107,16 +97,21 @@ class FRCNNDataset(MamiBase):
 
         item = {
             'id': id,
-            'image_id': image_filename,
-            'image': np.array(image),
-            'image_path': image_path,
+            'image_filename': image_filename,
             'text': text
         }
 
+        # Load image or image features
         if self.feats_dict:
             item['roi_features'] = self.feats_dict[image_filename]['roi_features']
             item['normalized_boxes'] = self.feats_dict[image_filename]['normalized_boxes']
+        else:
+            image_path = os.path.join(self.image_dir, image_filename)
+            image = Image.open(image_path)
+            image = image.convert("RGB") if image.mode != "RGB" else image
+            item['image'] = np.array(image)
 
+        # Load labels
         for l in self.labels:
             item[l] = record[l]
 
@@ -139,8 +134,11 @@ class ImageDataset(MamiBase):
     def __getitem__(self, idx: int):
         record = self.annotations[idx]
 
+        # retrieve id
         image_filename = record['img']
+        id, _ = os.path.splitext(image_filename)
 
+        # image loading and processing
         image_path = os.path.join(self.image_dir, image_filename)
         image = Image.open(image_path)
         image = image.resize((224, 224))
@@ -153,13 +151,14 @@ class ImageDataset(MamiBase):
         text = self.text_template.format(**input_kwargs)
 
         item = {
-            'id': record['id'],
+            'id': id,
             'image_filename': image_filename,
             'text': text,
             'image': np.array(image),
             'image_path': image_path
         }
 
+        # Load labels
         for l in self.labels:
             item[l] = record[l]
 

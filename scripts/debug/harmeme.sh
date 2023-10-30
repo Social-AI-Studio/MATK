@@ -1,28 +1,27 @@
-#!/bin/bash
+# #!/bin/bash
 
 python3 main.py \
-    +experiment=fhm/visualbert.yaml \
+    +experiment=harmeme/flava.yaml \
     action=fit \
     trainer=debug_trainer
 
 python3 main.py \
-    +experiment=fhm/visualbert.yaml \
+    +experiment=harmeme/visualbert.yaml \
     action=fit \
     trainer=debug_trainer
 
 python3 main.py \
-    +experiment=fhm/lxmert.yaml \
-    action=fit \
-    trainer=debug_trainer
-
-
-python3 main.py \
-    +experiment=fhm/t5_classification.yaml \
+    +experiment=harmeme/lxmert.yaml \
     action=fit \
     trainer=debug_trainer
 
 python3 main.py \
-    +experiment=fhm/bart_classification.yaml \
+    +experiment=harmeme/t5_classification.yaml \
+    action=fit \
+    trainer=debug_trainer 
+
+python3 main.py \
+    +experiment=harmeme/bart_classification.yaml \
     action=fit \
     trainer=debug_trainer
 

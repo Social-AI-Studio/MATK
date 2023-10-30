@@ -1,7 +1,8 @@
 # @package _global_
 defaults:
   - /model: bart_classification
-  - /dataset: mami
+  - /dataset: 
+    - mami
   - /datamodule: text_classification_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
@@ -13,7 +14,7 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_labels:
-    misogynous:
+    mami_misogynous:
       0: "no"
       1: "yes"
   optimizers:
@@ -21,21 +22,20 @@ model:
       lr: 2e-5
 
 dataset:
-  dataset_class: datasets.mami.TextClassificationDataset
-  tokenizer_class_or_path: facebook/bart-large
-  text_template: "{text}"
-  output_template: "{label}"
-  cls_labels:
-    misogynous:
-      0: "no"
-      1: "yes"
-  labels:
-  - misogynous
+  mami:
+    dataset_class: datasets.mami.TextClassificationDataset
+    tokenizer_class_or_path: facebook/bart-large
+    text_template: "{text}"
+    output_template: "{label}"
+    labels:
+      mami_misogynous:
+        0: "no"
+        1: "yes"
 
 datamodule:
   tokenizer_class_or_path: facebook/bart-large
 
-monitor_metric: validate_misogynous_loss
+monitor_metric: validate_mami_misogynous_loss
 monitor_mode: max
 save_top_ks: 1
 

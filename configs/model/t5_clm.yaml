@@ -1,0 +1,3 @@
+class_path: models.t5.T5CLMModel
+model_class_or_path: t5-large
+optimizers: ???

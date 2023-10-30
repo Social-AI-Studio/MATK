@@ -2,6 +2,7 @@
 defaults:
   - /model: t5_classification
   - /dataset: 
+    - fhm_finegrained
     - mami
   - /datamodule: text_classification_datamodule
   - /trainer: single_gpu_trainer
@@ -14,6 +15,9 @@ defaults:
 # Mandatory Configuration Parameters
 model:
   cls_labels:
+    fhm_finegrained_hate:
+      0: "no"
+      1: "yes"
     mami_misogynous:
       0: "no"
       1: "yes"
@@ -22,10 +26,17 @@ model:
       lr: 2e-5
 
 dataset:
-  mami:
+  fhm_finegrained:
+    dataset_class: datasets.fhm_finegrained.TextClassificationDataset
+    text_template: "is this meme hateful? {text}"
+    output_template: "{label}"
+    labels:
+      fhm_finegrained_hate:
+        0: "no"
+        1: "yes"
+  mami: 
     dataset_class: datasets.mami.TextClassificationDataset
-    tokenizer_class_or_path: t5-large
-    text_template: "{text}"
+    text_template: "is this meme misogynous? {text}"
     output_template: "{label}"
     labels:
       mami_misogynous:
@@ -35,12 +46,12 @@ dataset:
 datamodule:
   tokenizer_class_or_path: t5-large
 
-monitor_metric: validate_mami_misogynous_average
+monitor_metric: validate_fhm_finegrained_hate_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/mami/t5-classification
+experiment_name: baseline/multitask/fhm-fg-mami/t5-classification
 
 # Job settings
 hydra.verbose: True
