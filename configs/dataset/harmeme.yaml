@@ -6,17 +6,21 @@ harmeme:
     predict: /mnt/data1/datasets/memes/harmeme/annotations/test.jsonl
 
   image_dirs:
-    train: /mnt/data1/datasets/memes/harmeme/images
-    validate: /mnt/data1/datasets/memes/harmeme/images
-    test: /mnt/data1/datasets/memes/harmeme/images
-    predict: /mnt/data1/datasets/memes/harmeme/images
+    train: /mnt/data1/datasets/memes/harmeme/images/img
+    validate: /mnt/data1/datasets/memes/harmeme/images/img
+    test: /mnt/data1/datasets/memes/harmeme/images/img
+    predict: /mnt/data1/datasets/memes/harmeme/images/img
 
   auxiliary_dicts:
-    train: {}
-    validate: {}
-    test: {}
-    predict: {}
-
+    train: 
+      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
+    validate:
+      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
+    test: 
+      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
+    predict: 
+      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
+      
   feats_dir:
     train: null
     validate: null

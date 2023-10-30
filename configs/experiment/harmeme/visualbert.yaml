@@ -13,8 +13,6 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
-  cls_dict:
-    harmeme_intensity: 2
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
@@ -25,7 +23,7 @@ dataset:
     dataset_class: datasets.harmeme.FRCNNDataset
     text_template: "{text}"
     labels:
-      - harmeme_intensity
+      harmeme_intensity: 2
     feats_dir:
       train: /mnt/data1/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned
       validate: /mnt/data1/datasets/memes/harmeme/features/unc-nlp/frcnn-vg-finetuned

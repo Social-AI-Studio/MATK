@@ -1,4 +1,5 @@
 import os
+import json
 import tqdm
 import numpy as np
 import pickle as pkl
@@ -10,9 +11,15 @@ from torch.utils.data import Dataset
 class CommonBase(Dataset):
     def _load_auxiliary(self, auxiliary_dicts: dict):
         data = {}
-        for key, filepath in tqdm.tqdm(auxiliary_dicts.items(), desc="Loading auxiliary info"):
-            with open(filepath, "rb") as f:
-                data[key] = pkl.load(f)
+        for key, aux_dir in auxiliary_dicts.items():
+            data[key] = {}
+            for record in tqdm.tqdm(self.annotations, desc="Loading auxiliary info"):
+                filepath = os.path.join(aux_dir, f"{record['id']}.json")
+                with open(filepath, "r") as f:
+                    d = json.load(f)[key]
+                    d = d.strip()
+                    d = d[: -1] if d[-1] == "." else d
+                    data[key][record['id']] = d
 
         return data
 

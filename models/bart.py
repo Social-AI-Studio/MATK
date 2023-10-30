@@ -64,7 +64,7 @@ class BartCLMModel(BaseLightningModule):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels=batch["labels"]
+            labels=batch["labels_input_ids"]
         )
 
         for cls_name, token2label in self.cls_tokens.items():

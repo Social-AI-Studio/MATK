@@ -12,10 +12,14 @@ fhm_finegrained:
     predict: /mnt/data1/datasets/memes/fhm/images/img
 
   auxiliary_dicts:
-    train: {}
-    validate: {}
-    test: {}
-    predict: {}
+    train: 
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+    validate:
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+    test: 
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+    predict: 
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
 
   feats_dir:
     train: null

@@ -12,10 +12,14 @@ mami:
     predict: /mnt/data1/datasets/memes/mami/images/img/test
 
   auxiliary_dicts:
-    train: {}
-    validate: {}
-    test: {}
-    predict: {}
+    train: 
+      caption: /mnt/data1/datasets/memes/mami/captions/deepfillv2/train/blip2-opt-6.7b-coco
+    validate:
+      caption: /mnt/data1/datasets/memes/mami/captions/deepfillv2/trial/blip2-opt-6.7b-coco
+    test: 
+      caption: /mnt/data1/datasets/memes/mami/captions/deepfillv2/test/blip2-opt-6.7b-coco
+    predict: 
+      caption: /mnt/data1/datasets/memes/mami/captions/deepfillv2/test/blip2-opt-6.7b-coco
 
   feats_dir:
     train: null

@@ -53,27 +53,30 @@ class FHMFGBase(CommonBase):
     ):
         super().__init__()
         self.annotations = utils._load_jsonl(annotation_filepath)
-        self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
+        self._preprocess_dataset()
 
-        self._preprocess_inputs(
+        self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
+        self._format_input_output(
             text_template,
             labels_template,
             labels_mapping
         )
 
-    def _preprocess_inputs(
-        self,
-        text_template: str,
-        labels_template: str,
-        labels_mapping: dict
-    ):
-        for record in tqdm.tqdm(self.annotations, desc="Dataset Preprocessing"):
+    def _preprocess_dataset(self):
+        for record in tqdm.tqdm(self.annotations, desc="Dataset preprocessing"):
             record["img"] = os.path.basename(record["img"])
             record["id"] = os.path.splitext(record["img"])[0]
 
             # convert label to numeric values
             record[f"{DATASET_PREFIX}_hate"] = HATEFULNESS[record["gold_hate"][0]]
 
+    def _format_input_output(
+        self,
+        text_template: str,
+        labels_template: str,
+        labels_mapping: dict
+    ):
+        for record in tqdm.tqdm(self.annotations, desc="Input/Output formatting"):
             # format input text template
             input_kwargs = {"text": record['text']}
             for key, data in self.auxiliary_data.items():

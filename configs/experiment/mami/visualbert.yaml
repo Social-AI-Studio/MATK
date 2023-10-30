@@ -13,8 +13,6 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
-  cls_dict:
-    mami_misogynous: 2
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
@@ -25,7 +23,7 @@ dataset:
     dataset_class: datasets.mami.FRCNNDataset
     text_template: "{text}"
     labels:
-      - mami_misogynous
+      mami_misogynous: 2
     feats_dir:
       train: /mnt/data1/datasets/memes/mami/features/train/unc-nlp/frcnn-vg-finetuned
       validate: /mnt/data1/datasets/memes/mami/features/trial/unc-nlp/frcnn-vg-finetuned
