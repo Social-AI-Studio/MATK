@@ -60,7 +60,7 @@ class LxmertClassificationModel(BaseLightningModule):
         setup_metrics(self, cls_cfg, metrics_cfg, "validate")
         setup_metrics(self, cls_cfg, metrics_cfg, "test")
 
-        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
         self.classes = list(cls_cfg.keys())
 
         # used for computing overall loss

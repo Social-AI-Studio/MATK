@@ -74,17 +74,7 @@ def main(cfg) -> None:
             checkpoint_path=cfg.model_checkpoint,
         )
         model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
-        # trainer.test(model, datamodule)
         predictions = trainer.predict(model, datamodule)
-
-
-        img_filenames = []
-        hate_preds = []
-        hate_labels = []
-        for d in predictions:
-            hate_preds += d['hate_preds']
-            hate_labels += d['hate_labels']
-            img_filenames += d['img']
         
         # print(os.getcwd())
         result_filepath = os.path.join(os.getcwd(), f"{cfg.experiment_name}.json")

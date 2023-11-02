@@ -40,7 +40,7 @@ class FlavaClassificationModel(BaseLightningModule):
 
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
-        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
 
         # used for computing overall loss
         self.train_loss = []
@@ -93,17 +93,23 @@ class FlavaClassificationModel(BaseLightningModule):
         self.forward("test", batch)
         return
 
-    def predict_step(self, batch, batch_idx):
+    def predict_step(self, batch):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
             pixel_values=batch['pixel_values']
         )
 
-        results = {}
+        results = {
+            "id": [],
+            "classification_task": [],
+            "logits": [],
+        }
         for idx, cls_name in enumerate(self.classes):
             logits = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
-            results[f"{cls_name}_preds"] = torch.argmax(logits, dim=1).tolist()
+            results["id"] = batch["id"].detach().cpu().tolist()
+            results["classification_task"] = [cls_name for i in range(batch["id"].shape[0])]
+            results["logits"] = logits.detach().cpu().tolist()
 
         return results
 

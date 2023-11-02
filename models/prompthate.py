@@ -55,7 +55,7 @@ class PromptModel(pl.LightningModule):
         setup_metrics(self, cls_cfg, metrics_cfg, "test")
 
         self.classes = list(cls_cfg.keys())
-        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
 
         # used for computing overall loss
         self.train_loss = []
