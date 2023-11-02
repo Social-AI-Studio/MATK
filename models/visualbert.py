@@ -55,7 +55,7 @@ class VisualBertClassificationModel(BaseLightningModule):
         
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
-        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
 
         # used for computing overall loss
         self.train_loss = []

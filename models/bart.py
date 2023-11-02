@@ -38,7 +38,7 @@ class BartCLMModel(BaseLightningModule):
         
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
-        self.metric_names = [cfg.name.lower() for cfg in metrics_cfg.values()]
+        self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
 
         self.train_loss = []
         self.val_loss = []
