@@ -6,3 +6,5 @@ fhm-visualbert.log
 fine-lxmert.log
 .ipynb_checkpoints
 config.py
+venv/
+experiments/

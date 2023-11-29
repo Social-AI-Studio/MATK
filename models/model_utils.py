@@ -17,7 +17,7 @@ class SimpleClassifier(nn.Module):
 def setup_metrics(obj, cls_dict, metrics_cfg, stage):
     for cls_name, num_classes in cls_dict.items():
         for cfg in metrics_cfg.values():
-            metric_name = cfg.name
+            metric_name = cfg.pop("name")
             metric_class = getattr(torchmetrics, metric_name)
 
             # e.g., train_validate_auroc
@@ -26,3 +26,4 @@ def setup_metrics(obj, cls_dict, metrics_cfg, stage):
                 f"{stage}_{cls_name}_{metric_name.lower()}",
                 metric_class(num_classes=num_classes, **cfg)
             )
+            cfg["name"] = metric_name
