@@ -1,0 +1,32 @@
+hatred:
+  annotation_filepaths:
+    train: fhm_train.jsonl
+    validate: fhm_train.jsonl
+    test: fhm_test.jsonl
+    predict: fhm_test.jsonl
+
+  image_dirs:
+    train: /mnt/data1/datasets/memes/fhm/images/img
+    # validate: /mnt/data1/datasets/memes/fhm/images/img
+    test: /mnt/data1/datasets/memes/fhm/images/img
+    predict: /mnt/data1/datasets/memes/fhm/images/img
+
+  auxiliary_dicts:
+    train: 
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+    validate:
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+    test: 
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+    predict: 
+      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+
+  feats_dir:
+    train: null
+    # validate: null
+    test: null
+    predict: null
+
+  dataset_class: ???
+  text_template: ???
+  labels: ???

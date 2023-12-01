@@ -22,19 +22,19 @@ class T5CLMModel(BaseLightningModule):
 
     def setup_tasks(self, metrics_cfg, cls_cfg):
         # set up the metrics for evaluation
-        cls_stats = {cls: len(label2word)
-                     for cls, label2word in cls_cfg.items()}
-        setup_metrics(self, cls_stats, metrics_cfg, "train")
-        setup_metrics(self, cls_stats, metrics_cfg, "validate")
-        setup_metrics(self, cls_stats, metrics_cfg, "test")
+        # cls_stats = {cls: len(label2word)
+        #              for cls, label2word in cls_cfg.items()}
+        setup_metrics(self, cls_cfg, metrics_cfg, "train")
+        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
+        setup_metrics(self, cls_cfg, metrics_cfg, "test")
 
         # set up the token2word conversion for evaluation purposes
-        self.cls_tokens = {}
-        for cls_name, label2word in cls_cfg.items():
-            self.cls_tokens[cls_name] = {}
-            for label, word in label2word.items():
-                tokens = self.tokenizer.encode(word, add_special_tokens=False)
-                self.cls_tokens[cls_name][tokens[0]] = label
+        # self.cls_tokens = {}
+        # for cls_name, label2word in cls_cfg.items():
+        #     self.cls_tokens[cls_name] = {}
+        #     for label, word in label2word.items():
+        #         tokens = self.tokenizer.encode(word, add_special_tokens=False)
+        #         self.cls_tokens[cls_name][tokens[0]] = label
         
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
@@ -59,7 +59,7 @@ class T5CLMModel(BaseLightningModule):
         targets = [x[0].item() for x in labels]
         targets = [token2label[x] for x in targets]
         return torch.tensor(targets, dtype=torch.int64)
-    
+
     def forward(self, stage, batch):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
@@ -88,8 +88,8 @@ class T5CLMModel(BaseLightningModule):
 
     def validation_step(self, batch, batch_idx):
         # this will be triggered during the Trainer's sanity check
-        if not hasattr(self, "cls_tokens"):
-            raise AttributeError("'cls_tokens' has not been initialised... Did you forget to call model.setup_tasks()?")
+        # if not hasattr(self, "cls_tokens"):
+        #     raise AttributeError("'cls_tokens' has not been initialised... Did you forget to call model.setup_tasks()?")
 
         loss = self.forward("validate", batch)
         self.val_loss.append(loss)

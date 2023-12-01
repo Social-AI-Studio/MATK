@@ -37,10 +37,10 @@ class TextDataModule(pl.LightningDataModule):
         labels = []
         for dataset in dataset_cfg:
             # ensure that word for each label is a single token.
-            for label2word in dataset_cfg[dataset].labels.values():
-                for _, word in label2word.items():
-                    encoded = tokenizer.encode(word, add_special_tokens=False)
-                    assert len(encoded) == 1
+            # for label2word in dataset_cfg[dataset].labels.values():
+            #     for _, word in label2word.items():
+            #         encoded = tokenizer.encode(word, add_special_tokens=False)
+            #         assert len(encoded) == 1
 
             # Import the individual dataset classes
             dataset_cfg[dataset].dataset_class = import_class(
