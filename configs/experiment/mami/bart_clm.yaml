@@ -3,7 +3,7 @@ defaults:
   - /model: bart_clm
   - /dataset: 
     - mami
-  - /datamodule: text_datamodule
+  - /datamodule: text_token_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
       - accuracy

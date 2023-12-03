@@ -17,7 +17,7 @@ python3 main.py \
 
 
 python3 main.py \
-    +experiment=fhm/t5_classification.yaml \
+    +experiment=fhm/t5_clm.yaml \
     action=fit \
     trainer=debug_trainer
 

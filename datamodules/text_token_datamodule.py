@@ -10,7 +10,7 @@ from .utils import import_class, ConcatDataset
 import lightning.pytorch as pl
 
 
-class TextDataModule(pl.LightningDataModule):
+class TextTokenDataModule(pl.LightningDataModule):
     """
     DataModule used for semantic segmentation in geometric generalization project
     """
