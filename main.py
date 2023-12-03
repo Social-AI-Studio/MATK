@@ -33,7 +33,8 @@ def main(cfg) -> None:
     ## extract all classification configurations)
     cls_cfg = {}
     for d in cfg.dataset.values():
-        cls_cfg.update(d['labels'])
+        if "labels" in d.keys():
+            cls_cfg.update(d['labels'])
 
     ## instantiate model
     model = model_class(**cfg.model)

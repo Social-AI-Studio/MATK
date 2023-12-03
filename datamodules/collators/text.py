@@ -49,3 +49,34 @@ def text_collate_fn(tokenizer, batches, labels):
     inputs.update(labels_dict)
 
     return inputs
+
+def text_gen_collate_fn(tokenizer, batches):
+    
+    # assume no multi task learning for now
+    flattened_batches = [item[0] for item in batches]
+    labels_dict = {}
+    start_index = 0
+    indices = list(range(start_index, start_index + len(flattened_batches)))
+    labels_dict["indices"] = torch.tensor(indices, dtype=torch.int64)
+
+    texts = []
+    targets = []
+    for item in flattened_batches:
+        texts.append(item["templated_text"])
+        targets.append(item["outputs"])
+    
+    inputs = tokenizer(  
+        text=texts, 
+        padding=True,
+        return_tensors="pt"
+    )
+    targets = tokenizer(  
+        text=texts, 
+        padding=True,
+        return_tensors="pt"
+    )
+    inputs["output_input_ids"] = targets.input_ids
+    inputs["output_attention_mask"] = targets.attention_mask
+    inputs.update(labels_dict)
+
+    return inputs

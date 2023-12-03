@@ -3,14 +3,14 @@ from torch.utils.data import DataLoader
 
 from typing import Optional
 from functools import partial
-from .collators.text import text_collate_fn
+from .collators.text import  text_gen_collate_fn
 from transformers import AutoTokenizer
 from .utils import import_class, ConcatDataset
 
 import lightning.pytorch as pl
 
 
-class TextGenerationsDataModule(pl.LightningDataModule):
+class TextGenerationDataModule(pl.LightningDataModule):
     """
     DataModule used for semantic segmentation in geometric generalization project
     """
@@ -36,24 +36,14 @@ class TextGenerationsDataModule(pl.LightningDataModule):
 
         labels = []
         for dataset in dataset_cfg:
-            # ensure that word for each label is a single token.
-            for label2word in dataset_cfg[dataset].labels.values():
-                for _, word in label2word.items():
-                    encoded = tokenizer.encode(word, add_special_tokens=False)
-                    assert len(encoded) == 1
-
             # Import the individual dataset classes
             dataset_cfg[dataset].dataset_class = import_class(
                 dataset_cfg[dataset].dataset_class
             )
 
-            # Retrieve labels
-            dataset_labels = list(dataset_cfg[dataset].labels.keys())
-            labels.extend(dataset_labels)
-
         # Partially load the collate functions
         self.collate_fn = partial(
-            text_collate_fn, tokenizer, labels=labels)
+            text_gen_collate_fn, tokenizer)
 
     def setup(self, stage: Optional[str] = None):
         if stage == "fit" or stage is None:
@@ -66,8 +56,6 @@ class TextGenerationsDataModule(pl.LightningDataModule):
                     annotation_filepath=cfg.annotation_filepaths.train,
                     auxiliary_dicts=cfg.auxiliary_dicts.train,
                     text_template=cfg.text_template,
-                    labels_template=cfg.labels_template,
-                    labels_mapping=cfg.labels
                 )
                 self.train.append(dataset_obj)
 
@@ -75,8 +63,6 @@ class TextGenerationsDataModule(pl.LightningDataModule):
                     annotation_filepath=cfg.annotation_filepaths.validate,
                     auxiliary_dicts=cfg.auxiliary_dicts.validate,
                     text_template=cfg.text_template,
-                    labels_template=cfg.labels_template,
-                    labels_mapping=cfg.labels
                 )
                 self.validate.append(dataset_obj)
 
@@ -89,8 +75,6 @@ class TextGenerationsDataModule(pl.LightningDataModule):
                     annotation_filepath=cfg.annotation_filepaths.test,
                     auxiliary_dicts=cfg.auxiliary_dicts.test,
                     text_template=cfg.text_template,
-                    labels_template=cfg.labels_template,
-                    labels_mapping=cfg.labels
                 )
                 self.test.append(dataset_obj)
 
@@ -102,8 +86,6 @@ class TextGenerationsDataModule(pl.LightningDataModule):
                     annotation_filepath=cfg.annotation_filepaths.predict,
                     auxiliary_dicts=cfg.auxiliary_dicts.predict,
                     text_template=cfg.text_template,
-                    labels_template=cfg.labels_template,
-                    labels_mapping=cfg.labels
                 )
                 self.predict.append(dataset_obj)
 
