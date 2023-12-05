@@ -1,0 +1,22 @@
+sbic:
+  annotation_filepaths:
+    train: /home/karan/projects/MATK/datasets/data/sbic/SBFv2.trn.csv
+    validate: /home/karan/projects/MATK/datasets/data/sbic/SBFv2.dev.csv
+    test: /home/karan/projects/MATK/datasets/data/sbic/SBFv2.tst.csv
+    predict: /home/karan/projects/MATK/datasets/data/sbic/SBFv2.tst.csv
+
+  auxiliary_dicts:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  dataset_class: ???
+  text_template: ???
+  labels: ???

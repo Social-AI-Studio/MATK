@@ -64,11 +64,11 @@ class T5CLMModel(BaseLightningModule):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels=batch["labels_input_ids"]
+            labels=batch["output_input_ids"]
         )
 
         for cls_name, token2label in self.cls_tokens.items():
-            indices = batch[f"{cls_name}_indices"]
+            indices = batch["indices"]
             labels = batch[cls_name]
 
             logits = self.get_logits(model_outputs, indices, list(token2label.keys()))

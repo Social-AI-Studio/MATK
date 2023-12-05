@@ -1,0 +1,22 @@
+latent_hatred:
+  annotation_filepaths:
+    train: /home/karan/projects/MATK/datasets/data/implicit-hate/implicit_hate_v1_stg3_posts.tsv
+    validate: /home/karan/projects/MATK/datasets/data/implicit-hate/implicit_hate_v1_stg3_posts.tsv
+    test: /home/karan/projects/MATK/datasets/data/implicit-hate/implicit_hate_v1_stg3_posts.tsv
+    predict: /home/karan/projects/MATK/datasets/data/implicit-hate/implicit_hate_v1_stg3_posts.tsv
+
+  auxiliary_dicts:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  dataset_class: ???
+  text_template: ???
+  labels: ???

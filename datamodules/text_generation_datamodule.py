@@ -54,15 +54,19 @@ class TextGenerationDataModule(pl.LightningDataModule):
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.train,
-                    auxiliary_dicts=cfg.auxiliary_dicts.train,
+                    # auxiliary_dicts=cfg.auxiliary_dicts.train,
                     text_template=cfg.text_template,
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.train.append(dataset_obj)
 
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.validate,
-                    auxiliary_dicts=cfg.auxiliary_dicts.validate,
+                    # auxiliary_dicts=cfg.auxiliary_dicts.validate,
                     text_template=cfg.text_template,
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.validate.append(dataset_obj)
 
@@ -73,8 +77,10 @@ class TextGenerationDataModule(pl.LightningDataModule):
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.test,
-                    auxiliary_dicts=cfg.auxiliary_dicts.test,
+                    # auxiliary_dicts=cfg.auxiliary_dicts.test,
                     text_template=cfg.text_template,
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.test.append(dataset_obj)
 
@@ -84,8 +90,10 @@ class TextGenerationDataModule(pl.LightningDataModule):
                 cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
                     annotation_filepath=cfg.annotation_filepaths.predict,
-                    auxiliary_dicts=cfg.auxiliary_dicts.predict,
+                    # auxiliary_dicts=cfg.auxiliary_dicts.predict,
                     text_template=cfg.text_template,
+                    labels_template=cfg.labels_template,
+                    labels_mapping=cfg.labels
                 )
                 self.predict.append(dataset_obj)
 
