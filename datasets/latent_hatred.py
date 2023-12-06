@@ -37,7 +37,6 @@ class LatentHatredBase(CommonBase):
             # record['latent_hatred_target'] = record['target']
             record['targets'] = record['target']
             record['latent_hatred_implied_statement'] = record['implied_statement']
-            record['outputs'] = record['implied_statement'] # This may be wrong
 
     def _format_input_output(
         self,
