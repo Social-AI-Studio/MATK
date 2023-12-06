@@ -34,7 +34,8 @@ class LatentHatredBase(CommonBase):
     def _preprocess_dataset(self):
         for record in tqdm.tqdm(self.annotations, desc="Dataset preprocessing"):
             record['text'] = record['post']
-            record['latent_hatred_target'] = record['target']
+            # record['latent_hatred_target'] = record['target']
+            record['targets'] = record['target']
             record['latent_hatred_implied_statement'] = record['implied_statement']
             record['outputs'] = record['implied_statement'] # This may be wrong
 

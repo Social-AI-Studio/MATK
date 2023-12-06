@@ -6,8 +6,7 @@ defaults:
   - /datamodule: text_generation_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
-      - accuracy
-      - auroc
+      - bleu_score
   - /hydra: experiment
   - _self_
 
