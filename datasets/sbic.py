@@ -15,7 +15,6 @@ class SBICBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
-        auxiliary_dicts: dict,  
         text_template: str,
         labels_template: str,
         labels_mapping: List[str]
@@ -26,7 +25,6 @@ class SBICBase(CommonBase):
 
         self._preprocess_dataset()
 
-        self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
         self._format_input_output(
             text_template,
             labels_template,
@@ -38,7 +36,8 @@ class SBICBase(CommonBase):
         for record in tqdm.tqdm(self.annotations, desc="Dataset preprocessing"):
             record['id'] = record['HITId']
             record['text'] = record['post']
-            record['sbic_target'] = record['targetMinority']
+            # record['sbic_target'] = record['targetMinority']
+            record['targets'] = record['targetMinority']
             record['sbic_implied_statement'] = record['targetStereotype']
 
     def _format_input_output(
@@ -50,8 +49,8 @@ class SBICBase(CommonBase):
         for record in tqdm.tqdm(self.annotations, desc="Input/Output formatting"):
             # format input text template
             input_kwargs = {"text": record['text']}
-            for key, data in self.auxiliary_data.items():
-                input_kwargs[key] = data[record["id"]]
+            # for key, data in self.auxiliary_data.items():
+            #     input_kwargs[key] = data[record["id"]]
             text = text_template.format(**input_kwargs)
             record["templated_text"] = text
 
@@ -60,7 +59,7 @@ class SBICBase(CommonBase):
                 for cls_name, label2word in labels_mapping.items():
                     label = record[cls_name]
                     record[f"templated_{cls_name}"] = labels_template.format(
-                        label=label2word[label]
+                        label=label
                     )
 
     def __len__(self):
@@ -70,14 +69,12 @@ class TextDataset(SBICBase):
     def __init__(
         self,
         annotation_filepath: str,
-        auxiliary_dicts: dict,
         text_template: str,
         labels_template: str,
         labels_mapping: dict
     ):
         super().__init__(
             annotation_filepath,
-            auxiliary_dicts,
             text_template,
             labels_template,
             labels_mapping
