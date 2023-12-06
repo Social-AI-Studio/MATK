@@ -2,7 +2,7 @@ import torch
 import importlib
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-from .model_utils import setup_metrics
+from .model_utils import setup_metrics, setup_generation_metrics
 from .base import BaseLightningModule
 
 class T5CLMModel(BaseLightningModule):
@@ -22,62 +22,29 @@ class T5CLMModel(BaseLightningModule):
 
     def setup_tasks(self, metrics_cfg, cls_cfg):
         # set up the metrics for evaluation
-        cls_stats = {cls: len(label2word)
-                     for cls, label2word in cls_cfg.items()}
-        setup_metrics(self, cls_stats, metrics_cfg, "train")
-        setup_metrics(self, cls_stats, metrics_cfg, "validate")
-        setup_metrics(self, cls_stats, metrics_cfg, "test")
-
-        # set up the token2word conversion for evaluation purposes
-        self.cls_tokens = {}
-        for cls_name, label2word in cls_cfg.items():
-            self.cls_tokens[cls_name] = {}
-            for label, word in label2word.items():
-                tokens = self.tokenizer.encode(word, add_special_tokens=False)
-                self.cls_tokens[cls_name][tokens[0]] = label
+        setup_generation_metrics(self, metrics_cfg, "train")
+        setup_generation_metrics(self, metrics_cfg, "validate")
+        setup_generation_metrics(self, metrics_cfg, "test")
         
         # important variables used in the BaseLightningModule
-        self.classes = list(cls_cfg.keys())
+        self.classes = ["target"]
         self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
 
         # used for computing overall loss
         self.train_loss = []
         self.val_loss = []
-
-    def get_logits(self, outputs, indices, tokens):
-        first_word = outputs.logits[indices, 0, :].cpu()
-
-        logits = []
-        for token in tokens:
-            logits.append(first_word[:,
-                                     token
-                                     ].unsqueeze(-1))
-        logits = torch.cat(logits, -1)
-        return logits
-
-    def get_labels(self, labels, token2label):
-        targets = [x[0].item() for x in labels]
-        targets = [token2label[x] for x in targets]
-        return torch.tensor(targets, dtype=torch.int64)
     
     def forward(self, stage, batch):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels=batch["output_input_ids"]
+            labels=batch["target_input_ids"]
         )
 
-        for cls_name, token2label in self.cls_tokens.items():
-            indices = batch["indices"]
-            labels = batch[cls_name]
-
-            logits = self.get_logits(model_outputs, indices, list(token2label.keys()))
-            labels = batch[f"{cls_name}"]
-            logits, labels = logits.cpu(), labels.cpu()
-
-            self.compute_metrics_step(stage, cls_name, labels, logits)
-
-        return model_outputs.loss / len(self.cls_tokens)
+        preds = self.tokenizer.batch_decode(torch.argmax(model_outputs.logits, dim=2).tolist(), skip_special_tokens=True)
+        targets = self.tokenizer.batch_decode(batch["target_input_ids"], skip_special_tokens=True)
+        self.compute_metrics_step(stage, "target", targets, preds)
+        return model_outputs.loss
 
     def training_step(self, batch, batch_idx):
         loss = self.forward("train", batch)
@@ -88,9 +55,6 @@ class T5CLMModel(BaseLightningModule):
 
     def validation_step(self, batch, batch_idx):
         # this will be triggered during the Trainer's sanity check
-        if not hasattr(self, "cls_tokens"):
-            raise AttributeError("'cls_tokens' has not been initialised... Did you forget to call model.setup_tasks()?")
-
         loss = self.forward("validate", batch)
         self.val_loss.append(loss)
 

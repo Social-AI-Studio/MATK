@@ -51,7 +51,6 @@ def text_collate_fn(tokenizer, batches, labels):
     return inputs
 
 def text_gen_collate_fn(tokenizer, batches):
-    
     # assume no multi task learning for now
     flattened_batches = [item[0] for item in batches]
     labels_dict = {}
@@ -63,7 +62,7 @@ def text_gen_collate_fn(tokenizer, batches):
     targets = []
     for item in flattened_batches:
         texts.append(item["templated_text"])
-        targets.append(item["outputs"])
+        targets.append(item["targets"])
     
     inputs = tokenizer(  
         text=texts, 
@@ -75,8 +74,8 @@ def text_gen_collate_fn(tokenizer, batches):
         padding=True,
         return_tensors="pt"
     )
-    inputs["output_input_ids"] = targets.input_ids
-    inputs["output_attention_mask"] = targets.attention_mask
+    inputs["target_input_ids"] = targets.input_ids
+    inputs["target_attention_mask"] = targets.attention_mask
     inputs.update(labels_dict)
 
     return inputs
