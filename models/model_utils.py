@@ -52,16 +52,37 @@ def setup_metrics(obj, cls_dict, metrics_cfg, stage):
                 f"{stage}_{cls_name}_{metric_name.lower()}",
                 metric_class(num_classes=num_classes, **cfg)
             )
-            cfg["name"] = metric_name
+            cfg["runtime_name"] = metric_name
 
 def setup_generation_metrics(obj, metrics_cfg, stage):
     for cfg in metrics_cfg.values():
         metric_name = cfg.pop("name")
+        if stage != "train":
+            runtime_name = cfg.pop("runtime_name")
         metric_class = find_metric_class(torchmetrics, metric_name)
         # e.g., train_validate_auroc
-        setattr(
-            obj,
-            f"{stage}_target_{metric_name.lower()}",
-            metric_class(**cfg)
-        )
+
+        if metric_name == "BLEUScore" and "weights" in cfg.keys() and cfg["weights"]==[1.0,0.0,0.0,0.0]:
+            setattr(
+                obj,
+                f"{stage}_target_bleu1",
+                metric_class(**cfg)
+            )
+            cfg["runtime_name"] = 'bleu1'
+        elif metric_name == "BLEUScore" and "weights" in cfg.keys() and cfg["weights"]==[0.0,1.0,0.0,0.0]:
+            setattr(
+                obj,
+                f"{stage}_target_bleu2",
+                metric_class(**cfg)
+            )
+            cfg["runtime_name"] = 'bleu2'
+        else:
+            setattr(
+                obj,
+                f"{stage}_target_{metric_name.lower()}",
+                metric_class(**cfg)
+            )
+            cfg["runtime_name"] = metric_name
         cfg["name"] = metric_name
+
+        

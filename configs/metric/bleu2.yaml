@@ -1,0 +1,8 @@
+bleu2:
+  name: BLEUScore
+  weights:
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    

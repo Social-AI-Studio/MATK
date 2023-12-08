@@ -7,6 +7,10 @@ defaults:
   - /trainer: single_gpu_trainer
   - /metric:
       - bleu_score
+      - bleu1
+      - bleu2
+      # - rouge_score
+
 
   - /hydra: experiment
   - _self_
@@ -27,7 +31,7 @@ dataset:
 datamodule:
   tokenizer_class_or_path: t5-large
 
-monitor_metric: validate_target_average
+monitor_metric: validate_loss
 monitor_mode: max
 save_top_ks: 1
 

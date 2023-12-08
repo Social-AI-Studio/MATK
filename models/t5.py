@@ -28,7 +28,7 @@ class T5CLMModel(BaseLightningModule):
         
         # important variables used in the BaseLightningModule
         self.classes = ["target"]
-        self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
+        self.metric_names = [cfg["runtime_name"].lower() for cfg in metrics_cfg.values()]
 
         # used for computing overall loss
         self.train_loss = []
