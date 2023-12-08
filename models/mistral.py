@@ -1,6 +1,7 @@
 import torch
 import importlib
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import prepare_model_for_kbit_training, LoraConfig, get_peft_model
 
 from .model_utils import setup_metrics, setup_generation_metrics
 from .base import BaseLightningModule
@@ -9,16 +10,45 @@ class MistralCLMModel(BaseLightningModule):
     def __init__(
         self,
         model_class_or_path: str,
-        optimizers: list
+        optimizers: list,
+        use_lora: bool,
+        use_gradient_checkpointing: bool,
     ):
         super().__init__()
         self.save_hyperparameters()
 
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_class_or_path)
+            model_class_or_path, device_map="auto")
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_class_or_path, use_fast=True)
         
+        if use_lora:
+            print("Using LoRA")
+            lora_config = LoraConfig(
+                r=8,
+                lora_alpha=16,
+                target_modules=[
+                    "q_proj",
+                    "k_proj",
+                    "v_proj",
+                    "o_proj",
+                    "gate_proj",
+                    "up_proj",
+                    "down_proj",
+                    "lm_head",
+                ],
+                bias="none",
+                lora_dropout=0.05,
+                task_type="CAUSAL_LM",
+            )
+
+            self.model = prepare_model_for_kbit_training(self.model)
+            self.model = get_peft_model(self.model, lora_config)
+
+        if use_gradient_checkpointing:
+            # Reduces memory usage significantly
+            self.model.gradient_checkpointing_enable()
+
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
 

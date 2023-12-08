@@ -12,6 +12,8 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
+  use_lora: False
+  use_gradient_checkpointing: False
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
