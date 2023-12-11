@@ -9,7 +9,7 @@ defaults:
       - bleu_score
       - bleu1
       - bleu2
-      # - rouge_score
+      - rouge_score
 
 
   - /hydra: experiment

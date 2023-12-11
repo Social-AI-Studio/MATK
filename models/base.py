@@ -5,7 +5,10 @@ class BaseLightningModule(pl.LightningModule):
     def compute_metrics_step(self, stage, cls_name, targets, preds):
         for metric_name in self.metric_names:
             metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
-            metric(preds, targets)
+            if metric_name == 'rougescore':
+                metric(preds, targets)['rougeL_fmeasure']
+            else:
+                metric(preds, targets)
 
     def compute_metrics_epoch(self, stage, cls_name):
         msg = "Epoch Results:\n"
@@ -14,6 +17,8 @@ class BaseLightningModule(pl.LightningModule):
         for metric_name in self.metric_names:
             metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
             metric_score = metric.compute()
+            if metric_name == 'rougescore':
+                metric_score = metric_score['rougeL_fmeasure']
             avg_metric_score += metric_score
 
             self.log(f'{stage}_{cls_name}_{metric_name}', metric_score,
