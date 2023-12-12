@@ -72,7 +72,7 @@ Once you have downloaded the dataset, identify and update the respective configu
 Model Training
 --------------
 
-Subsequently, once you have identified the respective configuraton file (i.e., fhm_finegrained_flava), you can train the model using the following commands:
+Subsequently, once you have identified the respective configuration file (i.e., fhm_finegrained_flava), you can train the model using the following commands:
 
 .. code-block:: bash
 
