@@ -1,6 +1,6 @@
 # @package _global_
 defaults:
-  - /model: t5_clm
+  - /model: mistral_clm
   - /dataset:
       - latent_hatred
   - /datamodule: text_generation_datamodule
@@ -12,6 +12,8 @@ defaults:
 
 # Mandatory Configuration Parameters
 model:
+  use_lora: False
+  use_gradient_checkpointing: False
   optimizers:
     - class_path: torch.optim.Adam
       lr: 2e-5
@@ -19,7 +21,7 @@ model:
 dataset:
   latent_hatred:
     dataset_class: datasets.latent_hatred.TextDataset
-    tokenizer_class_or_path: t5-large
+    tokenizer_class_or_path: mistral
     text_template: "{text}"
     labels_template: "{label}"
     labels:
@@ -28,14 +30,14 @@ dataset:
         1: "yes"
 
 datamodule:
-  tokenizer_class_or_path: t5-large
+  tokenizer_class_or_path: mistralai/Mistral-7B-v0.1
 
 monitor_metric: validate_latent_hatred_label_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/latent_hatred/t5-clm
+experiment_name: baseline/latent_hatred/mistral-clm
 
 # Job settings
 hydra.verbose: True
