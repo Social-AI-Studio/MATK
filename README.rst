@@ -72,13 +72,13 @@ Once you have downloaded the dataset, identify and update the respective configu
 Model Training
 --------------
 
-Subsequently, once you have identified the respective configuraton file (i.e., fhm_finegrained_flava), you can train the model using the following commands:
+Subsequently, once you have identified the respective configuraton file (i.e., fhm_finegrained/flava), you can train the model using the following commands:
 
 .. code-block:: bash
 
   python3 main.py \
-    +experiment=fhm_finegrained_flava \
-    action=train
+    +experiment=fhm_finegrained/flava \
+    action=fit
 
 
 Model Inference
@@ -89,7 +89,7 @@ Similarly, you can run the model on your test set using the following command:
 .. code-block:: bash
 
   python3 main.py \
-    +experiment=fhm_finegrained_flava \
+    +experiment=fhm_finegrained/flava \
     action=test
 
 
@@ -103,8 +103,8 @@ For executing one-time override commands, utilize the following command:
 .. code-block:: bash
 
   python3 main.py \
-    +experiment=fhm_finegrained_flava \
-    action=test \
+    +experiment=fhm_finegrained/flava \
+    action=fit \
     datamodule.batch_size=16 \
     trainer.accumulate_grad_batches=1 \
     model.optimizers.0.lr=2e-5
@@ -211,6 +211,13 @@ The AUROC scores are presented in the format `average (std.dev)`, where both the
 **************************
 Meme Models Analysis
 **************************
+
+***************
+Known Issues
+***************
+
+- MATK package doesn't work with Python 3.10. Please kindly use Python 3.8 for now.
+
 
 
 **************************
