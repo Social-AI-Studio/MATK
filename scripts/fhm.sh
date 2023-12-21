@@ -15,7 +15,12 @@
 #     action=fit \
 #     seed_everything=1111,1112,1113,1114,1115,1116,1117,1118,1119,1120
 
-python3 main.py --multirun \
-    +experiment=mami/flava.yaml \
+# python3 main.py --multirun \
+#     +experiment=mami/flava.yaml \
+#     action=fit \
+#     seed_everything=1111,1112,1113,1114,1115,1116,1117,1118,1119,1120
+
+python3 main.py \
+    +experiment=fhm/t5_clm.yaml \
     action=fit \
-    seed_everything=1111,1112,1113,1114,1115,1116,1117,1118,1119,1120
+    trainer=single_gpu_trainer

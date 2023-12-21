@@ -13,13 +13,13 @@ fhm:
 
   auxiliary_dicts:
     train: 
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+      caption: /mnt/data1/datasets/memes/fhm/captions/img/ofa-large-caption
     validate:
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+      caption: /mnt/data1/datasets/memes/fhm/captions/img/ofa-large-caption
     test: 
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+      caption: /mnt/data1/datasets/memes/fhm/captions/img/ofa-large-caption
     predict: 
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+      caption: /mnt/data1/datasets/memes/fhm/captions/img/ofa-large-caption
 
   feats_dir:
     train: null
