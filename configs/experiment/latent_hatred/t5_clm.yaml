@@ -2,7 +2,7 @@
 defaults:
   - /model: t5_clm
   - /dataset:
-      - fhm
+      - latent_hatred
   - /datamodule: text_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
@@ -18,28 +18,28 @@ model:
       lr: 2e-5
 
 dataset:
-  fhm:
-    dataset_class: datasets.fhm.TextDataset
+  latent_hatred:
+    dataset_class: datasets.latent_hatred.TextDataset
     tokenizer_class_or_path: google/flan-t5-large
     text_template: >
-      Determine whether the following meme is hateful. Answer "yes" for "hateful" and "no" for "non-hateful.
-      Post: {text}
-      Caption: {caption}
+      Determine whether the following post is hateful. Answer "yes" for "hateful" and "no" for "non-hateful.
+      Text: {text}
+      Answer:
     labels_template: "{label}"
     labels:
-      fhm_label:
+      latent_hatred_label:
         0: "no"
         1: "yes"
 
 datamodule:
   tokenizer_class_or_path: google/flan-t5-large
 
-monitor_metric: validate_fhm_label_average
+monitor_metric: validate_latent_hatred_label_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/fhm/t5-clm
+experiment_name: baseline/latent_hatred/t5-clm
 
 # Job settings
 hydra.verbose: True

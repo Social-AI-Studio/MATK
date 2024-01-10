@@ -21,3 +21,4 @@ last.ckpt
 main.log
 t5-train1.log
 test_fhm.json
+logs

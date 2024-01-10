@@ -7,40 +7,47 @@ class BaseLightningModule(pl.LightningModule):
             metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
             metric(preds, targets)
 
-    def compute_metrics_epoch(self, stage, cls_name):
-        msg = "Epoch Results:\n"
+    def compute_metrics_epoch(self, stage):
+        msg = f"{stage.capitalize()} Epoch Results:\n"
 
-        avg_metric_score = 0
-        for metric_name in self.metric_names:
-            metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
-            metric_score = metric.compute()
-            avg_metric_score += metric_score
+        total_avg_metric_score = 0
+        for cls_name in self.classes:
+            avg_metric_score = 0
+            for metric_name in self.metric_names:
+                metric = getattr(self, f"{stage}_{cls_name}_{metric_name}")
+                metric_score = metric.compute()
+                avg_metric_score += metric_score
 
-            self.log(f'{stage}_{cls_name}_{metric_name}', metric_score,
-                    prog_bar=True, sync_dist=True)
-            
-            msg += f"\t{stage}_{cls_name}_{metric_name}: {metric_score}\n"
+                self.log(f'{stage}_{cls_name}_{metric_name}', metric_score,
+                         prog_bar=True, sync_dist=True)
 
-            # reset the metrics
-            metric.reset()
+                msg += f"\t{stage}_{cls_name}_{metric_name}: {metric_score}\n"
 
-        avg_metric_score = avg_metric_score / len(self.metric_names)
+                # reset the metrics
+                metric.reset()
 
-        self.log(f'{stage}_{cls_name}_average', avg_metric_score,
-                    prog_bar=True, sync_dist=True)
-        
-        msg += f"\t{stage}_{cls_name}_average: {avg_metric_score}\n"
+            avg_metric_score = avg_metric_score / len(self.metric_names)
+            total_avg_metric_score += avg_metric_score
+
+            self.log(f'{stage}_{cls_name}_average', avg_metric_score,
+                     prog_bar=True, sync_dist=True)
+
+            msg += f"\t{stage}_{cls_name}_average: {avg_metric_score}\n"
+
+        final_avg_metric_score = total_avg_metric_score / len(self.classes)
+
+        self.log(f'{stage}_average', final_avg_metric_score,
+                 prog_bar=True, sync_dist=True)
+
+        msg += f"\t{stage}_average' {final_avg_metric_score}\n"
 
         logging.info(msg)
 
     def on_training_epoch_end(self):
-        for cls_name in self.classes:
-            self.compute_metrics_epoch("train", cls_name)
+        self.compute_metrics_epoch("train")
 
     def on_validation_epoch_end(self):
-        for cls_name in self.classes:
-            self.compute_metrics_epoch("validate", cls_name)
+        self.compute_metrics_epoch("validate")
 
     def on_test_epoch_end(self):
-        for cls_name in self.classes:
-            self.compute_metrics_epoch("test", cls_name)
+        self.compute_metrics_epoch("test")

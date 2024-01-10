@@ -9,9 +9,9 @@ from . import utils
 from typing import List
 from .base import CommonBase
 
-DATASET_PREFIX = "sbic"
+DATASET_PREFIX = "latent_hatred"
 
-class SBICBase(CommonBase):
+class LatentHatredBase(CommonBase):
     def __init__(
         self,
         annotation_filepath: str,
@@ -26,7 +26,6 @@ class SBICBase(CommonBase):
 
         self._preprocess_dataset()
 
-        # self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
         self._format_input_output(
             text_template,
             labels_template,
@@ -34,13 +33,10 @@ class SBICBase(CommonBase):
         )
 
     def _preprocess_dataset(self):
-        # Considering: filtering out items with missing targetMinority or targetSterotype
         for record in tqdm.tqdm(self.annotations, desc="Dataset preprocessing"):
             record['text'] = record['post']
-            # record['sbic_target'] = record['targetMinority']
-            # record['targets'] = record['targetMinority']
-            # record['sbic_implied_statement'] = record['targetStereotype']
-            record[f"{DATASET_PREFIX}_label"] = record["offensiveYN"]
+            record[f"{DATASET_PREFIX}_label"] = record['class']
+            # record['latent_hatred_implied_statement'] = record['implied_statement']
 
     def _format_input_output(
         self,
@@ -50,7 +46,7 @@ class SBICBase(CommonBase):
     ):
         for record in tqdm.tqdm(self.annotations, desc="Input/Output formatting"):
             # format input text template
-            input_kwargs = {"text": record['text'], "label": record[f"{DATASET_PREFIX}_label"]}
+            input_kwargs = {"text": record["post"]}
             # for key, data in self.auxiliary_data.items():
             #     input_kwargs[key] = data[record["id"]]
             text = text_template.format(**input_kwargs)
@@ -61,13 +57,13 @@ class SBICBase(CommonBase):
                 for cls_name, label2word in labels_mapping.items():
                     label = record[cls_name]
                     record[f"templated_{cls_name}"] = labels_template.format(
-                        label=label2word[label]
+                        label=label
                     )
 
     def __len__(self):
         return len(self.annotations)
 
-class TextDataset(SBICBase):
+class TextDataset(LatentHatredBase):
     def __init__(
         self,
         annotation_filepath: str,

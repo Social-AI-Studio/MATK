@@ -32,6 +32,7 @@ def main(cfg) -> None:
 
     ## extract all classification configurations)
     cls_cfg = {}
+    print(cfg.dataset)
     for d in cfg.dataset.values():
         cls_cfg.update(d['labels'])
 
