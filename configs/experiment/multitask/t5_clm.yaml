@@ -4,7 +4,7 @@ defaults:
   - /dataset: 
     - sbic
     - latent_hatred
-    - mami
+    - fhm_finegrained
   - /datamodule: text_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
@@ -46,17 +46,17 @@ dataset:
         0: "no"
         1: "yes"
 
-  mami:
-    dataset_class: datasets.mami.TextDataset
+  fhm_finegrained:
+    dataset_class: datasets.fhm_finegrained.TextDataset
     tokenizer_class_or_path: google/flan-t5-large
     text_template: >
       Determine whether the following meme is hateful. Answer "yes" for "hateful" and "no" for "non-hateful.
       Text: {text}
       Caption: {caption}
-      Answer:
+      Answer: 
     labels_template: "{label}"
     labels:
-      mami_misogynous:
+      fhm_finegrained_hate:
         0: "no"
         1: "yes"
 
@@ -68,7 +68,7 @@ monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/multitask/sbic-latent_hatred-mamic/t5-classification
+experiment_name: baseline/multitask/sbic-latent_hatred-fhmfgc/t5-classification
 
 # Job settings
 hydra.verbose: True

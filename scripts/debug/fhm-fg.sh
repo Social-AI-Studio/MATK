@@ -16,12 +16,12 @@
 #     trainer=debug_trainer
 
 python3 main.py \
-    +experiment=fhm_finegrained/t5_classification.yaml \
+    +experiment=fhm_finegrained/t5_clm.yaml \
     action=fit \
     trainer=debug_trainer
 
-python3 main.py \
-    +experiment=fhm_finegrained/bart_classification.yaml \
-    action=fit \
-    trainer=debug_trainer
+# python3 main.py \
+#     +experiment=fhm_finegrained/bart_classification.yaml \
+#     action=fit \
+#     trainer=debug_trainer
 

@@ -22,3 +22,15 @@ main.log
 t5-train1.log
 test_fhm.json
 logs
+debug-lh.log
+nohup.out
+scripts/eval_fhmfg.sh
+scripts/eval_harmeme_cap.sh
+scripts/eval_harmeme_nocap.sh
+scripts/eval_latenthatred.sh
+scripts/eval_sbic.sh
+scripts/eval_sbiclh.sh
+scripts/eval_sbiclhfhm.sh
+scripts/eval_sbiclhmami.sh
+scripts/train/
+test.log

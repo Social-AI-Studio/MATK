@@ -43,8 +43,7 @@ def text_collate_fn(tokenizer, batches, labels):
     
     inputs = tokenizer(  
         text=texts, 
-        padding=True,
-        return_tensors="pt"
+        return_tensors="pt",  truncation=True, padding=True, max_length=512
     )
     inputs.update(labels_dict)
 

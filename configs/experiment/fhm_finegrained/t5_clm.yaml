@@ -20,8 +20,12 @@ model:
 dataset:
   fhm_finegrained:
     dataset_class: datasets.fhm_finegrained.TextDataset
-    tokenizer_class_or_path: t5-large
-    text_template: "{caption} . {text}"
+    tokenizer_class_or_path: google/flan-t5-large
+    text_template: >
+      Determine whether the following meme is hateful. Answer "yes" for "hateful" and "no" for "non-hateful.
+      Text: {text}
+      Caption: {caption}
+      Answer: 
     labels_template: "{label}"
     labels:
       fhm_finegrained_hate:
@@ -29,7 +33,7 @@ dataset:
         1: "yes"
 
 datamodule:
-  tokenizer_class_or_path: t5-large
+  tokenizer_class_or_path: google/flan-t5-large
 
 monitor_metric: validate_fhm_finegrained_hate_average
 monitor_mode: max

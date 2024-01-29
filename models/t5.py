@@ -64,17 +64,22 @@ class T5CLMModel(BaseLightningModule):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels=batch["labels_input_ids"]
+            labels=batch["labels_input_ids"],
         )
+        indiced = model_outputs.logits
+
+        print(model_outputs.keys())
 
         for cls_name, token2label in self.cls_tokens.items():
             indices = batch[f"{cls_name}_indices"]
             labels = batch[cls_name]
 
+            explanation = self.tokenizer.batch_decode(torch.argmax(indiced[indices, : , :], dim=-1).tolist(), skip_special_tokens=True)
+            print(explanation)
+
             logits = self.get_logits(model_outputs, indices, list(token2label.keys()))
             labels = batch[f"{cls_name}"]
             logits, labels = logits.cpu(), labels.cpu()
-
             self.compute_metrics_step(stage, cls_name, labels, logits)
 
         return model_outputs.loss / len(self.cls_tokens)

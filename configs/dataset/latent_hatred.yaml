@@ -1,20 +1,20 @@
 latent_hatred:
   annotation_filepaths:
-    train: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/train.jsonl
-    validate: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/val.jsonl
-    test: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/test.jsonl
-    predict: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/test.jsonl
+    train: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/trainl.jsonl
+    validate: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/vall.jsonl
+    test: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/testl.jsonl
+    predict: /mnt/data1/datasets/hatespeech/latent_hatred/preprocessed/testl.jsonl
 
   auxiliary_dicts:
     train: 
-      caption: null
+      generated_implied_statement: /mnt/data1/datasets/hatespeech/latent_hatred/rationales/train
     validate: 
-      caption: null
+      generated_implied_statement: /mnt/data1/datasets/hatespeech/latent_hatred/rationales/val
     test: 
-      caption: null
+      generated_implied_statement: /mnt/data1/datasets/hatespeech/latent_hatred/rationales/test
     predict: 
-      caption: null
-
+      generated_implied_statement: /mnt/data1/datasets/hatespeech/latent_hatred/rationales/test
+      
   feats_dir:
     train: null
     validate: null

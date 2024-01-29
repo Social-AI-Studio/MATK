@@ -25,6 +25,7 @@ class LatentHatredBase(CommonBase):
         # keys: post, target, implied_statement
 
         self._preprocess_dataset()
+        self.auxiliary_data = self._load_auxiliary(auxiliary_dicts)
 
         self._format_input_output(
             text_template,
@@ -47,8 +48,8 @@ class LatentHatredBase(CommonBase):
         for record in tqdm.tqdm(self.annotations, desc="Input/Output formatting"):
             # format input text template
             input_kwargs = {"text": record["post"]}
-            # for key, data in self.auxiliary_data.items():
-            #     input_kwargs[key] = data[record["id"]]
+            for key, data in self.auxiliary_data.items():
+                input_kwargs[key] = data[record["id"]]
             text = text_template.format(**input_kwargs)
             record["templated_text"] = text
 
