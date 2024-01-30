@@ -35,6 +35,7 @@ def text_collate_fn(tokenizer, batches, labels):
     tokenized = tokenizer(labels_dict["labels"], padding=True, truncation=True, return_tensors="pt")
     labels_dict["labels_input_ids"] = tokenized.input_ids
     labels_dict["labels_attention_mask"] = tokenized.attention_mask
+
     del labels_dict["labels"]
 
     texts = []

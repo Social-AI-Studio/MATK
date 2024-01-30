@@ -58,7 +58,7 @@ class LatentHatredBase(CommonBase):
                 for cls_name, label2word in labels_mapping.items():
                     label = record[cls_name]
                     record[f"templated_{cls_name}"] = labels_template.format(
-                        label=label
+                        label=label2word[label] + ". " + record["generated_implied_statement"]
                     )
 
     def __len__(self):
