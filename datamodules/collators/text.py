@@ -4,6 +4,8 @@ from torch.nn.utils.rnn import pad_sequence
 def text_collate_fn(tokenizer, batches, labels):
 
     # Restructure the dataset batches
+
+    # print(labels)
     batch_dict = {label: [] for label in labels}
     for item_tuple in batches:
         for item in item_tuple:
@@ -29,7 +31,8 @@ def text_collate_fn(tokenizer, batches, labels):
         # Capture the label indices for each dataset
         indices = list(range(start_index, start_index + len(items)))
         start_index = len(items)
-        labels_dict[label] = torch.tensor([i[label] for i in items], dtype=torch.int64)
+
+        # labels_dict[label] = torch.tensor([i[label] for i in items], dtype=torch.int64) # this gets the label: 0 things from records and stores is as a tensor
         labels_dict[f"{label}_indices"] = torch.tensor(indices, dtype=torch.int64)
 
     tokenized = tokenizer(labels_dict["labels"], padding=True, truncation=True, return_tensors="pt")
