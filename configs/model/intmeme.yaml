@@ -1,0 +1,7 @@
+class_path: models.intmeme.IntMemeModel
+vla_class_or_path: facebook/flava-full
+mie_class_or_path: roberta-large
+dropout: ???
+optimizers: ???
+output_dims: ???
+add_residual_conn: ???

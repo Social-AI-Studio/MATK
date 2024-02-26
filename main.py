@@ -36,7 +36,7 @@ def main(cfg) -> None:
         cls_cfg.update(d['labels'])
 
     ## instantiate model
-    model = model_class(**cfg.model)
+    model = model_class(**cfg.model, classes_per_task=list(cls_cfg.values()))
     model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
     total_parameters = sum(p.numel() for p in model.parameters())
     trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)

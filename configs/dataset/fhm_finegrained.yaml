@@ -6,20 +6,20 @@ fhm_finegrained:
     predict: /mnt/data1/datasets/memes/fhm_finegrained/annotations/test.jsonl
 
   image_dirs:
-    train: /mnt/data1/datasets/memes/fhm/images/img
-    validate: /mnt/data1/datasets/memes/fhm/images/img
-    test: /mnt/data1/datasets/memes/fhm/images/img
-    predict: /mnt/data1/datasets/memes/fhm/images/img
+    train: /mnt/data1/datasets/memes/fhm/images/img_clean
+    validate: /mnt/data1/datasets/memes/fhm/images/img_clean
+    test: /mnt/data1/datasets/memes/fhm/images/img_clean
+    predict: /mnt/data1/datasets/memes/fhm/images/img_clean
 
   auxiliary_dicts:
     train: 
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
-    validate:
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/mPLUG/
+    validate: 
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/mPLUG/
     test: 
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/mPLUG/
     predict: 
-      caption: /mnt/data1/datasets/memes/fhm/captions/deepfillv2/blip2-opt-6.7b-coco/
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/mPLUG/
 
   feats_dir:
     train: null

@@ -1,0 +1,45 @@
+# @package _global_
+defaults:
+  - /model: intmeme
+  - /dataset: 
+    - harmeme
+  - /datamodule: intmeme_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+    - accuracy
+    - auroc
+  - /hydra: experiment
+  - _self_
+    
+# Mandatory Configuration Parameters
+model:
+  dropout: 0.1
+  output_dims: 512
+  optimizers: 
+  - class_path: torch.optim.Adam
+    lr: 2e-5
+
+dataset:
+  harmeme:
+    dataset_class: datasets.harmeme.IntMemeDataset
+    text_template: "{interpretation}"
+    labels:
+      harmeme_intensity: 2
+
+datamodule:
+  vla_processor_class_or_path: facebook/flava-full
+  mie_tokenizer_class_or_path: roberta-large
+  batch_size: 16
+
+monitor_metric: validate_harmeme_intensity_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/harmeme/intmeme
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???

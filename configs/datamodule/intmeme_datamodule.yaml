@@ -1,0 +1,6 @@
+class_path: datamodules.intmeme_datamodule.IntMemeDataModule
+vla_processor_class_or_path: ???
+mie_tokenizer_class_or_path: ???
+num_workers: 8
+batch_size: 32
+shuffle_train: true

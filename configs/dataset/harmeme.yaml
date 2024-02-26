@@ -6,20 +6,20 @@ harmeme:
     predict: /mnt/data1/datasets/memes/harmeme/annotations/test.jsonl
 
   image_dirs:
-    train: /mnt/data1/datasets/memes/harmeme/images/img
-    validate: /mnt/data1/datasets/memes/harmeme/images/img
-    test: /mnt/data1/datasets/memes/harmeme/images/img
-    predict: /mnt/data1/datasets/memes/harmeme/images/img
+    train: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
+    validate: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
+    test: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
+    predict: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
 
   auxiliary_dicts:
     train: 
-      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
-    validate:
-      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/mPLUG/prompt_5/
+    validate: 
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/mPLUG/prompt_5/
     test: 
-      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/mPLUG/prompt_5/
     predict: 
-      caption: /mnt/data1/datasets/memes/harmeme/captions/deepfillv2/blip2-opt-6.7b-coco
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/mPLUG/prompt_5/
       
   feats_dir:
     train: null

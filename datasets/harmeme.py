@@ -161,3 +161,28 @@ class TextDataset(HarmemeBase):
 
     def __getitem__(self, idx: int):
         return self.annotations[idx]
+    
+
+
+class IntMemeDataset(HarmemeBase):
+    def __init__(
+        self,
+        annotation_filepath: str,
+        auxiliary_dicts: dict,
+        text_template: str,
+        img_dir: str
+    ):
+        super().__init__(
+            annotation_filepath,
+            auxiliary_dicts,
+            text_template,
+            None,
+            None
+        )
+        self.image_dict = self._load_images(self.annotations, img_dir)
+
+    def __getitem__(self, idx: int):
+        record = self.annotations[idx]
+        record['img'] = self.image_dict[record['id']]
+        record['passage'] = record['templated_text']
+        return record
