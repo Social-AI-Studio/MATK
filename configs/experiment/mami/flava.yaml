@@ -20,10 +20,15 @@ model:
 dataset:
   mami:
     dataset_class: datasets.mami.ImageDataset
-    text_template: "{text}"
+    text_template: "{text} [SEP] {interpretation}"
     labels:
       mami_misogynous: 2
+
 datamodule:
+  processor_class_or_path: facebook/flava-full
+
+
+monitor_metric: validate_mami_misogynous_average
 monitor_mode: max
 save_top_ks: 1
 

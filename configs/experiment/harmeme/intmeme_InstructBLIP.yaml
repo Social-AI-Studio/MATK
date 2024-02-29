@@ -1,9 +1,9 @@
 # @package _global_
 defaults:
-  - /model: flava
+  - /model: intmeme
   - /dataset: 
-    - harmeme
-  - /datamodule: processor_datamodule
+    - harmeme_InstructBLIP
+  - /datamodule: intmeme_datamodule
   - /trainer: single_gpu_trainer
   - /metric:
     - accuracy
@@ -13,26 +13,30 @@ defaults:
     
 # Mandatory Configuration Parameters
 model:
+  dropout: 0.1
+  output_dims: 512
   optimizers: 
   - class_path: torch.optim.Adam
     lr: 2e-5
 
 dataset:
   harmeme:
-    dataset_class: datasets.harmeme.ImageDataset
-    text_template: "{text} [SEP] {interpretation}"
+    dataset_class: datasets.harmeme.IntMemeDataset
+    text_template: "{interpretation}"
     labels:
       harmeme_intensity: 2
 
 datamodule:
-  processor_class_or_path: facebook/flava-full
+  vla_processor_class_or_path: facebook/flava-full
+  mie_tokenizer_class_or_path: roberta-large
+  batch_size: 16
 
 monitor_metric: validate_harmeme_intensity_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/harmeme/flava
+experiment_name: baseline/harmeme/intmeme_InstructBLIP
 
 # Job settings
 hydra.verbose: True

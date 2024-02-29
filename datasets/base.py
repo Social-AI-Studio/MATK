@@ -11,10 +11,13 @@ from torch.utils.data import Dataset
 class CommonBase(Dataset):
     def _load_auxiliary(self, auxiliary_dicts: dict):
         data = {}
+        print(len(auxiliary_dicts))
         for key, aux_dir in auxiliary_dicts.items():
             data[key] = {}
             for record in tqdm.tqdm(self.annotations, desc="Loading auxiliary info"):
+                print(record)
                 filepath = os.path.join(aux_dir, f"{record['id']}.json")
+                print(filepath)
                 with open(filepath, "r") as f:
                     d = json.load(f)[key]
                     d = d.strip()

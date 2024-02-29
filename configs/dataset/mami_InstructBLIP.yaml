@@ -13,13 +13,13 @@ mami:
 
   auxiliary_dicts:
     train: 
-      interpretation: /mnt/data1/datasets/memes/mami/interpretations/train/mPLUG/prompt_5
+      interpretation: /mnt/data1/datasets/memes/mami/interpretations/train/InstructBLIP/prompt_5
     validate: 
-      interpretation: /mnt/data1/datasets/memes/mami/interpretations/trial/mPLUG/prompt_5
+      interpretation: /mnt/data1/datasets/memes/mami/interpretations/trial/InstructBLIP/prompt_5
     test: 
-      interpretation: /mnt/data1/datasets/memes/mami/interpretations/test/mPLUG/prompt_5
+      interpretation: /mnt/data1/datasets/memes/mami/interpretations/test/InstructBLIP/prompt_5
     predict: 
-      interpretation: /mnt/data1/datasets/memes/mami/interpretations/test/mPLUG/prompt_5
+      interpretation: /mnt/data1/datasets/memes/mami/interpretations/test/InstructBLIP/prompt_5
 
   feats_dir:
     train: null

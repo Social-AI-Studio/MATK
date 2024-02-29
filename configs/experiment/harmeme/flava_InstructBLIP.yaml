@@ -2,7 +2,7 @@
 defaults:
   - /model: flava
   - /dataset: 
-    - harmeme
+    - harmeme_InstructBLIP
   - /datamodule: processor_datamodule
   - /trainer: single_gpu_trainer
   - /metric:

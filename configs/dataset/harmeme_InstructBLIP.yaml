@@ -1,0 +1,32 @@
+harmeme:  
+  annotation_filepaths:
+    train: /mnt/data1/datasets/memes/harmeme/annotations/train.jsonl
+    validate: /mnt/data1/datasets/memes/harmeme/annotations/val.jsonl
+    test: /mnt/data1/datasets/memes/harmeme/annotations/test.jsonl
+    predict: /mnt/data1/datasets/memes/harmeme/annotations/test.jsonl
+
+  image_dirs:
+    train: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
+    validate: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
+    test: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
+    predict: /mnt/data1/datasets/memes/harmeme/images/deepfillv2
+
+  auxiliary_dicts:
+    train: 
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/InstructBLIP/prompt_5/
+    validate: 
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/InstructBLIP/prompt_5/
+    test: 
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/InstructBLIP/prompt_5/
+    predict: 
+      interpretation: /mnt/data1/datasets/memes/harmeme/interpretations/InstructBLIP/prompt_5/
+      
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  dataset_class: ???
+  text_template: ???
+  labels: ???

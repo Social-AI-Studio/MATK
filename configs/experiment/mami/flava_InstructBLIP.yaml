@@ -1,15 +1,15 @@
 # @package _global_
 defaults:
-  - /model: flava
-  - /dataset: 
-    - harmeme
-  - /datamodule: processor_datamodule
-  - /trainer: single_gpu_trainer
-  - /metric:
-    - accuracy
-    - auroc
-  - /hydra: experiment
-  - _self_
+- /model: flava
+- /dataset: 
+  - mami_InstructBLIP
+- /datamodule: processor_datamodule
+- /trainer: single_gpu_trainer
+- /metric:
+  - accuracy
+  - auroc
+- /hydra: experiment
+- _self_
     
 # Mandatory Configuration Parameters
 model:
@@ -18,21 +18,22 @@ model:
     lr: 2e-5
 
 dataset:
-  harmeme:
-    dataset_class: datasets.harmeme.ImageDataset
+  mami:
+    dataset_class: datasets.mami.ImageDataset
     text_template: "{text} [SEP] {interpretation}"
     labels:
-      harmeme_intensity: 2
+      mami_misogynous: 2
 
 datamodule:
   processor_class_or_path: facebook/flava-full
 
-monitor_metric: validate_harmeme_intensity_average
+
+monitor_metric: validate_mami_misogynous_average
 monitor_mode: max
 save_top_ks: 1
 
 # Experiment settings
-experiment_name: baseline/harmeme/flava
+experiment_name: baseline/mami/flava
 
 # Job settings
 hydra.verbose: True

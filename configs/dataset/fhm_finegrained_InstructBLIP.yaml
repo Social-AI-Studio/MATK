@@ -1,0 +1,32 @@
+fhm_finegrained:
+  annotation_filepaths:
+    train: /mnt/data1/datasets/memes/fhm_finegrained/annotations/train.json
+    validate: /mnt/data1/datasets/memes/fhm_finegrained/annotations/dev_seen.json
+    test: /mnt/data1/datasets/memes/fhm_finegrained/annotations/dev_seen.json
+    predict: /mnt/data1/datasets/memes/fhm_finegrained/annotations/test.jsonl
+
+  image_dirs:
+    train: /mnt/data1/datasets/memes/fhm/images/img_clean
+    validate: /mnt/data1/datasets/memes/fhm/images/img_clean
+    test: /mnt/data1/datasets/memes/fhm/images/img_clean
+    predict: /mnt/data1/datasets/memes/fhm/images/img_clean
+
+  auxiliary_dicts:
+    train: 
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/InstructBLIP/
+    validate: 
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/InstructBLIP/
+    test: 
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/InstructBLIP/
+    predict: 
+      interpretation: /mnt/data1/datasets/memes/fhm_finegrained/interpretations/InstructBLIP/
+
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  dataset_class: ???
+  text_template: ???
+  labels: ???
