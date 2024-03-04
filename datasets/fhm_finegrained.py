@@ -68,7 +68,8 @@ class FHMFGBase(CommonBase):
             record["id"] = os.path.splitext(record["img"])[0]
 
             # convert label to numeric values
-            record[f"{DATASET_PREFIX}_hate"] = HATEFULNESS[record["gold_hate"][0]]
+            if "gold_hate" in record:
+                record[f"{DATASET_PREFIX}_hate"] = HATEFULNESS[record["gold_hate"][0]]
 
     def _format_input_output(
         self,

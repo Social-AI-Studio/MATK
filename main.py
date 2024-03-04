@@ -36,7 +36,10 @@ def main(cfg) -> None:
         cls_cfg.update(d['labels'])
 
     ## instantiate model
-    model = model_class(**cfg.model, classes_per_task=list(cls_cfg.values()))
+    if "intmeme" in cfg["experiment_name"]:
+        model = model_class(**cfg.model, classes_per_task=list(cls_cfg.values()))
+    else:
+        model = model_class(**cfg.model)
     model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
     total_parameters = sum(p.numel() for p in model.parameters())
     trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -74,16 +77,25 @@ def main(cfg) -> None:
             checkpoint_path=cfg.model_checkpoint,
         )
         model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
+        predictions = trainer.test(model, datamodule)
         predictions = trainer.predict(model, datamodule)
+
+        outputs = []
+        # print("predictions:", len(predictions))
+        for batch in predictions:
+            # print("batch:", len(batch))
+            # print(batch)
+            for idx in range(len(batch['logits'])):
+                outputs.append({
+                    "logits": batch["logits"][idx],
+                    "pred": batch["logits"][idx].index(max(batch["logits"][idx]))
+                })
         
         # print(os.getcwd())
-        result_filepath = os.path.join(os.getcwd(), f"{cfg.experiment_name}.json")
+        result_filepath = os.path.join(os.getcwd(), f"preds.json")
+        print(result_filepath)
         with open(result_filepath, "w+") as f:
-            json.dump({
-                "img": img_filenames,
-                "hate_preds": hate_preds,
-                "hate_labels": hate_labels
-            }, f)
+            json.dump(outputs, f)
     else:
         raise Exception(f"Requested action {cfg.action} unimplemented")
 

@@ -20,7 +20,7 @@ model:
 dataset:
   fhm_finegrained:
     dataset_class: datasets.fhm_finegrained.ImageDataset
-    text_template: "{text} [SEP] {interpretation}"
+    text_template: "{text}"
     labels:
       fhm_finegrained_hate: 2
 

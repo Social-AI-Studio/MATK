@@ -11,6 +11,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+            
+# def sche_lambda(step):
+#     warm_up_steps = 95 # harmeme 
+#     return min(step/warm_up_steps, 1) 
+
 class GateFusionModule(nn.Module):
     def __init__(self, vla_dims, mie_dims, output_embeds):
         super(GateFusionModule, self).__init__()
@@ -20,6 +25,7 @@ class GateFusionModule(nn.Module):
         
         # Gate layer
         self.gate_layer = nn.Linear(2 * output_embeds, output_embeds)
+        self.dropout = nn.Dropout(0.1)
 
         # Transform layers for residual connections
         self.vla_residual = nn.Linear(vla_dims, output_embeds)
@@ -27,8 +33,8 @@ class GateFusionModule(nn.Module):
     
     def forward(self, vla_embeds, mie_embeds, add_residual_conn):
         # Transform inputs to a common space
-        vla_common = self.vla_transform(vla_embeds)
-        mie_common = self.mie_transform(mie_embeds)
+        vla_common = self.dropout(F.relu(self.vla_transform(vla_embeds)))
+        mie_common = self.dropout(F.relu(self.mie_transform(mie_embeds)))
 
         # Concatenate vla_embeds and input2 along the feature dimension
         combined_inputs = torch.cat((vla_common, mie_common), dim=1)
@@ -150,27 +156,50 @@ class IntMemeModel(BaseLightningModule):
         return
 
     def predict_step(self, batch):
-        model_outputs = self.model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
+        vla_outputs = self.vla_model(
+            input_ids=batch["meme_input_ids"],
+            attention_mask=batch["meme_attention_mask"],
             pixel_values=batch['pixel_values']
         )
+        vla_cls = vla_outputs.multimodal_embeddings[:, 0]
+
+        mie_outputs = self.mie_model(
+            input_ids=batch["passage_input_ids"],
+            attention_mask=batch["passage_attention_mask"]
+        )
+        mie_cls = mie_outputs.last_hidden_state[:, 0]
+        fused_outputs = self.gate(vla_cls, mie_cls, self.add_residual_conn)
+
+        for idx, cls_name in enumerate(self.classes):
+            classifier = self.mlps[idx]
+            logits = classifier(fused_outputs)
 
         results = {
-            "id": [],
-            "classification_task": [],
             "logits": [],
         }
         for idx, cls_name in enumerate(self.classes):
-            logits = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
-            results["id"] = batch["id"].detach().cpu().tolist()
-            results["classification_task"] = [cls_name for i in range(batch["id"].shape[0])]
             results["logits"] = logits.detach().cpu().tolist()
 
         return results
+    
+
+    # def configure_optimizers(self):
+    #     opts = []
+    #     for opt_cfg in self.optimizers:
+    #         class_name = opt_cfg.pop("class_path")
+
+    #         package_name = ".".join(class_name.split(".")[:-1])
+    #         package = importlib.import_module(package_name)
+
+    #         class_name = class_name.split(".")[-1]
+    #         cls = getattr(package, class_name)
+
+    #         opts.append(cls(self.parameters(), **opt_cfg))
+
+    #     return opts
 
     def configure_optimizers(self):
-        opts = []
+        optimizers = []
         for opt_cfg in self.optimizers:
             class_name = opt_cfg.pop("class_path")
 
@@ -180,6 +209,9 @@ class IntMemeModel(BaseLightningModule):
             class_name = class_name.split(".")[-1]
             cls = getattr(package, class_name)
 
-            opts.append(cls(self.parameters(), **opt_cfg))
+            opt = cls(self.parameters(), **opt_cfg)
 
-        return opts
+            optimizers.append(opt)
+            # schedulers.append(torch.optim.lr_scheduler.LambdaLR(opt, lr_lambda=sche_lambda))
+
+        return optimizers #, schedulers

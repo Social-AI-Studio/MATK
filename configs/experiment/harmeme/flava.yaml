@@ -20,7 +20,7 @@ model:
 dataset:
   harmeme:
     dataset_class: datasets.harmeme.ImageDataset
-    text_template: "{text} [SEP] {interpretation}"
+    text_template: "{text}"
     labels:
       harmeme_intensity: 2
 

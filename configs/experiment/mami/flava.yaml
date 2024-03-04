@@ -20,7 +20,7 @@ model:
 dataset:
   mami:
     dataset_class: datasets.mami.ImageDataset
-    text_template: "{text} [SEP] {interpretation}"
+    text_template: "{text}"
     labels:
       mami_misogynous: 2
 

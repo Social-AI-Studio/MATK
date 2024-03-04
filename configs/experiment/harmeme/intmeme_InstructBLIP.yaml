@@ -16,7 +16,7 @@ model:
   dropout: 0.1
   output_dims: 512
   optimizers: 
-  - class_path: torch.optim.Adam
+  - class_path: torch.optim.AdamW
     lr: 2e-5
 
 dataset:

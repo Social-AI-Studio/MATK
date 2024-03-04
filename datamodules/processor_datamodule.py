@@ -80,7 +80,7 @@ class ProcessorDataModule(pl.LightningDataModule):
         if stage == "predict" or stage is None:
             self.predict = []
             for dataset in self.dataset_cfg:
-                self.dataset_cfg[dataset]
+                cfg = self.dataset_cfg[dataset]
                 dataset_obj = cfg.dataset_class(
                     img_dir=cfg.image_dirs.predict,
                     annotation_filepath=cfg.annotation_filepaths.predict,

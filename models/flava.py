@@ -22,12 +22,6 @@ class FlavaClassificationModel(BaseLightningModule):
         self.dropout = dropout
         self.optimizers = optimizers
 
-    def setup_tasks(self, metrics_cfg, cls_cfg):
-        # set up the metrics for evaluation
-        setup_metrics(self, cls_cfg, metrics_cfg, "train")
-        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
-        setup_metrics(self, cls_cfg, metrics_cfg, "test")
-
         # set up the various classification heads
         self.mlps = nn.ModuleList([
             SimpleClassifier(
@@ -35,8 +29,14 @@ class FlavaClassificationModel(BaseLightningModule):
                 num_classes,
                 self.dropout
             )
-            for num_classes in cls_cfg.values()
+            for num_classes in [2]
         ])
+
+    def setup_tasks(self, metrics_cfg, cls_cfg):
+        # set up the metrics for evaluation
+        setup_metrics(self, cls_cfg, metrics_cfg, "train")
+        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
+        setup_metrics(self, cls_cfg, metrics_cfg, "test")
 
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
@@ -100,15 +100,21 @@ class FlavaClassificationModel(BaseLightningModule):
             pixel_values=batch['pixel_values']
         )
 
+        loss = 0.0
+
+        for idx, cls_name in enumerate(self.classes):
+            indices = batch[f"{cls_name}_indices"]
+            targets = batch[cls_name]
+            classifier = self.mlps[idx]
+
+            logits = classifier(
+                model_outputs.multimodal_embeddings[indices, 0]
+            )
+
         results = {
-            "id": [],
-            "classification_task": [],
             "logits": [],
         }
         for idx, cls_name in enumerate(self.classes):
-            logits = self.mlps[idx](model_outputs.multimodal_embeddings[:, 0])
-            results["id"] = batch["id"].detach().cpu().tolist()
-            results["classification_task"] = [cls_name for i in range(batch["id"].shape[0])]
             results["logits"] = logits.detach().cpu().tolist()
 
         return results
