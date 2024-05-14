@@ -5,7 +5,6 @@ import shutil
 from multiprocessing import Pool
 
 import fire
-import easyocr
 import numpy as np
 import torch
 
@@ -33,13 +32,6 @@ def multi_boxes_mask(image, boxes, pad_crop=5):
         patch = image[box[0]: box[2], box[1]: box[3], :]
         pure_white = (patch > 253).all(axis=-1).astype(np.uint8)
         mask[box[0]: box[2], box[1]: box[3], :] = pure_white[..., None]
-        
-        # plt.subplot(2, 1, 1)
-        # plt.imshow(patch)
-        # plt.subplot(2, 1, 2)
-        # plt.imshow(pure_white)
-        # plt.colorbar()
-        # plt.show()
         
         print('pure_white ', pure_white.sum())
     
@@ -87,29 +79,6 @@ def cast_pred_type(pred):
         score = float(score)
         result.append((coord, txt, score))
     return result
-
-
-def detect(root_dir):
-    reader = easyocr.Reader(['en'])
-    image_dir = os.path.join(root_dir, 'img')
-    images = glob.glob(os.path.join(image_dir, '*.png')) 
-    images += glob.glob(os.path.join(image_dir, '**', '*.png')) 
-    # images = images[:3]
-    print(len(images))
-    assert len(images) > 0 # adjust depending on number of images in image folder
-
-    out_json = os.path.join(root_dir, 'ocr.json')
-    out_anno = {}
-    print(f"Find {len(images)} images!")
-
-    for i, image_path in enumerate(images):
-        print(F"{i}/{len(images)}")
-        img_name = os.path.basename(image_path)
-        pred = reader.readtext(image_path)
-        out_anno[img_name] = cast_pred_type(pred)
-
-    with open(out_json, 'w') as f:
-        json.dump(out_anno, f)
 
 
 def point_to_box(anno_json):

@@ -1,0 +1,41 @@
+# @package _global_
+defaults:
+  - /model: flava
+  - /dataset: 
+    - harm_p
+  - /datamodule: processor_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+    - accuracy
+    - auroc
+  - /hydra: experiment
+  - _self_
+    
+# Mandatory Configuration Parameters
+model:
+  optimizers: 
+  - class_path: torch.optim.Adam
+    lr: 2e-5
+
+dataset:
+  harm_p:
+    dataset_class: datasets.harm_p.ImageDataset
+    text_template: "{text}"
+    labels:
+      harm_p_intensity: 2
+
+datamodule:
+  processor_class_or_path: facebook/flava-full
+
+monitor_metric: validate_harm_p_intensity_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/harmeme/flava
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???
