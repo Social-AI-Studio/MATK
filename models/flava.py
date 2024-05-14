@@ -13,7 +13,8 @@ class FlavaClassificationModel(BaseLightningModule):
         self,
         model_class_or_path: str,
         dropout: float,
-        optimizers: list
+        optimizers: list,
+        cls_classes: list,
     ):
         super().__init__()
         self.save_hyperparameters()
@@ -22,12 +23,6 @@ class FlavaClassificationModel(BaseLightningModule):
         self.dropout = dropout
         self.optimizers = optimizers
 
-    def setup_tasks(self, metrics_cfg, cls_cfg):
-        # set up the metrics for evaluation
-        setup_metrics(self, cls_cfg, metrics_cfg, "train")
-        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
-        setup_metrics(self, cls_cfg, metrics_cfg, "test")
-
         # set up the various classification heads
         self.mlps = nn.ModuleList([
             SimpleClassifier(
@@ -35,8 +30,14 @@ class FlavaClassificationModel(BaseLightningModule):
                 num_classes,
                 self.dropout
             )
-            for num_classes in cls_cfg.values()
+            for num_classes in cls_classes
         ])
+
+    def setup_tasks(self, metrics_cfg, cls_cfg):
+        # set up the metrics for evaluation
+        setup_metrics(self, cls_cfg, metrics_cfg, "train")
+        setup_metrics(self, cls_cfg, metrics_cfg, "validate")
+        setup_metrics(self, cls_cfg, metrics_cfg, "test")
 
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())

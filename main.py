@@ -36,8 +36,9 @@ def main(cfg) -> None:
         cls_cfg.update(d['labels'])
 
     ## instantiate model
-    model = model_class(**cfg.model)
+    model = model_class(**cfg.model, cls_classes=list(cls_cfg.values()))
     model.setup_tasks(metrics_cfg=cfg.metric, cls_cfg=cls_cfg)
+
     total_parameters = sum(p.numel() for p in model.parameters())
     trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
     logging.info(f"Model's Parameters: {total_parameters}")
@@ -56,8 +57,8 @@ def main(cfg) -> None:
         logging.info("Training model...")
         trainer.fit(model, datamodule)
 
-        # logging.info("Evaluating model - validate...")
-        # trainer.validate(model, datamodule)
+        logging.info("Evaluating model - validate...")
+        trainer.validate(model, datamodule)
 
         logging.info("Evaluating model - test...")
         trainer.test(model, datamodule, ckpt_path='best')
