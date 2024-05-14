@@ -5,7 +5,6 @@ import shutil
 from multiprocessing import Pool
 
 import fire
-import easyocr
 import numpy as np
 import torch
 
