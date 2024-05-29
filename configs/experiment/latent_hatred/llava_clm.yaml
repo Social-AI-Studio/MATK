@@ -1,0 +1,50 @@
+# @package _global_
+defaults:
+  - /model: llava_clm
+  - /dataset: 
+    - latent_hatred
+  - /datamodule: text_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+      - accuracy
+      - auroc
+  - /hydra: experiment
+  - _self_
+
+# Mandatory Configuration Parameters
+model:
+  optimizers:
+    - class_path: torch.optim.Adam
+      lr: 2e-5
+  # save_dir: latent_hatred-llava-1111
+  save_dir: latent_hatred-llava-1111
+
+dataset:
+  latent_hatred:
+    dataset_class: datasets.latent_hatred.TextDataset
+    tokenizer_class_or_path: llava-hf/llava-1.5-7b-hf
+    text_template: >
+      USER: Determine whether the following post is hateful. Answer "yes" for "hateful" and "no" for "non-hateful. 
+      Post Text: {text}
+      ASSISTANT:  
+    labels_template: "{label}"
+    labels:
+      latent_hatred_label:
+        0: "no"
+        1: "yes"
+
+datamodule:
+  tokenizer_class_or_path: llava-hf/llava-1.5-7b-hf
+
+monitor_metric: validate_latent_hatred_label_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/latent_hatred/llava-clm
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???

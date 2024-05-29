@@ -1,0 +1,50 @@
+# @package _global_
+defaults:
+  - /model: t5_clm
+  - /dataset: 
+    - mmhs
+  - /datamodule: text_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+      - accuracy
+      - auroc
+  - /hydra: experiment
+  - _self_
+
+# Mandatory Configuration Parameters
+model:
+  optimizers:
+    - class_path: torch.optim.Adam
+      lr: 2e-5
+
+dataset:
+  mmhs:
+    dataset_class: datasets.mmhs.TextDataset
+    tokenizer_class_or_path: google/flan-t5-large
+    text_template: >
+      Determine whether the following meme is hateful. Answer "yes" for "hateful" and "no" for "non-hateful. 
+      Meme Text: {text}
+      Meme Web Entity: {web_entity}
+      Meme Caption: {caption}
+      Answer:
+    labels_template: "{label}"
+    labels:
+      mmhs_label:
+        0: "no"
+        1: "yes"
+
+datamodule:
+  tokenizer_class_or_path: google/flan-t5-large
+
+monitor_metric: validate_mmhs_label_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/mmhs/t5-clm/mistral
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???

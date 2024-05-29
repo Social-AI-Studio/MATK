@@ -1,0 +1,4 @@
+class_path: models.llava.LlavaCLMModel
+model_class_or_path: llava-hf/llava-1.5-7b-hf
+optimizers: ???
+save_dir: ???

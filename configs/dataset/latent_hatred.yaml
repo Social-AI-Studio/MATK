@@ -1,0 +1,26 @@
+latent_hatred:
+  annotation_filepaths:
+    train: /mnt/data1/datasets/hatespeech/latent_hatred/truncated/explanations/train-explanations.jsonl
+    validate: /mnt/data1/datasets/hatespeech/latent_hatred/truncated/explanations/val-explanations.jsonl
+    test: /mnt/data1/datasets/hatespeech/latent_hatred/truncated/explanations/test-explanations.jsonl
+    predict: /mnt/data1/datasets/hatespeech/latent_hatred/truncated/explanations/test-explanations.jsonl
+
+  auxiliary_dicts:
+    train: 
+      caption: null
+    validate: 
+      caption: null
+    test: 
+      caption: null
+    predict: 
+      caption: null
+      
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  dataset_class: ???
+  text_template: ???
+  labels: ???

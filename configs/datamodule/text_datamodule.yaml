@@ -1,5 +1,5 @@
 shuffle_train: true
 num_workers: 4
-batch_size: 32
+batch_size: 4
 class_path: datamodules.text_datamodule.TextDataModule
 tokenizer_class_or_path: ???

@@ -35,6 +35,8 @@ def processor_collate_fn(batches, processor, labels):
     inputs = processor(
         images=images, text=texts, return_tensors="pt", padding=True
     )
+   
     inputs.update(labels_dict)
+    
 
     return inputs

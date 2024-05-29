@@ -1,31 +1,71 @@
+import os
 import torch
+import torch.nn as nn
 import importlib
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from torch.nn import CrossEntropyLoss
+import torch.nn.functional as F
+from transformers import AutoProcessor, LlavaForConditionalGeneration
 
+from transformers import AutoTokenizer, AutoProcessor, LlavaForConditionalGeneration
+
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    LlamaForCausalLM,
+    LlamaTokenizer,
+    BitsAndBytesConfig,
+    HfArgumentParser,
+    TrainingArguments,
+    pipeline,
+    logging,
+)
+from peft import (
+    LoraConfig,
+    get_peft_model,
+    get_peft_model_state_dict,
+    prepare_model_for_kbit_training
+)
 from .model_utils import setup_metrics
 from .base import BaseLightningModule
 
-import json
-
-def append_dict_to_jsonl(dictionary, filename):
-    with open(filename, 'a') as f:
-        json.dump(dictionary, f)
-        f.write('\n')
-
-class T5CLMModel(BaseLightningModule):
+class LlavaCLMModel(BaseLightningModule):
     def __init__(
         self,
         model_class_or_path: str,
-        optimizers: list
+        optimizers: list,
+        save_dir: str
     ):
         super().__init__()
         self.save_hyperparameters()
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type='nf4',
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.bfloat16
+        )
+        self.model = LlavaForConditionalGeneration.from_pretrained(model_class_or_path, quantization_config=bnb_config)
+        print(f'Memory used by model: {round(self.model.get_memory_footprint()/1024/1024/1024, 2)} GB')
+        LORA_R = 128
+        LORA_ALPHA = 256
+        
+        config = LoraConfig(
+            r=LORA_R,
+            lora_alpha=LORA_ALPHA,
+            target_modules="all-linear",
+            task_type="CAUSAL_LM",
+            
+        )
+        self.model = prepare_model_for_kbit_training(self.model)
+        self.model = get_peft_model(self.model, config)
+        self.model.gradient_checkpointing_enable()
 
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(
-            model_class_or_path)
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model_class_or_path, use_fast=True)
+        tokenizer = AutoTokenizer.from_pretrained(model_class_or_path,use_fast=True)
+        self.tokenizer = AutoProcessor.from_pretrained(model_class_or_path,use_fast=True)
+        self.tokenizer.tokenizer = tokenizer
+
         self.optimizers = optimizers
+        self.save_dir = save_dir
+        
 
     def setup_tasks(self, metrics_cfg, cls_cfg):
         # set up the metrics for evaluation
@@ -40,9 +80,9 @@ class T5CLMModel(BaseLightningModule):
         for cls_name, label2word in cls_cfg.items():
             self.cls_tokens[cls_name] = {}
             for label, word in label2word.items():
-                tokens = self.tokenizer.encode(word, add_special_tokens=False)
-                self.cls_tokens[cls_name][tokens[0]] = label
-        print(self.cls_tokens)
+                tokens = self.tokenizer.tokenizer.encode(word)
+                self.cls_tokens[cls_name][tokens[1]] = label
+           
         # important variables used in the BaseLightningModule
         self.classes = list(cls_cfg.keys())
         self.metric_names = [cfg["name"].lower() for cfg in metrics_cfg.values()]
@@ -52,8 +92,7 @@ class T5CLMModel(BaseLightningModule):
         self.val_loss = []
 
     def get_logits(self, outputs, indices, tokens):
-        first_word = outputs.logits[indices, 0, :].cpu()
-        print(tokens)
+        first_word = outputs.logits[indices, -1, :].cpu()
         logits = []
         for token in tokens:
             logits.append(first_word[:,
@@ -66,9 +105,9 @@ class T5CLMModel(BaseLightningModule):
         model_outputs = self.model(
             input_ids=batch["input_ids"],
             attention_mask=batch["attention_mask"],
-            labels=batch["labels_input_ids"],
-            decoder_attention_mask = batch["labels_attention_mask"],
         )
+        
+        loss = 0.0
 
         for cls_name, token2label in self.cls_tokens.items():
             indices = batch[f"{cls_name}_indices"]
@@ -76,13 +115,13 @@ class T5CLMModel(BaseLightningModule):
 
             logits = self.get_logits(model_outputs, indices, list(token2label.keys())) # some decimal values
             labels = batch[f"{cls_name}"] # 0 or 1
-            print(logits)
-            print(labels)
+
             logits, labels = logits.cpu(), labels.cpu() 
             self.compute_metrics_step(stage, cls_name, labels, logits)
-            explanation = self.tokenizer.batch_decode(torch.argmax(model_outputs.logits[indices, : , :], dim=2).tolist(), skip_special_tokens=True)
-
-        return model_outputs.loss / len(self.cls_tokens)
+            # explanation = self.tokenizer.batch_decode(torch.argmax(model_outputs.logits[indices, : , :], dim=2).tolist(), skip_special_tokens=True)
+            # print(explanation)
+            loss += F.cross_entropy(logits, labels)
+        return loss / len(self.cls_tokens)
 
     def training_step(self, batch, batch_idx):
         loss = self.forward("train", batch)
@@ -135,3 +174,8 @@ class T5CLMModel(BaseLightningModule):
             opts.append(cls(self.parameters(), **opt_cfg))
 
         return opts
+    
+    def on_save_checkpoint(self, checkpoint):
+        # 99% of use cases you don't need to implement this method
+        print("Custom saving!!!")
+        self.model.save_pretrained(self.save_dir)

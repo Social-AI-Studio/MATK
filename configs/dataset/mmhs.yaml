@@ -1,0 +1,26 @@
+mmhs:
+  annotation_filepaths:
+    train: /mnt/data1/datasets/temp/MMHS150K/explanations/train-explanations.jsonl
+    validate: /mnt/data1/datasets/temp/MMHS150K/explanations/val-explanations.jsonl
+    test: /mnt/data1/datasets/temp/MMHS150K/explanations/test-explanations.jsonl
+    predict: /mnt/data1/datasets/temp/MMHS150K/explanations/test-explanations.jsonl
+
+  auxiliary_dicts:
+    train: 
+      caption: /mnt/data1/datasets/temp/MMHS150K/captions/deepfillv2/blip2-opt-6.7b-coco
+    validate: 
+      caption: /mnt/data1/datasets/temp/MMHS150K/captions/deepfillv2/blip2-opt-6.7b-coco
+    test: 
+      caption: /mnt/data1/datasets/temp/MMHS150K/captions/deepfillv2/blip2-opt-6.7b-coco
+    predict: 
+      caption: /mnt/data1/datasets/temp/MMHS150K/captions/deepfillv2/blip2-opt-6.7b-coco
+
+  feats_dir:
+    train: null
+    validate: null
+    test: null
+    predict: null
+
+  dataset_class: ???
+  text_template: ???
+  labels: ???

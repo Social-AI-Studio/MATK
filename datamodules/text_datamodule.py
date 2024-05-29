@@ -29,9 +29,14 @@ class TextDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.shuffle_train = shuffle_train
         self.num_workers = num_workers
+        self.dataset_cfg_len = len(self.dataset_cfg)
+        print("Dataset cfg len is "+str(self.dataset_cfg_len))
+        print("Multitask adjusted batch size is "+str(self.batch_size//self.dataset_cfg_len))
 
         # Initialise tokenizer
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_class_or_path)
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.padding_side = "right"
         self.tokenizer_class_or_path = tokenizer_class_or_path
 
         labels = []
@@ -108,13 +113,13 @@ class TextDataModule(pl.LightningDataModule):
                 self.predict.append(dataset_obj)
 
     def train_dataloader(self):
-        return DataLoader(ConcatDataset(*self.train), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
+        return DataLoader(ConcatDataset(*self.train), batch_size=self.batch_size//self.dataset_cfg_len, num_workers=self.num_workers, collate_fn=self.collate_fn, shuffle=self.shuffle_train)
 
     def val_dataloader(self):
-        return DataLoader(ConcatDataset(*self.validate), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        return DataLoader(ConcatDataset(*self.validate), batch_size=self.batch_size//self.dataset_cfg_len, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
-        return DataLoader(ConcatDataset(*self.test), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        return DataLoader(ConcatDataset(*self.test), batch_size=self.batch_size//self.dataset_cfg_len, num_workers=self.num_workers, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
-        return DataLoader(ConcatDataset(*self.predict), batch_size=self.batch_size, num_workers=self.num_workers, collate_fn=self.collate_fn)
+        return DataLoader(ConcatDataset(*self.predict), batch_size=self.batch_size//self.dataset_cfg_len, num_workers=self.num_workers, collate_fn=self.collate_fn)

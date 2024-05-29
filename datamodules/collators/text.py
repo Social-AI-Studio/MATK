@@ -30,11 +30,12 @@ def text_collate_fn(tokenizer, batches, labels):
         indices = list(range(start_index, start_index + len(items)))
         start_index = len(items)
         labels_dict[label] = torch.tensor([i[label] for i in items], dtype=torch.int64)
-        labels_dict[f"{label}_indices"] = torch.tensor(indices, dtype=torch.int64)
+        labels_dict[f"{label}_indices"] = torch.tensor(indices, dtype=torch.int64)  
 
     tokenized = tokenizer(labels_dict["labels"], padding=True, truncation=True, return_tensors="pt")
     labels_dict["labels_input_ids"] = tokenized.input_ids
     labels_dict["labels_attention_mask"] = tokenized.attention_mask
+
     del labels_dict["labels"]
 
     texts = []
@@ -43,9 +44,8 @@ def text_collate_fn(tokenizer, batches, labels):
     
     inputs = tokenizer(  
         text=texts, 
-        padding=True,
-        return_tensors="pt"
+        return_tensors="pt",  padding=True, truncation=True
     )
     inputs.update(labels_dict)
-
+    
     return inputs

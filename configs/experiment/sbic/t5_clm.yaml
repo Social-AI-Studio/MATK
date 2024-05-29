@@ -1,0 +1,48 @@
+# @package _global_
+defaults:
+  - /model: t5_clm
+  - /dataset:
+      - sbic
+  - /datamodule: text_datamodule
+  - /trainer: single_gpu_trainer
+  - /metric:
+      - accuracy
+      - auroc
+  - /hydra: experiment
+  - _self_
+
+# Mandatory Configuration Parameters
+model:
+  optimizers:
+    - class_path: torch.optim.Adam
+      lr: 2e-5
+
+dataset:
+  sbic:
+    dataset_class: datasets.sbic.TextDataset
+    tokenizer_class_or_path: google/flan-t5-large
+    text_template: >
+      Determine whether the following post is hateful and explain why. Answer "yes" for "hateful" and "no" for "non-hateful. 
+      Text: {text}
+      Answer:
+    labels_template: "{label}"
+    labels:
+      sbic_label:
+        0: "no"
+        1: "yes"
+
+datamodule:
+  tokenizer_class_or_path: google/flan-t5-large
+
+monitor_metric: validate_sbic_label_average
+monitor_mode: max
+save_top_ks: 1
+
+# Experiment settings
+experiment_name: baseline/sbic/t5-clm
+
+# Job settings
+hydra.verbose: True
+seed_everything: 1111
+overwrite: False
+action: ???
